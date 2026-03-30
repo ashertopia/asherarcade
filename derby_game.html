@@ -1034,7 +1034,11 @@ function startGame(){
 function fetchLeaderboard(){
   fetch(`${CONFIG.appsScriptURL}?key=${CONFIG.leaderboardKey}`)
     .then(r=>r.json())
-    .then(d=>{ if(d?.scores) leaderboard=d.scores.sort((a,b)=>b.score-a.score).slice(0,10); })
+    .then(d=>{
+      // Apps Script returns a plain array [{name, score}, ...]
+      const arr = Array.isArray(d) ? d : (d?.scores || []);
+      leaderboard = arr.sort((a,b)=>b.score-a.score).slice(0,10);
+    })
     .catch(()=>{});
 }
 
