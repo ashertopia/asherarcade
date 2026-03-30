@@ -679,6 +679,8 @@ function drawDead(){
   ctx.fillText('TIME: '+mi+':'+si,W/2,H/2+5);
   ctx.fillStyle='#c8290e';rr(W/2-85,H/2+28,170,38,7);
   ctx.fillStyle='#fff';ctx.font='10px Press Start 2P';ctx.fillText('TRY AGAIN',W/2,H/2+53);
+  ctx.fillStyle='#3D95CE';rr(W/2-80,H/2+74,160,30,7);
+  ctx.fillStyle='#fff';ctx.font='7px Press Start 2P';ctx.fillText('☕ BUY ME A COFFEE',W/2,H/2+94);
   ctx.textAlign='left';
 }
 
@@ -720,6 +722,9 @@ function drawLB(){
   }
   ctx.fillStyle='#c8290e';rr(W/2-90,H-50,180,36,7);
   ctx.fillStyle='#fff';ctx.font='9px Press Start 2P';ctx.fillText('PLAY AGAIN',W/2,H-26);
+  // Buy Me a Coffee button
+  ctx.fillStyle='#3D95CE';rr(W/2-90,H-96,180,34,7);
+  ctx.fillStyle='#fff';ctx.font='8px Press Start 2P';ctx.fillText('☕ BUY ME A COFFEE',W/2,H-73);
   ctx.textAlign='left';
 }
 
@@ -735,11 +740,13 @@ function uiTouch(x,y){
       GS.char=x<W/2?'jackie':'dizzle';
     }
   }else if(GS.state==='dead'){
-    if(y>H/2+24)restartGame();
+    if(y>H/2+70&&y<H/2+108){if(window.showTip){window.shown=false;showTip();}}
+    else if(y>H/2+24)restartGame();
   }else if(GS.state==='win'){
     if(GS.name&&y>H-54)submitScore();
   }else if(GS.state==='leaderboard'){
     if(y>H-54)restartGame();
+    else if(y>H-100&&y<H-58){if(window.showTip){window.shown=false;showTip();}} // coffee btn
   }
 }
 
@@ -750,8 +757,8 @@ function handleNameKey(e){
 }
 
 function submitScore(){
-  // Show tip after submitting score - they've finished and had fun
-  setTimeout(function(){if(window.showTip)showTip();},1500);
+  // Show tip after submitting score - reset shown so it fires fresh
+  setTimeout(function(){if(window.showTip){window.shown=false;showTip();}},1500);
   const surl='https://script.google.com/macros/s/AKfycbwFs6IMY8op3GtUH0E3HCKnpfnvO42pRBeowsA172fRBf7GyR0_G4EZUQuCU_vjb4KQ0A/exec?name='+encodeURIComponent(GS.name)+'&score='+GS.timer.toFixed(2)+'&character='+GS.char+'&key=bragg_racing_lb_v1';
   fetch(surl,{mode:'no-cors'}).catch(()=>{});
   if(!GS.bestTime||GS.timer<GS.bestTime)GS.bestTime=GS.timer;
