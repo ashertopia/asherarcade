@@ -170,19 +170,22 @@ function getPuInterval(){
 }
 
 const PU_TYPES=[
-  ['immune', 'IMMUNITY!',    true,  4,2],
-  ['magnet', 'MAGNET!',      true,  3,2],
-  ['shield', 'SHIELD!',      true,  2,1],
-  ['slow',   'SLOW DOWN!',   true,  3,2],
-  ['double', 'x2 POINTS!',   true,  3,2],
-  ['tornado','SPEED BOOST!', true,  2,2],
-  ['addlife','+1 LIFE!',     true,  1,1],
-  ['bomb',   'BOMB!',        false, 1,4],
-  ['fire',   'SPEED SURGE!', false, 1,5],
+  // type, label, positive, wt<30, wt30-70, wt70+
+  ['immune', 'IMMUNITY!',    true,  1, 1, 1],
+  ['magnet', 'MAGNET!',      true,  3, 3, 2],
+  ['shield', 'SHIELD!',      true,  3, 2, 2],
+  ['slow',   'SLOW DOWN!',   true,  3, 3, 2],
+  ['double', 'x2 POINTS!',   true,  3, 2, 1],
+  ['tornado','SPEED BOOST!', true,  2, 2, 1],
+  ['addlife','+1 LIFE!',     true,  2, 1, 1],
+  ['bomb',   'BOMB!',        false, 1, 4, 7],
+  ['fire',   'SPEED SURGE!', false, 2, 3, 5],
 ];
 
 function pickPuType(){
-  const lvl=getLvl(),ti=lvl>=50?1:0,pool=[];
+  const lvl=getLvl();
+  const ti=lvl>=70?2:lvl>=30?1:0;
+  const pool=[];
   PU_TYPES.forEach(p=>{for(let i=0;i<p[3+ti];i++)pool.push(p);});
   return pool[Math.floor(Math.random()*pool.length)];
 }
