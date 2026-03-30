@@ -852,9 +852,11 @@ function drawGameOver(){
   txt(`$${cash}`,W/2,192,52,'#2ecc71','center');
 
   txt('Score saved to leaderboard!',W/2,270,20,'#FFD700','center');
-  txt('© 2026 ASHERTOPIA',W/2,622,16,'#222','center');
 
   btn('PLAY AGAIN',W/2-90,320,180,50,'#2ecc71','#fff','playagain',22);
+  btn('☕  Buy Me a Coffee',W/2-110,386,220,46,'#3D95CE','#fff','coffee',20);
+
+  txt('© 2026 ASHERTOPIA',W/2,622,16,'#222','center');
 }
 
 // SUBMITTED screen removed — score auto-saves on game over
@@ -935,6 +937,15 @@ function handleTap(cx,cy){
 function handleBtn(tag){
   if(tag==='play'){ startGame(); return; }
   if(tag==='playagain'){ playerName=''; state=ST.TITLE; return; }
+  if(tag==='coffee'){
+    const note = encodeURIComponent('Office Derby - great game!');
+    const appUrl = `venmo://paycharge?txn=pay&recipients=epecho&amount=3&note=${note}`;
+    const webUrl = `https://venmo.com/epecho`;
+    const start = Date.now();
+    window.location.href = appUrl;
+    setTimeout(()=>{ if(Date.now()-start < 1600) window.open(webUrl,'_blank'); }, 1200);
+    return;
+  }
   if(tag==='race'&&state===ST.BETTING){
     if(betHorse<0||betAmount<=0||betAmount>cash) return;
     initRace(); state=ST.RACING; return;
