@@ -125,6 +125,7 @@ fetchLB(document.getElementById('lbList'));
 
 // Game state
 let best=0;
+let shownTip=false;
 let state='menu',score=0,lives=3,shield=false,immuneT=0;
 const TW=240,TH=288;
 const TX_MIN=-Math.round(TW*0.40);
@@ -361,11 +362,21 @@ function endGame(){
   const name=(prompt('Enter your name for the leaderboard:','Player')||'Player').trim().slice(0,14)||'Player';
   best=Math.max(best,score);
   const s=document.getElementById('screen');
+  const tipHtml = shownTip ? '' :
+    `<div style="margin:10px 0 4px;padding:10px 14px;background:rgba(255,143,171,0.12);border-radius:12px;border:1px solid rgba(255,143,171,0.3);">
+      <div style="font-size:12px;color:#ffd6e0;margin-bottom:6px;">Enjoying the game? Tip the creator! 🎮</div>
+      <a href="https://venmo.com/epecho" target="_blank"
+         style="display:inline-block;background:#008CFF;color:#fff;padding:8px 20px;border-radius:20px;font-weight:800;font-size:13px;text-decoration:none;">
+        💙 Tip \$3 on Venmo
+      </a>
+    </div>`;
+  shownTip = true;
   s.innerHTML=`
     <img style="width:120px;height:auto;border-radius:50%;object-fit:cover;border:4px solid #ffd700;margin-bottom:5px;" src="${iTinWin.src}">
     <div class="stitle" style="color:#ffd700">Game Over!</div>
     <div class="sdesc" style="font-size:17px;margin:3px 0">Score: <strong style="color:#ff8fab">${score}</strong></div>
     <div class="sdesc" style="color:#ffd700">&#x1F3C6; Best: <strong>${best}</strong></div>
+    ${tipHtml}
     <div style="color:#ffd700;font-size:12px;font-weight:bold;margin:6px 0 2px;">🏆 Leaderboard</div>
     <div id="endLB"></div>
     <button class="sbtn" onclick="startGame()">Play Again!</button>`;
