@@ -104,7 +104,7 @@ window.addEventListener('resize', resize);
 // ============================================================
 const ST = { TITLE:0, BETTING:1, SHADY:2, RACING:3, RESULTS:4, GAMEOVER:5, SCOUT:7 };
 let state = ST.TITLE;
-let cash, round, betAmount, betHorse, shadyAction, shadyType, shadyStep;
+let cash, round, betAmount, betHorse, shadyAction, shadyType, shadyStep, shadyUsesLeft;
 let playerName = '';
 let betTyping = false, betTypingVal = '';
 let nameInput, raceResults, btnRects, bettingScroll, horses;
@@ -114,7 +114,7 @@ let leaderboard = [];
 function resetState() {
   cash = CONFIG.startingCash;
   round = 1; betAmount = 50; betHorse = -1;
-  shadyAction = null; shadyType = 'boost'; shadyStep = 0;
+  shadyAction = null; shadyType = 'boost'; shadyStep = 0; shadyUsesLeft = 3;
   nameInput = ''; raceResults = []; btnRects = []; bettingScroll = 0;
   resultsCashSettled = false; cashDelta = 0;
   betTyping = false; betTypingVal = '';
@@ -620,7 +620,10 @@ function drawBetting() {
   // Two small buttons: Scout Report | Shady Guy
   const btnW=(W-20)/2;
   btn('🔍 SCOUT REPORT', 8,      py2+108, btnW, 34, '#0d2a2a','#2ecc71','scout',16);
-  btn(shadyAction?'🤫 DEAL ✓':`🤫 SHADY (-$${CONFIG.shadyCost})`, 12+btnW, py2+108, btnW, 34, shadyAction?'#2d0d2d':'#1a0d2e', shadyAction?'#e91e63':'#9b59b6','shady',16);
+  const shadyLabel = shadyAction ? '🤫 DEAL ✓' : shadyUsesLeft > 0 ? `🤫 SHADY (-$${CONFIG.shadyCost}) [${shadyUsesLeft} left]` : '🤫 SHADY (used up)';
+  const shadyBg    = shadyAction ? '#2d0d2d' : shadyUsesLeft > 0 ? '#1a0d2e' : '#111';
+  const shadyFg    = shadyAction ? '#e91e63' : shadyUsesLeft > 0 ? '#9b59b6' : '#444';
+  btn(shadyLabel, 12+btnW, py2+108, btnW, 34, shadyBg, shadyFg, 'shady', 14);
 
   if(cash<=0){
     // Broke — force game over
@@ -652,7 +655,7 @@ function drawShady() {
   }
 
   txt('"Pssst... need an edge?"',W/2,sy+52,20,'#c39bd3','center');
-  txt(`Cost: $${CONFIG.shadyCost}`,W/2,sy+72,20,'#e91e63','center');
+  txt(`Cost: $${CONFIG.shadyCost}  ·  ${shadyUsesLeft} use${shadyUsesLeft!==1?'s':''} remaining`,W/2,sy+72,18,'#e91e63','center');
 
   if(shadyStep===0){
     btn('⚡  BOOST MY HORSE', W/2-115,310,230,46,'#1a2a00','#2ecc71','shady_boost',20);
@@ -996,7 +999,10 @@ function handleBtn(tag){
     return;
   }
   if(tag==='shady'){
-    if(shadyAction){ cash+=CONFIG.shadyCost; shadyAction=null; horses.forEach(h=>{h.boosted=false;h.poisoned=false;}); return; }
+    // Refund if already has a deal active
+    if(shadyAction){ cash+=CONFIG.shadyCost; shadyAction=null; shadyUsesLeft++; horses.forEach(h=>{h.boosted=false;h.poisoned=false;}); return; }
+    // Block if no uses left or can't afford
+    if(shadyUsesLeft<=0) return;
     if(cash<CONFIG.shadyCost) return;
     shadyStep=0; state=ST.SHADY; return;
   }
@@ -1008,7 +1014,7 @@ function handleBtn(tag){
   if(tag==='shady_back'){ shadyStep=0; return; }
   if(tag.startsWith('shadytarget_')){
     const idx=parseInt(tag.split('_')[1]);
-    cash-=CONFIG.shadyCost; shadyAction={type:shadyType,targetIdx:idx};
+    cash-=CONFIG.shadyCost; shadyUsesLeft--; shadyAction={type:shadyType,targetIdx:idx};
     if(shadyType==='boost') horses[idx].boosted=true;
     else horses[idx].poisoned=true;
     state=ST.BETTING; return;
