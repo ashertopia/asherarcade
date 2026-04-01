@@ -122,6 +122,23 @@
     .btn-arcade{background:#c0476a;color:#fff;}
     .btn-coffee{background:#fde8f0;color:#c0476a;border:1px solid #e8a0b8;}
 
+    #qr-fallback{
+      display:none;
+      text-align:center;
+      padding:6px 12px 2px;
+    }
+    #qr-fallback a{
+      font-family:'Lato',sans-serif;font-size:clamp(11px,2.8vw,13px);font-weight:700;
+      color:#c0476a;
+      background:#fde8f0;
+      border:1.5px solid #e8a0b8;
+      border-radius:20px;
+      padding:6px 16px;
+      text-decoration:none;
+      display:inline-block;
+      transition:opacity 0.15s;
+    }
+    #qr-fallback a:hover{opacity:0.82;}
     footer{padding:6px 10px 10px;font-size:10px;color:#c0a0a8;text-align:center;}
     footer a{color:#c0476a;text-decoration:none;font-family:'Playfair Display',serif;font-size:11px;}
   </style>
@@ -145,6 +162,10 @@
 </div>
 
 <div id="hint">Slide each piece to its ▲▼◀▶ exit arrow — pieces only leave through their own exit!</div>
+
+<div id="qr-fallback">
+  <a href="https://youtu.be/xvFZjo5PgG0?si=a_0TCZyZp-hanxYs" target="_blank">💌 Can't scan QR codes? Click here instead!</a>
+</div>
 
 <div class="btn-row">
   <a class="btn btn-arcade" href="https://asherarcade.com" target="_blank">🎮 Make your own game at Asher Arcade!</a>
@@ -366,7 +387,7 @@ function updateQR() {
   else if(pct < 0.35)   hint.textContent = "Nice move! Keep going... 👀";
   else if(pct < 0.65)   hint.textContent = "Making progress! 💍 You can see something forming...";
   else if(gone < total) hint.textContent = "Almost there — just a few more pieces! 🥂";
-  else { hint.textContent = "🎉 You did it! Scan the QR code for the surprise!"; hint.classList.add('celebrate'); }
+  else { hint.textContent = "🎉 You did it! Scan the QR code for the surprise!"; hint.classList.add('celebrate'); document.getElementById('qr-fallback').style.display='block'; }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
