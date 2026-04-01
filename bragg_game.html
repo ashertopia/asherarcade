@@ -606,7 +606,12 @@ function drawHUD(){
 function drawTitle(){
   di('title_bg',0,0,W,H);
   ctx.fillStyle='rgba(0,0,0,0.3)';ctx.fillRect(0,0,W,H);
-  di('logo',W/2-119,14,238,78);
+  // ASHER ARCADE brand strip
+  ctx.fillStyle='rgba(0,0,0,0.5)';ctx.fillRect(0,0,W,20);
+  ctx.fillStyle='#ffd700';ctx.font='6px Press Start 2P';ctx.textAlign='center';
+  ctx.fillText('⚡ ASHER ARCADE  •  asherarcade.com  •  CUSTOM GAMES FOR ANY OCCASION ⚡',W/2,14);
+  ctx.textAlign='left';
+  di('logo',W/2-119,22,238,78);
   di('cover',W/2-50,140,100,133);
   // Leaderboard
   ctx.fillStyle='rgba(0,0,0,0.58)';rr(16,198,W-32,112,7);
@@ -633,7 +638,7 @@ function drawTitle(){
   ctx.fillStyle='#fff';ctx.font='9px Press Start 2P';ctx.textAlign='center';
   ctx.fillText(GS.lbOK?"LET'S RACE! 🏃":"LOADING...",W/2,H-28+pulse);
   ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='5px Press Start 2P';
-  ctx.fillText('A GAME BY ASHER ARCADE  •  ashertopia  ©2026',W/2,H-6);
+  ctx.fillText('ASHER ARCADE © 2026  •  asherarcade.com',W/2,H-6);
   ctx.textAlign='left';
 }
 
@@ -670,17 +675,39 @@ function drawCharSelect(){
 }
 
 function drawDead(){
-  ctx.fillStyle='rgba(0,0,0,0.8)';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='rgba(0,0,0,0.85)';ctx.fillRect(0,0,W,H);
   ctx.textAlign='center';
-  ctx.fillStyle='#e8431a';ctx.font='20px Press Start 2P';ctx.fillText('GAME OVER!',W/2,H/2-50);
-  ctx.fillStyle='#fff';ctx.font='8px Press Start 2P';
-  ctx.fillText("Didn't make it to the church!",W/2,H/2-18);
+  // Title
+  ctx.fillStyle='#e8431a';ctx.font='18px Press Start 2P';
+  ctx.fillText('GAME OVER!',W/2,36);
+  ctx.fillStyle='#fff';ctx.font='7px Press Start 2P';
+  ctx.fillText("Didn't make it to the church!",W/2,54);
   const t=GS.timer,mi=Math.floor(t/60).toString().padStart(2,'0'),si=(t%60).toFixed(2).padStart(5,'0');
-  ctx.fillText('TIME: '+mi+':'+si,W/2,H/2+5);
-  ctx.fillStyle='#c8290e';rr(W/2-85,H/2+28,170,38,7);
-  ctx.fillStyle='#fff';ctx.font='10px Press Start 2P';ctx.fillText('TRY AGAIN',W/2,H/2+53);
-  ctx.fillStyle='#3D95CE';rr(W/2-80,H/2+74,160,30,7);
-  ctx.fillStyle='#fff';ctx.font='7px Press Start 2P';ctx.fillText('☕ BUY ME A COFFEE',W/2,H/2+94);
+  ctx.fillText('TIME: '+mi+':'+si,W/2,68);
+  // TRY AGAIN (green)
+  ctx.fillStyle='#2ecc71';rr(W/2-100,76,200,34,7);
+  ctx.fillStyle='#fff';ctx.font='9px Press Start 2P';ctx.fillText('PLAY AGAIN',W/2,99);
+  // Buy Me a Coffee (blue)
+  ctx.fillStyle='#3D95CE';rr(W/2-100,118,200,32,7);
+  ctx.fillStyle='#fff';ctx.font='7px Press Start 2P';
+  ctx.fillText('☕  Buy Me a Coffee',W/2,139);
+  // WANT YOUR OWN GAME promo panel
+  ctx.fillStyle='#ffd700';rr(18,158,W-36,92,6);
+  ctx.fillStyle='#111';rr(20,160,W-40,62,4);
+  ctx.fillStyle='#ffd700';ctx.font='7px Press Start 2P';
+  ctx.fillText('WANT YOUR OWN GAME?',W/2,176);
+  ctx.fillStyle='#ccc';ctx.font='6px Press Start 2P';
+  ctx.fillText('We build custom browser games for',W/2,192);
+  ctx.fillText('weddings, offices, churches & more.',W/2,205);
+  ctx.fillStyle='#ffd700';
+  ctx.fillText('Fully personalized. Yours to keep.',W/2,218);
+  // asherarcade.com button
+  ctx.fillStyle='#111';rr(18,226,W-36,26,6);
+  ctx.strokeStyle='#ffd700';ctx.lineWidth=1.5;rr(18,226,W-36,26,6,false,true);
+  ctx.fillStyle='#ffd700';ctx.font='8px Press Start 2P';
+  ctx.fillText('► asherarcade.com',W/2,244);
+  // Asher Arcade logo bottom
+  di('aa_logo',W/2-70,258,140,33);
   ctx.textAlign='left';
 }
 
@@ -714,12 +741,20 @@ function drawLB(){
   ctx.fillStyle='rgba(0,0,0,0.5)';rr(22,55,W-44,222,8);
   if(!GS.lbOK){ctx.fillStyle='#aaa';ctx.font='8px Press Start 2P';ctx.fillText('Loading...',W/2,160);}
   else if(!GS.lb.length){ctx.fillStyle='#aaa';ctx.font='7px Press Start 2P';ctx.fillText('No scores yet!',W/2,155);}
-  else for(let i=0;i<Math.min(9,GS.lb.length);i++){
+  else for(let i=0;i<Math.min(7,GS.lb.length);i++){
     const e=GS.lb[i],mi=Math.floor(e.score/60).toString().padStart(2,'0'),si=(e.score%60).toFixed(2).padStart(5,'0');
     ctx.fillStyle=i===0?'#ffd700':i===1?'#c0c0c0':i===2?'#cd7f32':'#ddd';
     ctx.font='7px Press Start 2P';
     ctx.fillText(`${i+1}. ${e.character==='dizzle'?'🤵':'👰'} ${(e.name||'???').substring(0,10).padEnd(10)}  ${mi}:${si}`,W/2,78+i*22);
   }
+  // Custom game promo
+  ctx.fillStyle='rgba(255,215,0,0.12)';rr(22,238,W-44,42,6);
+  ctx.strokeStyle='rgba(255,215,0,0.5)';ctx.lineWidth=1;rr(22,238,W-44,42,6,false,true);
+  ctx.fillStyle='#ffd700';ctx.font='6px Press Start 2P';ctx.textAlign='center';
+  ctx.fillText('🎮 WANT A CUSTOM GAME FOR YOUR EVENT?',W/2,252);
+  ctx.fillStyle='#aef';ctx.font='6px Press Start 2P';
+  ctx.fillText('► ASHERARCADE.COM ◄',W/2,268);
+  ctx.textAlign='left';
   ctx.fillStyle='#c8290e';rr(W/2-90,H-50,180,36,7);
   ctx.fillStyle='#fff';ctx.font='9px Press Start 2P';ctx.fillText('PLAY AGAIN',W/2,H-26);
   // Buy Me a Coffee button
@@ -740,13 +775,15 @@ function uiTouch(x,y){
       GS.char=x<W/2?'jackie':'dizzle';
     }
   }else if(GS.state==='dead'){
-    if(y>H/2+70&&y<H/2+108){if(window.showTip){window.shown=false;showTip();}}
-    else if(y>H/2+24)restartGame();
+    if(y>76&&y<110)restartGame();
+    else if(y>118&&y<150){if(window.showTip){window.shown=false;showTip();}}
+    else if(y>226&&y<252){window.open('https://asherarcade.com','_blank');}
   }else if(GS.state==='win'){
     if(GS.name&&y>H-54)submitScore();
   }else if(GS.state==='leaderboard'){
     if(y>H-54)restartGame();
-    else if(y>H-100&&y<H-58){if(window.showTip){window.shown=false;showTip();}} // coffee btn
+    else if(y>H-100&&y<H-58){if(window.showTip){window.shown=false;showTip();}}
+    else if(y>238&&y<284){window.open('https://asherarcade.com','_blank');}
   }
 }
 
