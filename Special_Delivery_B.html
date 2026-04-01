@@ -124,6 +124,23 @@
     .btn-arcade{background:linear-gradient(90deg,#e05585,#7088e0);color:#fff;}
     .btn-coffee{background:#f0ebff;color:#8050b0;border:1px solid #c0a0e0;}
 
+    #qr-fallback{
+      display:none; /* hidden until puzzle solved */
+      text-align:center;
+      padding:6px 12px 2px;
+    }
+    #qr-fallback a{
+      font-family:'Nunito',sans-serif;font-size:clamp(11px,2.8vw,13px);font-weight:700;
+      color:#8050b0;
+      background:#f0ebff;
+      border:1.5px solid #c0a0e0;
+      border-radius:20px;
+      padding:6px 16px;
+      text-decoration:none;
+      display:inline-block;
+      transition:opacity 0.15s;
+    }
+    #qr-fallback a:hover{opacity:0.82;}
     footer{padding:6px 10px 10px;font-size:10px;color:#a090b8;text-align:center;}
     footer a{color:#8060b0;text-decoration:none;font-family:'Fredoka One',cursive;font-size:11px;}
   </style>
@@ -144,6 +161,10 @@
     <canvas id="grid-canvas"></canvas>
     <div id="board"></div>
   </div>
+</div>
+
+<div id="qr-fallback">
+  <a href="https://youtu.be/xvFZjo5PgG0?si=a_0TCZyZp-hanxYs" target="_blank">📱 Can't scan QR codes? Click here instead!</a>
 </div>
 
 <div id="hint">Find the ▲▼◀▶ exit arrows — each piece can only leave one way! 🍼</div>
@@ -365,7 +386,11 @@ function updateQR(){
   else if(pct<0.35)     hint.textContent="Nice! Something is hiding under there... 🧸";
   else if(pct<0.65)     hint.textContent="Halfway there! 👶 Keep going...";
   else if(gone<total)   hint.textContent="Almost! Just a few more pieces 🦆";
-  else{hint.textContent="🎉 You found it! Scan the QR code for the surprise!";hint.classList.add('celebrate');}
+  else{
+    hint.textContent="🎉 You found it! Scan the QR code for the surprise!";
+    hint.classList.add('celebrate');
+    document.getElementById('qr-fallback').style.display='block';
+  }
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
