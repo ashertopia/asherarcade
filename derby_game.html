@@ -478,14 +478,21 @@ function drawTitle() {
   grd(0,0,W,H,'#1a1a3a','#2a2a5a');
   [[20,30],[50,80],[100,20],[180,60],[300,40],[340,100],[80,150],[260,120],[310,200],[40,300],[150,250],[220,180],[290,280]].forEach(([sx,sy])=>{ctx.fillStyle='rgba(255,255,255,0.6)';ctx.fillRect(sx,sy,2,2);});
 
-  // Logo — top of screen
+  // Asher Arcade branding strip — semi-transparent so background shows
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, 0, W, 28);
+  if(IMG.aslogo) ctx.drawImage(IMG.aslogo, 6, 3, 22, 22);
+  txt('ASHER ARCADE', 32, 6, 13, '#2ecc71', 'left');
+  rect(0, 28, W, 2, '#2ecc71');
+
+  // Game logo — below branding strip
   if (IMG.logo) {
     const lw = 340, lh = Math.round(340 * (IMG.logo.height/IMG.logo.width));
-    ctx.drawImage(IMG.logo, W/2 - lw/2, 12, lw, lh);
+    ctx.drawImage(IMG.logo, W/2 - lw/2, 32, lw, lh);
   } else {
     ctx.save();ctx.shadowColor='#FFD700';ctx.shadowBlur=25;
-    ptxt('OFFICE', W/2, 20, 18, '#FFD700','center');
-    ptxt('DERBY',  W/2, 46, 22, '#FFD700','center');
+    ptxt('OFFICE', W/2, 40, 18, '#FFD700','center');
+    ptxt('DERBY',  W/2, 66, 22, '#FFD700','center');
     ctx.restore();
   }
 
@@ -538,7 +545,7 @@ function drawTitle() {
     rect(W/2-85,566,170,46,'#111');
     txt('TYPE NAME FIRST',W/2,582,14,'#333','center');
   }
-  txt('© 2026 ASHERTOPIA', W/2, 622, 14, '#333', 'center');
+  txt('© 2026 ASHER ARCADE · asherarcade.com', W/2, 622, 13, '#444', 'center');
 }
 
 // BETTING
@@ -844,22 +851,41 @@ function drawGameOver(){
   btnRects=[];
   [[20,50],[60,100],[140,30],[200,80],[300,50],[340,120],[80,200],[260,150]].forEach(([sx,sy])=>{ctx.fillStyle='#fff';ctx.fillRect(sx,sy,2,2);});
 
+  // Asher Arcade branding strip — semi-transparent
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, 0, W, 28);
+  if(IMG.aslogo) ctx.drawImage(IMG.aslogo, 6, 3, 22, 22);
+  txt('ASHER ARCADE', 32, 6, 13, '#2ecc71', 'left');
+  rect(0, 28, W, 2, '#2ecc71');
+
   const broke=cash<=0, won=cash>CONFIG.startingCash;
   const ts=broke?'BROKE!':won?'PAYDAY!':'RACE OVER!', tc=broke?'#e74c3c':won?'#FFD700':'#aaa';
   ctx.save();ctx.shadowColor=tc;ctx.shadowBlur=20;
-  ptxt(ts,W/2,80,14,tc,'center');
+  ptxt(ts,W/2,92,14,tc,'center');
   ctx.restore();
 
-  txt(`${playerName}`,W/2,130,28,'#fff','center');
-  txt('Final bankroll:',W/2,166,20,'#aaa','center');
-  txt(`$${cash}`,W/2,192,52,'#2ecc71','center');
+  txt(`${playerName}`,W/2,140,28,'#fff','center');
+  txt('Final bankroll:',W/2,176,20,'#aaa','center');
+  txt(`$${cash}`,W/2,202,52,'#2ecc71','center');
 
-  txt('Score saved to leaderboard!',W/2,270,20,'#FFD700','center');
+  txt('Score saved to leaderboard!',W/2,272,18,'#FFD700','center');
 
-  btn('PLAY AGAIN',W/2-90,320,180,50,'#2ecc71','#fff','playagain',22);
-  btn('☕  Buy Me a Coffee',W/2-110,386,220,46,'#3D95CE','#fff','coffee',20);
+  // All three action areas same width and x — centered block
+  const bx = 20, bw = W - 40;
+  btn('PLAY AGAIN',       bx, 296, bw, 46, '#2ecc71',  '#fff', 'playagain', 22);
+  btn('☕  Buy Me a Coffee', bx, 352, bw, 46, '#3D95CE',  '#fff', 'coffee',    19);
 
-  txt('© 2026 ASHERTOPIA',W/2,622,16,'#222','center');
+  // Promo card — same width as buttons
+  grd(bx, 410, bw, 148, '#1a1a00','#0f0f00');
+  ctx.strokeStyle='#FFD700';ctx.lineWidth=2;ctx.strokeRect(bx,410,bw,148);
+  rect(bx, 410, bw, 26, '#FFD700');
+  txt('WANT YOUR OWN GAME?', W/2, 412, 15, '#000', 'center');
+  txt('We build custom browser games for', W/2, 446, 14, '#aaa', 'center');
+  txt('weddings, offices, churches & more.', W/2, 464, 14, '#aaa', 'center');
+  txt('Fully personalized. Yours to keep.', W/2, 484, 14, '#FFD700', 'center');
+  btn('▶  asherarcade.com', bx, 504, bw, 40, '#FFD700', '#000', 'promo', 17);
+
+  txt('© 2026 ASHER ARCADE', W/2, 568, 13, '#333', 'center');
 }
 
 // SUBMITTED screen removed — score auto-saves on game over
@@ -940,6 +966,7 @@ function handleTap(cx,cy){
 function handleBtn(tag){
   if(tag==='play'){ startGame(); return; }
   if(tag==='playagain'){ playerName=''; state=ST.TITLE; return; }
+  if(tag==='promo'){ window.open('https://asherarcade.com','_blank'); return; }
   if(tag==='coffee'){
     const note = encodeURIComponent('Office Derby - great game!');
     const appUrl = `venmo://paycharge?txn=pay&recipients=epecho&amount=3&note=${note}`;
