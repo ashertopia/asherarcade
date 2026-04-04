@@ -509,20 +509,28 @@ function drawHUD(){
     ctx.font='11px sans-serif';ctx.textAlign='center';
     ctx.fillText(towedChar==='dog'?'🐕🛡️':towedChar==='kevin'?'🤙🛡️':'👵🛡️',W-38,43);ctx.textAlign='left';
   }
-  // D-pad — left zone only, shown as two subtle arrows
-  if(GS.state==='playing'){
-    const dAlpha=0.35;
-    // Left arrow button
-    ctx.save();ctx.globalAlpha=touchLeft?0.7:dAlpha;
-    ctx.fillStyle=touchLeft?C.pk:'rgba(255,255,255,0.8)';
-    ctx.beginPath();ctx.moveTo(8,H/2-20);ctx.lineTo(32,H/2-36);ctx.lineTo(32,H/2-4);ctx.closePath();ctx.fill();
-    // Right arrow button
-    ctx.globalAlpha=touchRight?0.7:dAlpha;
-    ctx.fillStyle=touchRight?C.pk:'rgba(255,255,255,0.8)';
-    ctx.beginPath();ctx.moveTo(52,H/2-20);ctx.lineTo(28,H/2-36);ctx.lineTo(28,H/2-4);ctx.closePath();ctx.fill();
-    // Divider hint line
-    ctx.globalAlpha=0.12;ctx.strokeStyle='#fff';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(DPAD_W,0);ctx.lineTo(DPAD_W,H);ctx.stroke();
+  // Touch buttons — only draw on touch devices (phone/tablet)
+  if(GS.state==='playing'&&'ontouchstart' in window){
+    ctx.save();
+    // Forward button (left side)
+    const fAlpha=touchForward?0.55:0.22;
+    ctx.globalAlpha=fAlpha;
+    ctx.fillStyle=touchForward?C.pk:'rgba(255,255,255,0.9)';
+    rr(4,H-52,BTN_W-8,44,10);ctx.fill();
+    ctx.globalAlpha=touchForward?0.95:0.45;
+    ctx.fillStyle=touchForward?'#fff':C.wh;
+    ctx.font='8px Press Start 2P';ctx.textAlign='center';
+    ctx.fillText('▶ PUSH',BTN_W/2,H-25);
+    // Jump button (right side)
+    const jAlpha=0.22;
+    ctx.globalAlpha=jAlpha;
+    ctx.fillStyle='rgba(255,255,255,0.9)';
+    rr(BTN_W+4,H-52,W-BTN_W-8,44,10);ctx.fill();
+    ctx.globalAlpha=0.45;ctx.fillStyle=C.wh;
+    ctx.fillText('▲ JUMP',BTN_W+(W-BTN_W)/2,H-25);
+    // Divider
+    ctx.globalAlpha=0.1;ctx.strokeStyle='#fff';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(BTN_W,H-56);ctx.lineTo(BTN_W,H);ctx.stroke();
     ctx.restore();
   }
   const s=Math.max(0,Math.floor((spd-BASE_SPD)*10));
@@ -552,9 +560,9 @@ function drawHUD(){
 // INPUT
 const keys={};
 let txS=0,tyS=0,ttS=0,tiltG=0,tiltOn=false;
-let touchLeft=false,touchRight=false;
-let activeTouches={}; // id->{x,y,zone} multi-touch tracking
-const DPAD_W=120; // left 120px = d-pad zone; rest = jump zone
+let touchForward=false; // left btn held = push Mag right
+let activeTouches={}; // id->zone
+const BTN_W=160; // left 160px = forward button; rest = jump
 
 document.addEventListener('keydown',e=>{
   if(keys[e.code])return;
@@ -588,38 +596,14 @@ canvas.addEventListener('touchstart',e=>{
     if(GS.state==='title'&&GS.lbOK){startGame();return;}
     if(GS.state==='dead'){txS=gx;tyS=gy;ttS=Date.now();continue;}
     if(GS.state!=='playing')continue;
-    // Classify touch zone
-    let zone='jump';
-    if(gx<DPAD_W){
-      zone = gx<DPAD_W/2 ? 'left' : 'right';
-    }
-    activeTouches[t.identifier]={x:gx,y:gy,zone};
-    if(zone==='left'){touchLeft=true;}
-    else if(zone==='right'){touchRight=true;}
-    else{txS=gx;tyS=gy;ttS=Date.now();} // jump zone — handle on end
+    const zone=gx<BTN_W?'fwd':'jump';
+    activeTouches[t.identifier]=zone;
+    if(zone==='fwd')touchForward=true;
+    else{txS=gx;tyS=gy;ttS=Date.now();}
   }
 },{passive:false});
 
-canvas.addEventListener('touchmove',e=>{
-  e.preventDefault();
-  const r=canvas.getBoundingClientRect();
-  for(const t of e.changedTouches){
-    if(!activeTouches[t.identifier])continue;
-    const gx=(t.clientX-r.left)*(W/r.width);
-    const gy=(t.clientY-r.top)*(H/r.height);
-    const zone=activeTouches[t.identifier].zone;
-    // Allow sliding d-pad finger to switch direction
-    if(zone==='left'||zone==='right'){
-      const newZone=gx<DPAD_W/2?'left':'right';
-      activeTouches[t.identifier].zone=newZone;
-    }
-    activeTouches[t.identifier].x=gx;
-    activeTouches[t.identifier].y=gy;
-  }
-  // Recompute d-pad state from all active touches
-  touchLeft=Object.values(activeTouches).some(t=>t.zone==='left');
-  touchRight=Object.values(activeTouches).some(t=>t.zone==='right');
-},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
 
 canvas.addEventListener('touchend',e=>{
   e.preventDefault();
@@ -629,25 +613,18 @@ canvas.addEventListener('touchend',e=>{
     const gy=(t.clientY-r.top)*(H/r.height);
     if(GS.state==='dead'){handleDeadTouch(gx,gy);continue;}
     if(GS.state!=='playing'){delete activeTouches[t.identifier];continue;}
-    const touch=activeTouches[t.identifier];
-    if(touch){
-      if(touch.zone==='jump'){
-        // Tap in jump zone = jump; double-tap = kickflip
-        const now=Date.now();
-        const dist=Math.hypot(gx-txS,gy-tyS);
-        const dt=now-ttS;
-        if(dist<50&&dt<300){
-          if(now-lastTapTime<320&&!P.onGround){doFlip();}
-          else{doJump();}
-          lastTapTime=now;
-        }
+    const zone=activeTouches[t.identifier];
+    if(zone==='jump'){
+      const now=Date.now();
+      if(Math.hypot(gx-txS,gy-tyS)<60&&(now-ttS)<320){
+        if(now-lastTapTime<320&&!P.onGround){doFlip();}
+        else{doJump();}
+        lastTapTime=now;
       }
-      delete activeTouches[t.identifier];
     }
+    delete activeTouches[t.identifier];
   }
-  // Recompute d-pad from remaining touches
-  touchLeft=Object.values(activeTouches).some(t=>t.zone==='left');
-  touchRight=Object.values(activeTouches).some(t=>t.zone==='right');
+  touchForward=Object.values(activeTouches).some(z=>z==='fwd');
 },{passive:false});
 
 canvas.addEventListener('click',e=>{
@@ -706,9 +683,11 @@ function update(){
 
   // Lean
   if(tiltOn)P.vx=Math.max(-3,Math.min(3,tiltG*.12));
-  else if(keys['ArrowLeft']||keys['KeyA']||touchLeft)P.vx=-2.5;
-  else if(keys['ArrowRight']||keys['KeyD']||touchRight)P.vx=2.5;
-  else P.vx*=.82;
+  else if(keys['ArrowLeft']||keys['KeyA'])P.vx=-2.5;
+  else if(keys['ArrowRight']||keys['KeyD'])P.vx=2.5;
+  else if(touchForward)P.vx=2.5; // forward button held
+  else if(towedChar){P.vx=Math.min(P.vx+0.08,1.5);} // auto-drift forward when towing so tow is visible
+  else P.vx*=.82; // drift back to natural position
   P.x=Math.max(38,Math.min(225,P.x+P.vx));
   // Record player position history for tow rope delayed follow
   towHistory.push({x:P.x,y:P.y});
@@ -1046,7 +1025,7 @@ function fetchLB(){GS.lbOK=false;fetch(SCRIPT+'?key='+KEY).then(r=>r.json()).the
 function submitScore(){fetch(SCRIPT+'?key='+KEY+'&name='+encodeURIComponent(GS.name||'ANON')+'&score='+Math.floor(GS.score),{mode:'no-cors'}).catch(()=>{});GS.submitted=true;setTimeout(()=>fetchLB(),1500);}
 
 // FLOW
-function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchLeft=false;touchRight=false;activeTouches={};obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
+function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchForward=false;activeTouches={};obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
     oldLady={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0};
     dog={triggered:false,x:W+60,visible:false,waveFrame:0,nextAt:DOG_SCORE,chasing:false};initP();}
 function restartGame(){hideNameInput();GS.state='title';GS.lbOK=false;fetchLB();}
