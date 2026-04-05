@@ -61,11 +61,11 @@ const keys={};
 window.addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();});
 window.addEventListener('keyup',e=>{keys[e.code]=false;});
 let touchLeft=false,touchRight=false,touchUp=false,touchDown=false,touchBoost=false;
-let touchJoystickId=null,touchBoostId=null,joyCenter=null,joyCurrent=null;
+let touchJoystickId=null,touchBoostId=null,joyBase=null,joyCurrent=null;
 function getTouchPos(t){const r=canvas.getBoundingClientRect();return{x:(t.clientX-r.left)/scale,y:(t.clientY-r.top)/scale};}
-canvas.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){const p=getTouchPos(t);if(state==='playing'&&p.x>W*0.72&&p.y>H*0.6){touchBoostId=t.identifier;touchBoost=true;}else if(state==='playing'&&touchJoystickId===null&&p.y>H*0.5){touchJoystickId=t.identifier;joyCenter={...p};joyCurrent={...p};}}},{passive:false});
-canvas.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){joyCurrent=getTouchPos(t);const dx=joyCurrent.x-joyCenter.x,dy=joyCurrent.y-joyCenter.y,dead=12;touchLeft=dx<-dead;touchRight=dx>dead;touchUp=dy<-dead;touchDown=dy>dead;}}},{passive:false});
-canvas.addEventListener('touchend',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){touchJoystickId=null;joyCenter=null;joyCurrent=null;touchLeft=touchRight=touchUp=touchDown=false;}if(t.identifier===touchBoostId){touchBoostId=null;touchBoost=false;}}},{passive:false});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){const p=getTouchPos(t);if(state==='playing'&&p.x>W*0.72&&p.y>H*0.6){touchBoostId=t.identifier;touchBoost=true;}else if(state==='playing'&&touchJoystickId===null&&p.y>H*0.5){touchJoystickId=t.identifier;joyBase={...p};joyCurrent={...p};}}},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){joyCurrent=getTouchPos(t);const dx=joyCurrent.x-joyBase.x,dy=joyCurrent.y-joyBase.y,dead=12;touchLeft=dx<-dead;touchRight=dx>dead;touchUp=dy<-dead;touchDown=dy>dead;}}},{passive:false});
+canvas.addEventListener('touchend',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){touchJoystickId=null;joyBase=null;joyCurrent=null;touchLeft=touchRight=touchUp=touchDown=false;}if(t.identifier===touchBoostId){touchBoostId=null;touchBoost=false;}}},{passive:false});
 
 let state='title',score=[0,0],timeLeft=MATCH_DURATION,bestScore=null;
 let announcer={text:'',timer:0,x:0,y:0,color:'#fff'};
@@ -97,16 +97,32 @@ function updateCar(car,dt,isKickoff){
   if(isKickoff&&!car.isPlayer)return;
   let ax=0,ay=0;
   if(car.isPlayer){
-    const left=keys['ArrowLeft']||keys['KeyA']||touchLeft;
-    const right=keys['ArrowRight']||keys['KeyD']||touchRight;
-    const up=keys['ArrowUp']||keys['KeyW']||touchUp;
-    const down=keys['ArrowDown']||keys['KeyS']||touchDown;
     const boosting=(keys['Space']||keys['ShiftLeft']||touchBoost)&&car.boost>0;
     const accel=boosting?BOOST_ACCEL:NORMAL_ACCEL,maxSpd=boosting?BOOST_MAX_SPEED:MAX_SPEED;
-    if(left)car.angle-=TURN_SPEED*dt;
-    if(right)car.angle+=TURN_SPEED*dt;
-    if(up){ax+=Math.cos(car.angle)*accel*dt;ay+=Math.sin(car.angle)*accel*dt;}
-    if(down){ax-=Math.cos(car.angle)*REVERSE_ACCEL*dt;ay-=Math.sin(car.angle)*REVERSE_ACCEL*dt;}
+    if(joyCurrent){
+      // Touch: joystick gives absolute world-space direction — car turns to face it
+      const jdx=joyCurrent.x-joyBase.x, jdy=joyCurrent.y-joyBase.y;
+      const jLen=Math.sqrt(jdx*jdx+jdy*jdy);
+      if(jLen>12){
+        const power=Math.min(jLen/48,1);
+        ax=(jdx/jLen)*accel*power*dt;
+        ay=(jdy/jLen)*accel*power*dt;
+        const targetAngle=Math.atan2(jdy,jdx);
+        let da=targetAngle-car.angle;
+        while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;
+        car.angle+=clamp(da,-7*dt,7*dt);
+      }
+    } else {
+      // Keyboard: classic turn-and-thrust
+      const left=keys['ArrowLeft']||keys['KeyA'];
+      const right=keys['ArrowRight']||keys['KeyD'];
+      const up=keys['ArrowUp']||keys['KeyW'];
+      const down=keys['ArrowDown']||keys['KeyS'];
+      if(left)car.angle-=TURN_SPEED*dt;
+      if(right)car.angle+=TURN_SPEED*dt;
+      if(up){ax+=Math.cos(car.angle)*accel*dt;ay+=Math.sin(car.angle)*accel*dt;}
+      if(down){ax-=Math.cos(car.angle)*REVERSE_ACCEL*dt;ay-=Math.sin(car.angle)*REVERSE_ACCEL*dt;}
+    }
     if(boosting){car.boost=Math.max(0,car.boost-BOOST_DRAIN);car.boostTrail.unshift({x:car.x-Math.cos(car.angle)*22,y:car.y-Math.sin(car.angle)*22,life:1});}
     else{car.boost=Math.min(BOOST_MAX,car.boost+BOOST_REGEN);}
     car.vx=clamp(car.vx+ax,-maxSpd,maxSpd);car.vy=clamp(car.vy+ay,-maxSpd,maxSpd);
