@@ -9,16 +9,7 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<button id="btnPush" style="position:fixed;display:none;z-index:50;
-  background:rgba(255,45,120,0.18);border:2px solid rgba(255,45,120,0.4);
-  border-radius:14px;color:rgba(255,255,255,0.75);
-  font-family:'Press Start 2P',monospace;font-size:11px;
-  touch-action:none;user-select:none;-webkit-user-select:none;">▶ PUSH</button>
-<button id="btnJump" style="position:fixed;display:none;z-index:50;
-  background:rgba(100,0,200,0.18);border:2px solid rgba(155,0,255,0.35);
-  border-radius:14px;color:rgba(255,255,255,0.75);
-  font-family:'Press Start 2P',monospace;font-size:11px;
-  touch-action:none;user-select:none;-webkit-user-select:none;">▲ JUMP</button>
+<!-- touch zones handled entirely in canvas -->
 <input id="nameOverlay" type="text" maxlength="12" autocomplete="off"
   autocorrect="off" autocapitalize="characters" spellcheck="false"
   placeholder="YOUR NAME"
@@ -33,48 +24,7 @@ const ctx=canvas.getContext('2d');
 const W=640,H=360;
 canvas.width=W;canvas.height=H;
 
-// ── Mobile buttons ──
-const btnPush=document.getElementById('btnPush');
-const btnJump=document.getElementById('btnJump');
-// btnPush and btnJump are visual only — actual input handled by document touch above
-// Just make sure they don't interfere
-if(btnPush){btnPush.style.pointerEvents='none';}
-if(btnJump){btnJump.style.pointerEvents='none';}
-
-function positionMobileButtons(){
-  const isTouchDevice='ontouchstart' in window;
-  if(!isTouchDevice){
-    if(btnPush)btnPush.style.display='none';
-    if(btnJump)btnJump.style.display='none';
-    return;
-  }
-  // Place buttons INSIDE canvas area — left half and right half
-  const r=canvas.getBoundingClientRect();
-  const midX=r.left+r.width/2;
-  const bh=52,gap=8;
-  const by=r.bottom-bh-gap; // near bottom of canvas
-
-  if(btnPush){
-    btnPush.style.display='flex';
-    btnPush.style.alignItems='center';
-    btnPush.style.justifyContent='center';
-    btnPush.style.left=Math.round(r.left+gap)+'px';
-    btnPush.style.top=Math.round(by)+'px';
-    btnPush.style.width=Math.round(midX-r.left-gap*2)+'px';
-    btnPush.style.height=bh+'px';
-  }
-  if(btnJump){
-    btnJump.style.display='flex';
-    btnJump.style.alignItems='center';
-    btnJump.style.justifyContent='center';
-    btnJump.style.left=Math.round(midX+gap)+'px';
-    btnJump.style.top=Math.round(by)+'px';
-    btnJump.style.width=Math.round(r.right-midX-gap*2)+'px';
-    btnJump.style.height=bh+'px';
-  }
-}
-window.addEventListener('resize',positionMobileButtons);
-positionMobileButtons();
+// Touch zones are drawn on canvas — no HTML button elements needed
 
 // ── Mobile name input overlay ──
 const nameOverlay=document.getElementById('nameOverlay');
@@ -558,7 +508,15 @@ function drawHUD(){
     ctx.font='11px sans-serif';ctx.textAlign='center';
     ctx.fillText(towedChar==='dog'?'🐕🛡️':towedChar==='kevin'?'🤙🛡️':'👵🛡️',W-38,43);ctx.textAlign='left';
   }
-  // Touch buttons are HTML elements (see btnPush/btnJump) — no canvas draw needed
+  // Touch zone hints — tiny translucent labels at bottom corners, touch device only
+  if('ontouchstart' in window&&GS.state==='playing'){
+    ctx.save();ctx.globalAlpha=0.22;ctx.fillStyle='#fff';
+    ctx.font='7px Press Start 2P';ctx.textAlign='left';
+    ctx.fillText('◀▶ PUSH',8,H-6);
+    ctx.textAlign='right';
+    ctx.fillText('TAP JUMP ▲',W-8,H-6);
+    ctx.restore();
+  }
   const s=Math.max(0,Math.floor((spd-BASE_SPD)*10));
   ctx.fillStyle='rgba(0,0,0,0.45)';rr(W-68,28,60,20,4);
   tc(W-38,42,'SPD+'+(s),'5px Press Start 2P',C.pu);
@@ -742,7 +700,7 @@ function update(){
   else if(touchForward)P.vx=2.5; // forward button held
   else if(towedChar){P.vx=Math.min(P.vx+0.08,1.5);} // auto-drift forward when towing so tow is visible
   else P.vx*=.82; // drift back to natural position
-  P.x=Math.max(38,Math.min(380,P.x+P.vx)); // allow push to near center
+  P.x=Math.max(38,Math.min(480,P.x+P.vx)); // push to ~75% of canvas width
   // Record player position history for tow rope delayed follow
   towHistory.push({x:P.x,y:P.y});
   if(towHistory.length>TOW_DELAY+20)towHistory.shift();
@@ -1084,7 +1042,7 @@ function fetchLB(){GS.lbOK=false;fetch(SCRIPT+'?key='+KEY).then(r=>r.json()).the
 function submitScore(){fetch(SCRIPT+'?key='+KEY+'&name='+encodeURIComponent(GS.name||'ANON')+'&score='+Math.floor(GS.score),{mode:'no-cors'}).catch(()=>{});GS.submitted=true;setTimeout(()=>fetchLB(),1500);}
 
 // FLOW
-function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchForward=false;activeTouches={};positionMobileButtons();obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
+function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchForward=false;activeTouches={};obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
     oldLady={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0};
     dog={triggered:false,x:W+60,visible:false,waveFrame:0,nextAt:DOG_SCORE,chasing:false};initP();}
 function restartGame(){hideNameInput();GS.state='title';GS.lbOK=false;fetchLB();}
