@@ -63,7 +63,7 @@ window.addEventListener('keyup',e=>{keys[e.code]=false;});
 let touchLeft=false,touchRight=false,touchUp=false,touchDown=false,touchBoost=false;
 let touchJoystickId=null,touchBoostId=null,joyBase=null,joyCurrent=null;
 function getTouchPos(t){const r=canvas.getBoundingClientRect();return{x:(t.clientX-r.left)/scale,y:(t.clientY-r.top)/scale};}
-canvas.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){const p=getTouchPos(t);if(state==='playing'&&p.x>W*0.72&&p.y>H*0.6){touchBoostId=t.identifier;touchBoost=true;}else if(state==='playing'&&touchJoystickId===null&&p.y>H*0.5){touchJoystickId=t.identifier;joyBase={...p};joyCurrent={...p};}}},{passive:false});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){const p=getTouchPos(t);if(state==='playing'&&p.x>W*0.72&&p.y>H*0.6){touchBoostId=t.identifier;touchBoost=true;}else if(state==='playing'&&touchJoystickId===null){touchJoystickId=t.identifier;joyBase={x:90,y:H-80};joyCurrent={...p};}}},{passive:false});
 canvas.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){joyCurrent=getTouchPos(t);const dx=joyCurrent.x-joyBase.x,dy=joyCurrent.y-joyBase.y,dead=12;touchLeft=dx<-dead;touchRight=dx>dead;touchUp=dy<-dead;touchDown=dy>dead;}}},{passive:false});
 canvas.addEventListener('touchend',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){touchJoystickId=null;joyBase=null;joyCurrent=null;touchLeft=touchRight=touchUp=touchDown=false;}if(t.identifier===touchBoostId){touchBoostId=null;touchBoost=false;}}},{passive:false});
 
