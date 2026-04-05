@@ -9,6 +9,20 @@
 </head>
 <body>
 <canvas id="c"></canvas>
+<button id="btnPush" ontouchstart="touchForward=true;event.preventDefault();" 
+  ontouchend="touchForward=false;event.preventDefault();"
+  ontouchcancel="touchForward=false;"
+  style="position:fixed;display:none;z-index:50;
+  background:rgba(255,45,120,0.18);border:2px solid rgba(255,45,120,0.4);
+  border-radius:14px;color:rgba(255,255,255,0.7);
+  font-family:'Press Start 2P',monospace;font-size:11px;
+  touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;">▶ PUSH</button>
+<button id="btnJump"
+  style="position:fixed;display:none;z-index:50;
+  background:rgba(100,0,200,0.18);border:2px solid rgba(155,0,255,0.35);
+  border-radius:14px;color:rgba(255,255,255,0.7);
+  font-family:'Press Start 2P',monospace;font-size:11px;
+  touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;">▲ JUMP</button>
 <input id="nameOverlay" type="text" maxlength="12" autocomplete="off"
   autocorrect="off" autocapitalize="characters" spellcheck="false"
   placeholder="YOUR NAME"
@@ -22,6 +36,69 @@ const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
 const W=640,H=360;
 canvas.width=W;canvas.height=H;
+
+// ── Mobile buttons ──
+const btnPush=document.getElementById('btnPush');
+const btnJump=document.getElementById('btnJump');
+if(btnJump){
+  btnJump.addEventListener('touchstart',e=>{
+    e.preventDefault();AC.resume();
+    if(GS.state==='title'&&GS.lbOK){startGame();return;}
+    if(GS.state!=='playing')return;
+    txS=0;tyS=0;ttS=Date.now();
+  },{passive:false});
+  btnJump.addEventListener('touchend',e=>{
+    e.preventDefault();
+    if(GS.state!=='playing')return;
+    const now=Date.now();
+    if(now-ttS<350){
+      if(now-lastTapTime<350&&!P.onGround){doFlip();}
+      else{doJump();}
+      lastTapTime=now;
+    }
+  },{passive:false});
+}
+
+function positionMobileButtons(){
+  if(!('ontouchstart' in window)){
+    if(btnPush)btnPush.style.display='none';
+    if(btnJump)btnJump.style.display='none';
+    return;
+  }
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const isPortrait=vh>vw;
+  if(btnPush&&btnJump){
+    btnPush.style.display='block';
+    btnJump.style.display='block';
+    if(isPortrait){
+      // Canvas rotated 90deg — buttons at bottom of portrait screen
+      const bh=54,bw=Math.floor(vw*0.42);
+      const gap=8,by=vh-bh-12;
+      btnPush.style.left=gap+'px';
+      btnPush.style.top=by+'px';
+      btnPush.style.width=bw+'px';
+      btnPush.style.height=bh+'px';
+      btnJump.style.left=(gap+bw+gap)+'px';
+      btnJump.style.top=by+'px';
+      btnJump.style.width=(vw-bw-gap*3)+'px';
+      btnJump.style.height=bh+'px';
+    } else {
+      // Landscape — buttons at bottom of screen
+      const bh=52,bw=Math.floor(vw*0.3);
+      const gap=10,by=vh-bh-10;
+      btnPush.style.left=gap+'px';
+      btnPush.style.top=by+'px';
+      btnPush.style.width=bw+'px';
+      btnPush.style.height=bh+'px';
+      btnJump.style.left=(vw-bw-gap)+'px';
+      btnJump.style.top=by+'px';
+      btnJump.style.width=bw+'px';
+      btnJump.style.height=bh+'px';
+    }
+  }
+}
+window.addEventListener('resize',positionMobileButtons);
+positionMobileButtons();
 
 // ── Mobile name input overlay ──
 const nameOverlay=document.getElementById('nameOverlay');
@@ -511,30 +588,7 @@ function drawHUD(){
     ctx.font='11px sans-serif';ctx.textAlign='center';
     ctx.fillText(towedChar==='dog'?'🐕🛡️':towedChar==='kevin'?'🤙🛡️':'👵🛡️',W-38,43);ctx.textAlign='left';
   }
-  // Touch buttons — only draw on touch devices (phone/tablet)
-  if(GS.state==='playing'&&'ontouchstart' in window){
-    ctx.save();
-    // Forward button (left side)
-    const fAlpha=touchForward?0.55:0.22;
-    ctx.globalAlpha=fAlpha;
-    ctx.fillStyle=touchForward?C.pk:'rgba(255,255,255,0.9)';
-    rr(4,H-52,BTN_W-8,44,10);ctx.fill();
-    ctx.globalAlpha=touchForward?0.95:0.45;
-    ctx.fillStyle=touchForward?'#fff':C.wh;
-    ctx.font='8px Press Start 2P';ctx.textAlign='center';
-    ctx.fillText('▶ PUSH',BTN_W/2,H-25);
-    // Jump button (right side)
-    const jAlpha=0.22;
-    ctx.globalAlpha=jAlpha;
-    ctx.fillStyle='rgba(255,255,255,0.9)';
-    rr(BTN_W+4,H-52,W-BTN_W-8,44,10);ctx.fill();
-    ctx.globalAlpha=0.45;ctx.fillStyle=C.wh;
-    ctx.fillText('▲ JUMP',BTN_W+(W-BTN_W)/2,H-25);
-    // Divider
-    ctx.globalAlpha=0.1;ctx.strokeStyle='#fff';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(BTN_W,H-56);ctx.lineTo(BTN_W,H);ctx.stroke();
-    ctx.restore();
-  }
+  // Touch buttons are HTML elements (see btnPush/btnJump) — no canvas draw needed
   const s=Math.max(0,Math.floor((spd-BASE_SPD)*10));
   ctx.fillStyle='rgba(0,0,0,0.45)';rr(W-68,28,60,20,4);
   tc(W-38,42,'SPD+'+(s),'5px Press Start 2P',C.pu);
@@ -1027,7 +1081,7 @@ function fetchLB(){GS.lbOK=false;fetch(SCRIPT+'?key='+KEY).then(r=>r.json()).the
 function submitScore(){fetch(SCRIPT+'?key='+KEY+'&name='+encodeURIComponent(GS.name||'ANON')+'&score='+Math.floor(GS.score),{mode:'no-cors'}).catch(()=>{});GS.submitted=true;setTimeout(()=>fetchLB(),1500);}
 
 // FLOW
-function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchForward=false;activeTouches={};obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
+function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchForward=false;activeTouches={};positionMobileButtons();obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
     oldLady={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0};
     dog={triggered:false,x:W+60,visible:false,waveFrame:0,nextAt:DOG_SCORE,chasing:false};initP();}
 function restartGame(){hideNameInput();GS.state='title';GS.lbOK=false;fetchLB();}
