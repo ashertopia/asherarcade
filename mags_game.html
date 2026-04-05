@@ -9,20 +9,16 @@
 </head>
 <body>
 <canvas id="c"></canvas>
-<button id="btnPush" ontouchstart="touchForward=true;event.preventDefault();" 
-  ontouchend="touchForward=false;event.preventDefault();"
-  ontouchcancel="touchForward=false;"
-  style="position:fixed;display:none;z-index:50;
+<button id="btnPush" style="position:fixed;display:none;z-index:50;
   background:rgba(255,45,120,0.18);border:2px solid rgba(255,45,120,0.4);
-  border-radius:14px;color:rgba(255,255,255,0.7);
+  border-radius:14px;color:rgba(255,255,255,0.75);
   font-family:'Press Start 2P',monospace;font-size:11px;
-  touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;">▶ PUSH</button>
-<button id="btnJump"
-  style="position:fixed;display:none;z-index:50;
+  touch-action:none;user-select:none;-webkit-user-select:none;">▶ PUSH</button>
+<button id="btnJump" style="position:fixed;display:none;z-index:50;
   background:rgba(100,0,200,0.18);border:2px solid rgba(155,0,255,0.35);
-  border-radius:14px;color:rgba(255,255,255,0.7);
+  border-radius:14px;color:rgba(255,255,255,0.75);
   font-family:'Press Start 2P',monospace;font-size:11px;
-  touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;">▲ JUMP</button>
+  touch-action:none;user-select:none;-webkit-user-select:none;">▲ JUMP</button>
 <input id="nameOverlay" type="text" maxlength="12" autocomplete="off"
   autocorrect="off" autocapitalize="characters" spellcheck="false"
   placeholder="YOUR NAME"
@@ -40,61 +36,41 @@ canvas.width=W;canvas.height=H;
 // ── Mobile buttons ──
 const btnPush=document.getElementById('btnPush');
 const btnJump=document.getElementById('btnJump');
-if(btnJump){
-  btnJump.addEventListener('touchstart',e=>{
-    e.preventDefault();AC.resume();
-    if(GS.state==='title'&&GS.lbOK){startGame();return;}
-    if(GS.state!=='playing')return;
-    txS=0;tyS=0;ttS=Date.now();
-  },{passive:false});
-  btnJump.addEventListener('touchend',e=>{
-    e.preventDefault();
-    if(GS.state!=='playing')return;
-    const now=Date.now();
-    if(now-ttS<350){
-      if(now-lastTapTime<350&&!P.onGround){doFlip();}
-      else{doJump();}
-      lastTapTime=now;
-    }
-  },{passive:false});
-}
+// btnPush and btnJump are visual only — actual input handled by document touch above
+// Just make sure they don't interfere
+if(btnPush){btnPush.style.pointerEvents='none';}
+if(btnJump){btnJump.style.pointerEvents='none';}
 
 function positionMobileButtons(){
-  if(!('ontouchstart' in window)){
+  const isTouchDevice='ontouchstart' in window;
+  if(!isTouchDevice){
     if(btnPush)btnPush.style.display='none';
     if(btnJump)btnJump.style.display='none';
     return;
   }
-  const vw=window.innerWidth,vh=window.innerHeight;
-  const isPortrait=vh>vw;
-  if(btnPush&&btnJump){
-    btnPush.style.display='block';
-    btnJump.style.display='block';
-    if(isPortrait){
-      // Canvas rotated 90deg — buttons at bottom of portrait screen
-      const bh=54,bw=Math.floor(vw*0.42);
-      const gap=8,by=vh-bh-12;
-      btnPush.style.left=gap+'px';
-      btnPush.style.top=by+'px';
-      btnPush.style.width=bw+'px';
-      btnPush.style.height=bh+'px';
-      btnJump.style.left=(gap+bw+gap)+'px';
-      btnJump.style.top=by+'px';
-      btnJump.style.width=(vw-bw-gap*3)+'px';
-      btnJump.style.height=bh+'px';
-    } else {
-      // Landscape — buttons at bottom of screen
-      const bh=52,bw=Math.floor(vw*0.3);
-      const gap=10,by=vh-bh-10;
-      btnPush.style.left=gap+'px';
-      btnPush.style.top=by+'px';
-      btnPush.style.width=bw+'px';
-      btnPush.style.height=bh+'px';
-      btnJump.style.left=(vw-bw-gap)+'px';
-      btnJump.style.top=by+'px';
-      btnJump.style.width=bw+'px';
-      btnJump.style.height=bh+'px';
-    }
+  // Place buttons INSIDE canvas area — left half and right half
+  const r=canvas.getBoundingClientRect();
+  const midX=r.left+r.width/2;
+  const bh=52,gap=8;
+  const by=r.bottom-bh-gap; // near bottom of canvas
+
+  if(btnPush){
+    btnPush.style.display='flex';
+    btnPush.style.alignItems='center';
+    btnPush.style.justifyContent='center';
+    btnPush.style.left=Math.round(r.left+gap)+'px';
+    btnPush.style.top=Math.round(by)+'px';
+    btnPush.style.width=Math.round(midX-r.left-gap*2)+'px';
+    btnPush.style.height=bh+'px';
+  }
+  if(btnJump){
+    btnJump.style.display='flex';
+    btnJump.style.alignItems='center';
+    btnJump.style.justifyContent='center';
+    btnJump.style.left=Math.round(midX+gap)+'px';
+    btnJump.style.top=Math.round(by)+'px';
+    btnJump.style.width=Math.round(r.right-midX-gap*2)+'px';
+    btnJump.style.height=bh+'px';
   }
 }
 window.addEventListener('resize',positionMobileButtons);
@@ -643,37 +619,69 @@ document.addEventListener('keyup',e=>{
 });
 window.addEventListener('deviceorientation',e=>{if(e.gamma!==null){tiltOn=true;tiltG=e.gamma;}});
 
-canvas.addEventListener('touchstart',e=>{
-  e.preventDefault();AC.resume();
-  const r=canvas.getBoundingClientRect();
+// ── Document-level touch — left screen half = push, right = jump ──
+// No canvas coordinate mapping — uses raw screen X which works regardless of rotation
+document.addEventListener('touchstart',e=>{
+  AC.resume();
   for(const t of e.changedTouches){
-    const gx=(t.clientX-r.left)*(W/r.width);
-    const gy=(t.clientY-r.top)*(H/r.height);
-    if(GS.state==='title'&&GS.lbOK){startGame();return;}
-    if(GS.state==='dead'){txS=gx;tyS=gy;ttS=Date.now();continue;}
+    const sx=t.clientX, sy=t.clientY;
+    const midX=window.innerWidth/2;
+    if(GS.state==='title'&&GS.lbOK){startGame();e.preventDefault();return;}
+    if(GS.state==='dead'){
+      // Map to canvas for dead screen button detection
+      const r=canvas.getBoundingClientRect();
+      // Handle portrait rotation: swap axes
+      const isPortrait=window.innerHeight>window.innerWidth;
+      let gx,gy;
+      if(isPortrait){
+        // Canvas rotated 90deg: screen Y → canvas X, screen X → canvas Y (inverted)
+        gx=(sy-r.top)*(W/r.height);
+        gy=((r.left+r.width)-sx)*(H/r.width);
+      } else {
+        gx=(sx-r.left)*(W/r.width);
+        gy=(sy-r.top)*(H/r.height);
+      }
+      txS=gx;tyS=gy;ttS=Date.now();
+      continue;
+    }
     if(GS.state!=='playing')continue;
-    const zone=gx<BTN_W?'fwd':'jump';
-    activeTouches[t.identifier]=zone;
-    if(zone==='fwd')touchForward=true;
-    else{txS=gx;tyS=gy;ttS=Date.now();}
+    e.preventDefault();
+    if(sx<midX){
+      // Left half — push forward
+      activeTouches[t.identifier]='fwd';
+      touchForward=true;
+    } else {
+      // Right half — jump
+      activeTouches[t.identifier]='jump';
+      txS=sx;tyS=sy;ttS=Date.now();
+    }
   }
 },{passive:false});
 
-canvas.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
-
-canvas.addEventListener('touchend',e=>{
-  e.preventDefault();
-  const r=canvas.getBoundingClientRect();
+document.addEventListener('touchend',e=>{
   for(const t of e.changedTouches){
-    const gx=(t.clientX-r.left)*(W/r.width);
-    const gy=(t.clientY-r.top)*(H/r.height);
-    if(GS.state==='dead'){handleDeadTouch(gx,gy);continue;}
+    const sx=t.clientX,sy=t.clientY;
+    if(GS.state==='dead'){
+      const r=canvas.getBoundingClientRect();
+      const isPortrait=window.innerHeight>window.innerWidth;
+      let gx,gy;
+      if(isPortrait){
+        gx=(sy-r.top)*(W/r.height);
+        gy=((r.left+r.width)-sx)*(H/r.width);
+      } else {
+        gx=(sx-r.left)*(W/r.width);
+        gy=(sy-r.top)*(H/r.height);
+      }
+      handleDeadTouch(gx,gy);
+      continue;
+    }
     if(GS.state!=='playing'){delete activeTouches[t.identifier];continue;}
     const zone=activeTouches[t.identifier];
     if(zone==='jump'){
       const now=Date.now();
-      if(Math.hypot(gx-txS,gy-tyS)<60&&(now-ttS)<320){
-        if(now-lastTapTime<320&&!P.onGround){doFlip();}
+      const dist=Math.hypot(sx-txS,sy-tyS);
+      if(dist<80&&now-ttS<350){
+        if(now-lastTapTime<350&&!P.onGround){doFlip();}
         else{doJump();}
         lastTapTime=now;
       }
@@ -681,6 +689,10 @@ canvas.addEventListener('touchend',e=>{
     delete activeTouches[t.identifier];
   }
   touchForward=Object.values(activeTouches).some(z=>z==='fwd');
+},{passive:false});
+
+document.addEventListener('touchmove',e=>{
+  if(GS.state==='playing')e.preventDefault();
 },{passive:false});
 
 canvas.addEventListener('click',e=>{
