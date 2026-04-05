@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>Bragg Racing</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:hidden;touch-action:none;font-family:'Press Start 2P',monospace;}
+body{background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;min-height:-webkit-fill-available;overflow:hidden;touch-action:none;font-family:'Press Start 2P',monospace;}
 canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;}
 
 /* ── TIP MODAL ── */
@@ -34,13 +34,35 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;}
 </head>
 <body>
 <canvas id="c"></canvas>
+<input id="nameInput" type="text" autocapitalize="characters" maxlength="12"
+  style="position:fixed;opacity:0;pointer-events:none;font-size:16px;top:50%;left:50%;width:1px;height:1px;border:none;outline:none;background:transparent;">
 <script>
 // ── CANVAS ──
 const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
 const W=640,H=360;
 canvas.width=W;canvas.height=H;
-function resize(){const s=Math.min(window.innerWidth/W,window.innerHeight/H);canvas.style.width=(W*s)+'px';canvas.style.height=(H*s)+'px';}
+function resize(){
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const isPortrait=vh>vw;
+  if(isPortrait){
+    const s=Math.min(vh/W,vw/H);
+    canvas.style.transform='rotate(90deg)';
+    canvas.style.transformOrigin='center center';
+    canvas.style.position='fixed';
+    canvas.style.left=Math.floor((vw-H*s)/2)+'px';
+    canvas.style.top=Math.floor((vh-W*s)/2)+'px';
+    canvas.style.width=Math.floor(W*s)+'px';
+    canvas.style.height=Math.floor(H*s)+'px';
+  }else{
+    canvas.style.transform='none';
+    canvas.style.position='static';
+    const s=Math.min(vw/W,vh/H);
+    canvas.style.width=Math.floor(W*s)+'px';
+    canvas.style.height=Math.floor(H*s)+'px';
+    canvas.style.left='';canvas.style.top='';
+  }
+}
 resize();window.addEventListener('resize',resize);
 
 // ── ROUNDED RECT ──
@@ -206,7 +228,16 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('keyup',e=>{keys[e.code]=false;});
 
 const _touches={};
-function cXY(t){const r=canvas.getBoundingClientRect();return{x:(t.clientX-r.left)*(W/r.width),y:(t.clientY-r.top)*(H/r.height)};}
+function cXY(t){
+  const r=canvas.getBoundingClientRect();
+  if(window.innerHeight>window.innerWidth){
+    // Canvas rotated 90deg - swap and flip axes
+    const gx=(t.clientY-r.top)*(W/r.height);
+    const gy=(1-(t.clientX-r.left)/r.width)*H;
+    return{x:gx,y:gy};
+  }
+  return{x:(t.clientX-r.left)*(W/r.width),y:(t.clientY-r.top)*(H/r.height)};
+}
 canvas.addEventListener('touchstart',e=>{
   e.preventDefault();AC.resume();
   for(const t of e.changedTouches){
@@ -346,6 +377,9 @@ function takeDmg(){
 }
 function doWin(){
   sfxWin();GS.running=false;GS.state='win';
+  // Open mobile keyboard for name entry
+  var ni=document.getElementById('nameInput');
+  if(ni){ni.value='';ni.style.pointerEvents='auto';ni.focus();}
 
   hearts=[];
   // Big burst of hearts when they meet
@@ -780,6 +814,7 @@ function uiTouch(x,y){
     else if(y>226&&y<252){window.open('https://asherarcade.com','_blank');}
   }else if(GS.state==='win'){
     if(GS.name&&y>H-54)submitScore();
+    else{var ni=document.getElementById('nameInput');if(ni)ni.focus();}
   }else if(GS.state==='leaderboard'){
     if(y>H-54)restartGame();
     else if(y>H-100&&y<H-58){if(window.showTip){window.shown=false;showTip();}}
@@ -794,6 +829,8 @@ function handleNameKey(e){
 }
 
 function submitScore(){
+  var ni=document.getElementById('nameInput');
+  if(ni){ni.blur();ni.style.pointerEvents='none';}
   // Show tip after submitting score - reset shown so it fires fresh
   setTimeout(function(){if(window.showTip){window.shown=false;showTip();}},1500);
   const surl='https://script.google.com/macros/s/AKfycbwFs6IMY8op3GtUH0E3HCKnpfnvO42pRBeowsA172fRBf7GyR0_G4EZUQuCU_vjb4KQ0A/exec?name='+encodeURIComponent(GS.name)+'&score='+GS.timer.toFixed(2)+'&character='+GS.char+'&key=bragg_racing_lb_v1';
@@ -890,6 +927,16 @@ requestAnimationFrame(loop);
     if(m)m.classList.add('active');
   };
   document.addEventListener('DOMContentLoaded',function(){
+    // Name input for mobile keyboard
+    var ni=document.getElementById('nameInput');
+    if(ni){
+      ni.addEventListener('input',function(){
+        if(GS.state==='win') GS.name=ni.value.toUpperCase().substring(0,12);
+      });
+      ni.addEventListener('keydown',function(e){
+        if(e.key==='Enter'&&GS.name&&GS.state==='win') submitScore();
+      });
+    }
     var btn=document.getElementById('tipBtn');
     var dis=document.getElementById('tipDismiss');
     var mod=document.getElementById('tipModal');
