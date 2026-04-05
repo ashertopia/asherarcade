@@ -424,17 +424,11 @@ function drawOldLady(){
 function drawWaveGuy(){
   if(kevTow.active||!waveGuy.visible)return;
   const kimg=IMG['kevin_img'];
-  const x=Math.floor(waveGuy.x),y=GROUND_Y-82;
+  const x=Math.floor(waveGuy.x),y=GROUND_Y-120;
   const fadeIn=Math.min(1,waveGuy.waveFrame/30);
   ctx.save();ctx.globalAlpha=0.92*fadeIn;
-  if(kimg&&kimg.complete){try{ctx.drawImage(kimg,x,y,22,82);}catch(e){}}
-  if(waveGuy.waveFrame<200&&x>0&&x<W){
-    const bx=x+26,by=y+10;
-    ctx.fillStyle='rgba(255,255,255,0.92)';rr(bx,by,80,24,5);
-    ctx.beginPath();ctx.moveTo(bx+4,by+24);ctx.lineTo(bx-8,by+30);ctx.lineTo(bx+16,by+24);ctx.closePath();ctx.fill();
-    ctx.fillStyle='#111';ctx.font='6px Press Start 2P';ctx.textAlign='center';
-    ctx.fillText('HEY MAG!! 🤙',bx+40,by+11);ctx.fillText('SHRED IT!',bx+40,by+22);ctx.textAlign='left';
-  }
+  if(kimg&&kimg.complete){try{ctx.drawImage(kimg,x,y-20,28,120);}catch(e){}}
+  // No speech bubble — Kevin just waves as he scrolls by
   ctx.globalAlpha=1;ctx.restore();
 }
 
@@ -957,14 +951,19 @@ function update(){
   if(waveGuy.visible&&!kevTow.active){
     waveGuy.x-=spd;waveGuy.waveFrame++;
     waveGuy.armAngle=Math.sin(waveGuy.waveFrame*0.15)*0.7;
-    if(waveGuy.x<P.x+40&&waveGuy.x>P.x-60&&!waveGuy.shown){
+    if(waveGuy.x<P.x+80&&waveGuy.x>P.x-120&&!waveGuy.shown){
       waveGuy.shown=true;
-      if(P.onGround){
+      // Trigger on contact — ground OR low jump (within 50px of ground)
+      const nearGround=P.y+PH>GROUND_Y-50;
+      if(nearGround){
         if(towedChar==='dog'){dogTow.active=false;}
         else if(towedChar==='lady'){ladyTow.active=false;oldLady.visible=false;}
         kevTow.active=true;kevTow.frame=0;towedChar='kevin';waveGuy.visible=false;
         addScore(1000,'KEVIN RIDE! 🤙',C.pk);sfxPowerup('star');
         popup(P.x,P.y-50,'🛡️ SHIELD!',C.pk);
+      } else {
+        // High jump over — keep scrolling, don't hide
+        waveGuy.shown=false; // reset so can trigger on the way back down
       }
     }
     if(waveGuy.x<-80){waveGuy.visible=false;}
