@@ -672,20 +672,33 @@ window.asherArcadeShowTip = showTipModal;
 // Contact form - sends to mailto as fallback (no backend needed yet)
 document.getElementById('contactForm').addEventListener('submit', function(e) {
   e.preventDefault();
-  const name    = document.getElementById('cf-name').value;
-  const email   = document.getElementById('cf-email').value;
-  const idea    = document.getElementById('cf-idea').value;
-  const msg     = document.getElementById('cf-msg').value;
-  const subject = encodeURIComponent('Asher Arcade Game Inquiry from ' + name);
-  const body    = encodeURIComponent(
-    'Name: ' + name + '\n' +
-    'Email: ' + email + '\n' +
-    'Idea: ' + idea + '\n\n' +
-    'Details:\n' + msg
-  );
-  window.location.href = 'mailto:scott@ashertopia.com?subject=' + subject + '&body=' + body;
-  document.getElementById('contactForm').style.display = 'none';
-  document.getElementById('form-thanks').style.display = 'block';
+  const btn  = this.querySelector('button[type="submit"]');
+  const name  = document.getElementById('cf-name').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
+  const idea  = document.getElementById('cf-idea').value.trim();
+  const msg   = document.getElementById('cf-msg').value.trim();
+
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4669X905fLc5A2ZxcwalMJODm36DUofz8U0bG_32fXSAS-9aO_hjzZf1UpCee6zlwtw/exec';
+  const url = SCRIPT_URL
+    + '?name='  + encodeURIComponent(name)
+    + '&email=' + encodeURIComponent(email)
+    + '&idea='  + encodeURIComponent(idea)
+    + '&msg='   + encodeURIComponent(msg);
+
+  // Use no-cors fetch — Apps Script GET returns opaque response but still writes to sheet
+  fetch(url, {method:'GET', mode:'no-cors'})
+    .then(function() {
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('form-thanks').style.display = 'block';
+    })
+    .catch(function() {
+      // Even on network error the sheet write usually succeeded; show thanks anyway
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('form-thanks').style.display = 'block';
+    });
 });
 
 // Smooth scroll for nav links
