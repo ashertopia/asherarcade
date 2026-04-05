@@ -152,14 +152,18 @@ function updateBall(dt){
     } else {ball.y=FIELD.y+FIELD.h-BALL_R;ball.vy=-Math.abs(ball.vy)*0.91;}
   }
   // Simple square walls — no phantom corner geometry
-  // Stuck/corner rescue - faster trigger (1.0s)
+  // Corner/stuck rescue — if puck is in a corner for 3s, teleport it to center
   const spd=Math.abs(ball.vx)+Math.abs(ball.vy);
-  const inCorner=(ball.x<FIELD.x+60||ball.x>FIELD.x+FIELD.w-60)&&(ball.y<FIELD.y+60||ball.y>FIELD.y+FIELD.h-60);
-  if(spd<12||inCorner){
+  const inCorner=(ball.x<FIELD.x+70||ball.x>FIELD.x+FIELD.w-70)&&(ball.y<FIELD.y+70||ball.y>FIELD.y+FIELD.h-70);
+  const isStuck=spd<15||inCorner;
+  if(isStuck){
     ball._stuckTimer+=dt;
-    if(ball._stuckTimer>1.0){
-      const cx=FIELD.x+FIELD.w/2,cy=FIELD.y+FIELD.h/2,dx=cx-ball.x,dy=cy-ball.y,d=Math.sqrt(dx*dx+dy*dy)||1;
-      ball.vx=(dx/d)*240+(Math.random()-0.5)*90;ball.vy=(dy/d)*240+(Math.random()-0.5)*90;ball._stuckTimer=0;
+    if(ball._stuckTimer>3.0){
+      // Teleport to center and kick toward a random goal
+      ball.x=FIELD.x+FIELD.w/2; ball.y=FIELD.y+FIELD.h/2;
+      const ang=(Math.random()*Math.PI*0.5)+(Math.random()<0.5?Math.PI*0.25:Math.PI*1.25);
+      ball.vx=Math.cos(ang)*280; ball.vy=Math.sin(ang)*280;
+      ball._stuckTimer=0;
     }
   } else {ball._stuckTimer=0;}
   // SAVE! removed — no announcer for near-goal
