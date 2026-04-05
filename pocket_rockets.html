@@ -63,7 +63,7 @@ window.addEventListener('keyup',e=>{keys[e.code]=false;});
 let touchLeft=false,touchRight=false,touchUp=false,touchDown=false,touchBoost=false;
 let touchJoystickId=null,touchBoostId=null,joyCenter=null,joyCurrent=null;
 function getTouchPos(t){const r=canvas.getBoundingClientRect();return{x:(t.clientX-r.left)/scale,y:(t.clientY-r.top)/scale};}
-canvas.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){const p=getTouchPos(t);if(p.x>W/2+60){touchBoostId=t.identifier;touchBoost=true;}else if(touchJoystickId===null){touchJoystickId=t.identifier;joyCenter={...p};joyCurrent={...p};}}},{passive:false});
+canvas.addEventListener('touchstart',e=>{e.preventDefault();for(const t of e.changedTouches){const p=getTouchPos(t);if(state==='playing'&&p.x>W*0.72&&p.y>H*0.6){touchBoostId=t.identifier;touchBoost=true;}else if(state==='playing'&&touchJoystickId===null&&p.y>H*0.5){touchJoystickId=t.identifier;joyCenter={...p};joyCurrent={...p};}}},{passive:false});
 canvas.addEventListener('touchmove',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){joyCurrent=getTouchPos(t);const dx=joyCurrent.x-joyCenter.x,dy=joyCurrent.y-joyCenter.y,dead=12;touchLeft=dx<-dead;touchRight=dx>dead;touchUp=dy<-dead;touchDown=dy>dead;}}},{passive:false});
 canvas.addEventListener('touchend',e=>{e.preventDefault();for(const t of e.changedTouches){if(t.identifier===touchJoystickId){touchJoystickId=null;joyCenter=null;joyCurrent=null;touchLeft=touchRight=touchUp=touchDown=false;}if(t.identifier===touchBoostId){touchBoostId=null;touchBoost=false;}}},{passive:false});
 
@@ -308,9 +308,28 @@ function drawHUD(){
   ctx.strokeStyle='#6ab8ff';ctx.lineWidth=1.5;ctx.strokeRect(bx,by,110,13);
   ctx.fillStyle='#fff';ctx.font='9px Boogaloo';ctx.textAlign='left';ctx.fillText('BOOST',bx,by-3);
   ctx.fillStyle='#fff';ctx.font='bold 10px Boogaloo';ctx.textAlign='center';ctx.fillText('YOU',p.x,p.y-30);
-  if(joyCurrent){ctx.save();ctx.globalAlpha=0.28;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(joyCenter.x,joyCenter.y,38,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(joyCurrent.x,joyCurrent.y,15,0,Math.PI*2);ctx.fill();ctx.restore();}
-  ctx.save();ctx.globalAlpha=touchBoost?0.4:0.13;ctx.fillStyle=touchBoost?'#4af':'#fff';ctx.beginPath();ctx.arc(W-62,H-62,42,0,Math.PI*2);ctx.fill();ctx.restore();
-  ctx.fillStyle=touchBoost?'#4af':'rgba(255,255,255,0.35)';ctx.font='11px Boogaloo';ctx.textAlign='center';ctx.fillText('BOOST',W-62,H-57);
+  // Joystick — always show base in bottom-left
+  const jcx=90,jcy=H-80,jRad=48;
+  ctx.save();ctx.globalAlpha=0.22;ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(jcx,jcy,jRad,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=0.08;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(jcx,jcy,jRad,0,Math.PI*2);ctx.fill();ctx.restore();
+  // Direction arrows inside joystick base
+  ctx.save();ctx.globalAlpha=0.25;ctx.fillStyle='#fff';ctx.font='18px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('▲',jcx,jcy-26);ctx.fillText('▼',jcx,jcy+26);ctx.fillText('◀',jcx-26,jcy);ctx.fillText('▶',jcx+26,jcy);ctx.restore();
+  // Joystick thumb — use touch position if active, else center
+  const thumbX=joyCurrent?joyCurrent.x:jcx, thumbY=joyCurrent?joyCurrent.y:jcy;
+  const clampDist=Math.sqrt((thumbX-jcx)**2+(thumbY-jcy)**2);
+  const clampedX=clampDist>jRad?jcx+(thumbX-jcx)/clampDist*jRad:thumbX;
+  const clampedY=clampDist>jRad?jcy+(thumbY-jcy)/clampDist*jRad:thumbY;
+  ctx.save();ctx.globalAlpha=joyCurrent?0.75:0.35;ctx.fillStyle=joyCurrent?'#4af':'#fff';
+  ctx.beginPath();ctx.arc(clampedX,clampedY,20,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=0.5;ctx.strokeStyle='#adf';ctx.lineWidth=2;ctx.beginPath();ctx.arc(clampedX,clampedY,20,0,Math.PI*2);ctx.stroke();ctx.restore();
+  // Boost button — bottom right
+  const boostX=W-75,boostY=H-75;
+  ctx.save();ctx.globalAlpha=touchBoost?0.75:0.22;
+  ctx.fillStyle=touchBoost?'#4af':'#fff';ctx.beginPath();ctx.arc(boostX,boostY,44,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=touchBoost?0.9:0.45;ctx.strokeStyle=touchBoost?'#adf':'#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(boostX,boostY,44,0,Math.PI*2);ctx.stroke();ctx.restore();
+  ctx.fillStyle=touchBoost?'#fff':'rgba(255,255,255,0.6)';ctx.font='bold 14px Boogaloo';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('BOOST',boostX,boostY+2);ctx.textBaseline='alphabetic';
 }
 
 function drawKickoff(){
