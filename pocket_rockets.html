@@ -405,12 +405,21 @@ function drawGameOver(){
   // Score input + submit block
   ctx.fillStyle='rgba(0,0,0,0.68)';roundRect(ctx,32,228,W-64,130,12);ctx.fill();
   ctx.strokeStyle='rgba(100,180,255,0.22)';ctx.lineWidth=1;ctx.stroke();
-  ctx.fillStyle='#aaddff';ctx.font='15px Boogaloo';ctx.textAlign='center';ctx.fillText('Post your score!',W/2,252);
-  if(!canvas._nameInputEl){const inp=document.createElement('input');inp.type='text';inp.placeholder='Your name...';inp.maxLength=16;inp.style.cssText='position:fixed;font-family:Boogaloo,sans-serif;font-size:18px;padding:8px 14px;border-radius:8px;border:2px solid #5bbaff;background:#0d1a2e;color:#fff;width:200px;text-align:center;outline:none;z-index:100;';document.body.appendChild(inp);canvas._nameInputEl=inp;}
-  const rect=canvas.getBoundingClientRect(),inp=canvas._nameInputEl;
-  inp.style.left=(rect.left+rect.width/2-100)+'px';inp.style.top=(rect.top+(270/H)*rect.height-20)+'px';inp.style.display='block';
-  const subY=322;ctx.fillStyle='#1e88e5';roundRect(ctx,W/2-95,subY,190,42,10);ctx.fill();
-  ctx.fillStyle='#fff';ctx.font='bold 20px Boogaloo';ctx.fillText('SUBMIT SCORE',W/2,subY+28);
+  const subY=322;
+  if(canvas._scoreSubmitted){
+    // Show confirmation — hide input, grey out button
+    if(canvas._nameInputEl){canvas._nameInputEl.style.display='none';}
+    ctx.fillStyle='#4cff91';ctx.font='bold 16px Boogaloo';ctx.textAlign='center';ctx.fillText('✓ Score posted! Thanks '+canvas._submittedName+'!',W/2,268);
+    ctx.fillStyle='#555';roundRect(ctx,W/2-95,subY,190,42,10);ctx.fill();
+    ctx.fillStyle='#999';ctx.font='bold 20px Boogaloo';ctx.fillText('SUBMITTED ✓',W/2,subY+28);
+  } else {
+    ctx.fillStyle='#aaddff';ctx.font='15px Boogaloo';ctx.textAlign='center';ctx.fillText('Post your score!',W/2,252);
+    if(!canvas._nameInputEl){const inp=document.createElement('input');inp.type='text';inp.placeholder='Your name...';inp.maxLength=16;inp.style.cssText='position:fixed;font-family:Boogaloo,sans-serif;font-size:18px;padding:8px 14px;border-radius:8px;border:2px solid #5bbaff;background:#0d1a2e;color:#fff;width:200px;text-align:center;outline:none;z-index:100;';document.body.appendChild(inp);canvas._nameInputEl=inp;}
+    const rect=canvas.getBoundingClientRect(),inp=canvas._nameInputEl;
+    inp.style.left=(rect.left+rect.width/2-100)+'px';inp.style.top=(rect.top+(270/H)*rect.height-20)+'px';inp.style.display='block';
+    ctx.fillStyle='#1e88e5';roundRect(ctx,W/2-95,subY,190,42,10);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 20px Boogaloo';ctx.fillText('SUBMIT SCORE',W/2,subY+28);
+  }
   // Leaderboard
   if(leaderboard.length>0){ctx.fillStyle='rgba(0,0,0,0.55)';roundRect(ctx,32,378,W-64,96,10);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 13px Boogaloo';ctx.textAlign='center';ctx.fillText('🏆 TOP SCORES',W/2,396);leaderboard.slice(0,5).forEach((row,i)=>{ctx.font='12px Boogaloo';ctx.fillStyle=i===0?'#ffd700':'#ccc';ctx.fillText((i+1)+'. '+(row[0]||'?')+'  '+(row[1]||0),W/2,412+i*13);});}
   // ── Three buttons at bottom ──
@@ -429,9 +438,15 @@ function drawGameOver(){
   // Re-register click handler every frame (gameover state)
   canvas._gameoverClick=(e)=>{
     const p=getTouchPos(e.changedTouches?e.changedTouches[0]:e);
-    if(p.y>subY&&p.y<subY+42&&p.x>W/2-95&&p.x<W/2+95){const name=(canvas._nameInputEl?.value||'Anonymous').trim()||'Anonymous';submitScore(name,score[0]+'-'+score[1]);}
+    if(p.y>subY&&p.y<subY+42&&p.x>W/2-95&&p.x<W/2+95&&!canvas._scoreSubmitted){
+      const name=(canvas._nameInputEl?.value||'Anonymous').trim()||'Anonymous';
+      canvas._scoreSubmitted=true;canvas._submittedName=name;
+      if(canvas._nameInputEl)canvas._nameInputEl.style.display='none';
+      submitScore(name,score[0]+'-'+score[1]);
+    }
     if(p.y>paY&&p.y<paY+46&&p.x>W/2-105&&p.x<W/2+105){
       if(canvas._nameInputEl){canvas._nameInputEl.remove();canvas._nameInputEl=null;}
+      canvas._scoreSubmitted=false;canvas._submittedName=null;
       canvas.removeEventListener('click',canvas._gameoverClick);
       canvas.removeEventListener('touchend',canvas._gameoverClick);
       state='title';kickoff(true);
