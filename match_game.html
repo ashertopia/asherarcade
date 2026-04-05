@@ -289,7 +289,7 @@ function cardAt(tx, ty) {
 function onTap(tx, ty) {
   if (gameState === STATE.TITLE) {
     // Check "LET'S PLAY" button area
-    if (tx >= 80 && tx <= 280 && ty >= 370 && ty <= 410) {
+    if (tx >= 80 && tx <= 280 && ty >= 542 && ty <= 582) {
       startGame();
     }
     return;
@@ -718,15 +718,15 @@ function drawTitle() {
   ctx.restore();
   monoText('HOW TO PLAY', W / 2, 204, NEON.cyan, 9);
   monoText('Tap cards to flip them over.', W / 2, 220, '#cccccc', 9);
-  monoText('Match all photo pairs to win!', W / 2, 234, '#cccccc', 9);
+  monoText('Match color outline pairs to win!', W / 2, 234, '#cccccc', 9);
   monoText('Fast + fewer flips = higher score.', W / 2, 248, '#cccccc', 9);
   monoText(`Best Score: ${bestScore}`, W / 2, 262, NEON.yellow, 9);
 
   // Leaderboard box
   drawLeaderboardBox(278);
 
-  // LET'S PLAY button — well clear of leaderboard (278 + 68 = 346 bottom)
-  drawNeonButton("LET'S PLAY", W / 2, 390, NEON.pink);
+  // LET'S PLAY button — below expanded leaderboard (278 + 260 = 538 bottom)
+  drawNeonButton("LET'S PLAY", W / 2, 562, NEON.pink);
 
   // Footer
   drawFooter();
@@ -760,26 +760,28 @@ function drawNeonButton(label, cx, cy, color) {
   ctx.shadowBlur = 0;
 }
 
-function drawLeaderboardBox(y) {
-  const bx = 20, bw = W - 40, bh = 68;
+function drawLeaderboardBox(y, maxRows = 15) {
+  const rowH = 16;
+  const bx = 20, bw = W - 40, bh = 14 + maxRows * rowH + 6;
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.fillRect(bx, y, bw, bh);
   ctx.strokeStyle = 'rgba(255,255,0,0.25)';
   ctx.lineWidth = 1;
   ctx.strokeRect(bx, y, bw, bh);
 
-  monoText('TOP SCORES', W / 2, y + 12, NEON.yellow, 9);
+  monoText('TOP SCORES', W / 2, y + 11, NEON.yellow, 10);
 
   if (leaderboardStatus === 'loading') {
-    monoText('LOADING...', W / 2, y + 38, '#666', 9);
+    monoText('LOADING...', W / 2, y + bh / 2, '#666', 10);
   } else if (leaderboardStatus === 'error' || leaderboard.length === 0) {
-    monoText('NO SCORES YET', W / 2, y + 38, '#666', 9);
+    monoText('NO SCORES YET', W / 2, y + bh / 2, '#666', 10);
   } else {
-    const top3 = leaderboard.slice(0, 3);
-    top3.forEach((entry, i) => {
-      const ly = y + 26 + i * 16;
-      monoText(`${i + 1}. ${(entry.name || 'PLAYER').toUpperCase().slice(0, 10)}`, bx + 70, ly, '#cccccc', 8, 'right');
-      monoText(`${entry.score}`, bx + bw - 20, ly, NEON.cyan, 8, 'right');
+    const topN = leaderboard.slice(0, maxRows);
+    topN.forEach((entry, i) => {
+      const ly = y + 24 + i * rowH;
+      const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
+      monoText(`${rank} ${(entry.name || 'PLAYER').toUpperCase().slice(0, 10)}`, bx + 14, ly, i < 3 ? NEON.yellow : '#cccccc', 10, 'left');
+      monoText(`${entry.score}`, bx + bw - 14, ly, NEON.cyan, 10, 'right');
     });
   }
 }
@@ -906,11 +908,11 @@ function drawWin() {
     monoText('✓ SCORE SUBMITTED', W / 2, 295, NEON.green, 9);
   }
 
-  // Leaderboard
-  drawLeaderboardBox(318);
+  // Leaderboard (top 5 on win screen to fit layout)
+  drawLeaderboardBox(318, 5);
 
   // ── BUY ME A COFFEE button ──────────────────────────────────
-  const coffeeY = 404;
+  const coffeeY = 438;
   const cbw = W - 40, cbh = 38, cbx = 20, cby = coffeeY - cbh / 2;
   const coffeeGrad = ctx.createLinearGradient(cbx, cby, cbx + cbw, cby + cbh);
   coffeeGrad.addColorStop(0, '#1a6fa8');
@@ -930,7 +932,7 @@ function drawWin() {
   ctx.fillText('☕  BUY ME A COFFEE', W / 2, coffeeY);
 
   // ── GET YOUR OWN GAME button ────────────────────────────────
-  const gameY = 452;
+  const gameY = 486;
   const gbw = W - 40, gbh = 38, gbx = 20, gby = gameY - gbh / 2;
   const gameGrad = ctx.createLinearGradient(gbx, gby, gbx + gbw, gby + gbh);
   gameGrad.addColorStop(0, '#3d0060');
@@ -953,7 +955,7 @@ function drawWin() {
   ctx.fillText('asherarcade.com', W / 2, gameY + 9);
 
   // ── PLAY AGAIN button ───────────────────────────────────────
-  drawNeonButton('PLAY AGAIN', W / 2, 508, NEON.cyan);
+  drawNeonButton('PLAY AGAIN', W / 2, 542, NEON.cyan);
 
   drawScanlines();
   drawFooter();
@@ -1021,7 +1023,7 @@ canvas.addEventListener('click', (e) => {
       return;
     }
     // Buy Me a Coffee (Venmo)
-    if (x >= 20 && x <= 340 && y >= 385 && y <= 423) {
+    if (x >= 20 && x <= 340 && y >= 419 && y <= 457) {
       const note = encodeURIComponent('Photo Booth Match - great game!');
       const appUrl = `venmo://paycharge?txn=pay&recipients=epecho&amount=3&note=${note}`;
       const webUrl = 'https://venmo.com/epecho';
@@ -1031,12 +1033,12 @@ canvas.addEventListener('click', (e) => {
       return;
     }
     // Get Your Own Game
-    if (x >= 20 && x <= 340 && y >= 433 && y <= 471) {
+    if (x >= 20 && x <= 340 && y >= 467 && y <= 505) {
       window.open('https://asherarcade.com', '_blank');
       return;
     }
     // Play Again
-    if (x >= 80 && x <= 280 && y >= 488 && y <= 528) {
+    if (x >= 80 && x <= 280 && y >= 522 && y <= 562) {
       scoreSubmitted = false;
       gameState = STATE.TITLE;
       return;
@@ -1057,7 +1059,7 @@ canvas.addEventListener('touchstart', (e) => {
       return;
     }
     // Buy Me a Coffee (Venmo)
-    if (x >= 20 && x <= 340 && y >= 385 && y <= 423) {
+    if (x >= 20 && x <= 340 && y >= 419 && y <= 457) {
       const note = encodeURIComponent('Photo Booth Match - great game!');
       const appUrl = `venmo://paycharge?txn=pay&recipients=epecho&amount=3&note=${note}`;
       const webUrl = 'https://venmo.com/epecho';
@@ -1067,12 +1069,12 @@ canvas.addEventListener('touchstart', (e) => {
       return;
     }
     // Get Your Own Game
-    if (x >= 20 && x <= 340 && y >= 433 && y <= 471) {
+    if (x >= 20 && x <= 340 && y >= 467 && y <= 505) {
       window.open('https://asherarcade.com', '_blank');
       return;
     }
     // Play Again
-    if (x >= 80 && x <= 280 && y >= 488 && y <= 528) {
+    if (x >= 80 && x <= 280 && y >= 522 && y <= 562) {
       scoreSubmitted = false;
       gameState = STATE.TITLE;
       return;
