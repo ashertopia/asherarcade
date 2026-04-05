@@ -613,59 +613,53 @@ document.addEventListener('keyup',e=>{
 });
 window.addEventListener('deviceorientation',e=>{if(e.gamma!==null){tiltOn=true;tiltG=e.gamma;}});
 
-// ── Document-level touch — left screen half = push, right = jump ──
-// No canvas coordinate mapping — uses raw screen X which works regardless of rotation
-document.addEventListener('touchstart',e=>{
+// ── Touch controls on canvas element ──
+// Split screen: left half = PUSH (move Mag right), right half = JUMP
+// Canvas may be CSS-rotated 90deg on portrait phones.
+// We use raw clientX vs screen midpoint — no coordinate mapping needed for push/jump zones.
+// For dead screen we map through getBoundingClientRect with rotation correction.
+
+function getCanvasCoords(clientX, clientY){
+  const r=canvas.getBoundingClientRect();
+  const isPortrait=window.innerHeight>window.innerWidth;
+  if(isPortrait){
+    // Canvas rotated 90deg clockwise via CSS:
+    // screen-x maps to canvas-y (inverted), screen-y maps to canvas-x
+    const gx=(clientY-r.top)*(W/r.height);
+    const gy=(1-(clientX-r.left)/r.width)*H;
+    return {gx,gy};
+  }
+  return {gx:(clientX-r.left)*(W/r.width), gy:(clientY-r.top)*(H/r.height)};
+}
+
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
   AC.resume();
   for(const t of e.changedTouches){
-    const sx=t.clientX, sy=t.clientY;
-    const midX=window.innerWidth/2;
-    if(GS.state==='title'&&GS.lbOK){startGame();e.preventDefault();return;}
+    if(GS.state==='title'&&GS.lbOK){startGame();return;}
     if(GS.state==='dead'){
-      // Map to canvas for dead screen button detection
-      const r=canvas.getBoundingClientRect();
-      // Handle portrait rotation: swap axes
-      const isPortrait=window.innerHeight>window.innerWidth;
-      let gx,gy;
-      if(isPortrait){
-        // Canvas rotated 90deg: screen Y → canvas X, screen X → canvas Y (inverted)
-        gx=(sy-r.top)*(W/r.height);
-        gy=((r.left+r.width)-sx)*(H/r.width);
-      } else {
-        gx=(sx-r.left)*(W/r.width);
-        gy=(sy-r.top)*(H/r.height);
-      }
+      const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
       txS=gx;tyS=gy;ttS=Date.now();
       continue;
     }
     if(GS.state!=='playing')continue;
-    e.preventDefault();
-    if(sx<midX){
-      // Left half — push forward
+    // Use RAW screen X vs screen midpoint — works regardless of canvas rotation
+    const screenMid=window.innerWidth/2;
+    if(t.clientX < screenMid){
       activeTouches[t.identifier]='fwd';
       touchForward=true;
     } else {
-      // Right half — jump
       activeTouches[t.identifier]='jump';
-      txS=sx;tyS=sy;ttS=Date.now();
+      txS=t.clientX;tyS=t.clientY;ttS=Date.now();
     }
   }
 },{passive:false});
 
-document.addEventListener('touchend',e=>{
+canvas.addEventListener('touchend',e=>{
+  e.preventDefault();
   for(const t of e.changedTouches){
-    const sx=t.clientX,sy=t.clientY;
     if(GS.state==='dead'){
-      const r=canvas.getBoundingClientRect();
-      const isPortrait=window.innerHeight>window.innerWidth;
-      let gx,gy;
-      if(isPortrait){
-        gx=(sy-r.top)*(W/r.height);
-        gy=((r.left+r.width)-sx)*(H/r.width);
-      } else {
-        gx=(sx-r.left)*(W/r.width);
-        gy=(sy-r.top)*(H/r.height);
-      }
+      const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
       handleDeadTouch(gx,gy);
       continue;
     }
@@ -673,7 +667,7 @@ document.addEventListener('touchend',e=>{
     const zone=activeTouches[t.identifier];
     if(zone==='jump'){
       const now=Date.now();
-      const dist=Math.hypot(sx-txS,sy-tyS);
+      const dist=Math.hypot(t.clientX-txS,t.clientY-tyS);
       if(dist<80&&now-ttS<350){
         if(now-lastTapTime<350&&!P.onGround){doFlip();}
         else{doJump();}
@@ -685,9 +679,7 @@ document.addEventListener('touchend',e=>{
   touchForward=Object.values(activeTouches).some(z=>z==='fwd');
 },{passive:false});
 
-document.addEventListener('touchmove',e=>{
-  if(GS.state==='playing')e.preventDefault();
-},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
 
 canvas.addEventListener('click',e=>{
   const r=canvas.getBoundingClientRect();
@@ -750,7 +742,7 @@ function update(){
   else if(touchForward)P.vx=2.5; // forward button held
   else if(towedChar){P.vx=Math.min(P.vx+0.08,1.5);} // auto-drift forward when towing so tow is visible
   else P.vx*=.82; // drift back to natural position
-  P.x=Math.max(38,Math.min(225,P.x+P.vx));
+  P.x=Math.max(38,Math.min(380,P.x+P.vx)); // allow push to near center
   // Record player position history for tow rope delayed follow
   towHistory.push({x:P.x,y:P.y});
   if(towHistory.length>TOW_DELAY+20)towHistory.shift();
