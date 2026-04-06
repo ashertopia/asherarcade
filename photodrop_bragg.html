@@ -681,31 +681,38 @@ async function startUpload() {
   btnSubmit.disabled = true;
   errorMsg.classList.remove('show');
 
-  const progressWrap = document.getElementById('progress-wrap');
-  const progressBar  = document.getElementById('progress-bar');
+  const progressWrap  = document.getElementById('progress-wrap');
+  const progressBar   = document.getElementById('progress-bar');
   const progressLabel = document.getElementById('progress-label');
-
   progressWrap.classList.add('visible');
 
   const guestName = document.getElementById('guest-name').value.trim() || 'Anonymous';
 
   let uploaded = 0;
-  let failed = 0;
+  let failed   = 0;
 
   for (let i = 0; i < selectedFiles.length; i++) {
     const file = selectedFiles[i];
     progressLabel.textContent = `Uploading ${i + 1} of ${selectedFiles.length}…`;
 
     try {
-      const base64 = await fileToBase64(file);
-      const url = `${scriptUrl}?folder=${encodeURIComponent(folderId)}&name=${encodeURIComponent(guestName)}&filename=${encodeURIComponent(file.name)}&type=${encodeURIComponent(file.type)}&data=${encodeURIComponent(base64)}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.status === 'ok') {
-        uploaded++;
-      } else {
-        failed++;
-      }
+      const base64 = await compressAndEncode(file);
+
+      // POST with no-cors — sidesteps CORS preflight from GitHub Pages
+      // We can't read the response body with no-cors, so we count optimistically
+      await fetch(scriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' }, // text/plain avoids preflight
+        body: JSON.stringify({
+          folder:   folderId,
+          name:     guestName,
+          filename: file.name,
+          type:     file.type,
+          data:     base64
+        }),
+        mode: 'no-cors'
+      });
+      uploaded++;
     } catch (e) {
       failed++;
     }
@@ -723,12 +730,24 @@ async function startUpload() {
   }
 }
 
-function fileToBase64(file) {
+// Compress to max 1200px and re-encode as JPEG at 75% quality
+function compressAndEncode(file) {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result.split(',')[1]);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+      if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.75).split(',')[1]);
+    };
+    img.onerror = reject;
+    img.src = url;
   });
 }
 
