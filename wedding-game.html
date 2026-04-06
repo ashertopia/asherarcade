@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Custom Wedding Games — Interactive Reception Fun | Asher Arcade</title>
+<meta name="description" content="Personalized browser games for wedding receptions, engagement parties, and rehearsal dinners. Guests compete on a live leaderboard — no download needed. From $79.">
+<link rel="canonical" href="https://www.asherarcade.com/wedding-game.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.asherarcade.com/wedding-game.html">
+<meta property="og:title" content="Custom Wedding Games | Asher Arcade">
+<meta property="og:description" content="Personalized browser games for your wedding reception. Guests play on their phones, compete on a leaderboard, and take home a memory. No app needed. From $79.">
+<meta property="og:site_name" content="Asher Arcade">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Custom Wedding Games | Asher Arcade">
+<meta name="twitter:description" content="Personalized browser games for your wedding reception. Guests play on their phones, compete on a leaderboard, and take home a memory. No app needed. From $79.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "Custom Wedding Reception Games",
+  "provider": {"@type": "Organization", "name": "Asher Arcade", "url": "https://www.asherarcade.com"},
+  "url": "https://www.asherarcade.com/wedding-game.html",
+  "description": "Personalized browser games for wedding receptions, engagement parties, and rehearsal dinners. Guests compete on a live leaderboard — no download needed. From $79."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [{"@type":"Question","name":"Can guests play during the reception on their own phones?","acceptedAnswer":{"@type":"Answer","text":"Yes — that's exactly how it works. Guests open the link on their phone and play right from the browser. No download, no account. The leaderboard updates live so everyone can see who's winning."}},
+{"@type":"Question","name":"What does a custom wedding character look like?","acceptedAnswer":{"@type":"Answer","text":"We generate custom artwork based on photos or descriptions of the couple. Characters are stylized and fun — not photorealistic, but clearly recognizable as the people they're based on."}},
+{"@type":"Question","name":"How far in advance do I need to order?","acceptedAnswer":{"@type":"Answer","text":"Most games are ready within 7 days. We recommend ordering at least 2 weeks before the wedding to allow time for revisions. Rush orders (3-day turnaround) are available."}},
+{"@type":"Question","name":"Can the game show on a TV or projector at the venue?","acceptedAnswer":{"@type":"Answer","text":"Yes. The game link works in any browser, so you can pull it up on a laptop connected to a TV or projector. The leaderboard is visible on screen while guests compete from their phones."}},
+{"@type":"Question","name":"How long is the game hosted?","acceptedAnswer":{"@type":"Answer","text":"The Memory tier includes 1 year of hosting, then $20/yr to renew. The game lives at its own URL on asherarcade.com — you can share the link any time after the wedding too."}}]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Boogaloo&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#7cc63a;--blue:#3a6fcc;--dark:#0d1117;--card:#161b22;
+  --pink:#ff8fab;--gold:#ffd700;--text:#e6edf3;--muted:#8b949e;
+  --border:rgba(255,255,255,0.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--dark);color:var(--text);font-family:'Nunito',sans-serif;overflow-x:hidden;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:rgba(13,17,23,0.97);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo{height:30px;width:auto;border-radius:5px;}
+.nav-name{font-family:'Boogaloo',sans-serif;font-size:22px;color:var(--green);letter-spacing:1px;}
+.nav-links{display:flex;gap:24px;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;transition:color 0.2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-cta{background:var(--green);color:#fff;border:none;padding:9px 22px;border-radius:20px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;text-decoration:none;transition:background 0.2s;}
+.nav-cta:hover{background:#8fd44a;}
+.hero{padding:80px 24px 70px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(124,198,58,0.1) 0%,transparent 65%);}
+.hero-eyebrow{display:inline-block;background:rgba(124,198,58,0.12);color:var(--green);border:1px solid rgba(124,198,58,0.25);padding:5px 18px;border-radius:20px;font-size:13px;font-weight:700;letter-spacing:0.5px;margin-bottom:22px;}
+.hero h1{font-family:'Boogaloo',sans-serif;font-size:clamp(38px,6vw,64px);line-height:1.1;margin-bottom:18px;max-width:780px;margin-left:auto;margin-right:auto;}
+.hero h1 span{color:var(--green);}
+.hero-sub{font-size:clamp(15px,2.5vw,18px);color:var(--muted);max-width:520px;margin:0 auto 36px;line-height:1.7;}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{background:var(--green);color:#fff;padding:14px 34px;border-radius:30px;font-weight:800;font-size:16px;text-decoration:none;transition:background 0.2s;box-shadow:0 4px 18px rgba(124,198,58,0.3);}
+.btn-primary:hover{background:#8fd44a;}
+.btn-secondary{background:transparent;color:var(--text);padding:14px 34px;border-radius:30px;font-weight:800;font-size:16px;text-decoration:none;border:2px solid rgba(255,255,255,0.12);transition:border-color 0.2s;}
+.btn-secondary:hover{border-color:rgba(255,255,255,0.35);}
+.section{padding:64px 24px;max-width:1060px;margin:0 auto;}
+.section-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:10px;}
+.section-title{font-family:'Boogaloo',sans-serif;font-size:clamp(26px,4vw,38px);margin-bottom:8px;}
+.section-sub{color:var(--muted);font-size:15px;margin-bottom:36px;line-height:1.6;max-width:560px;}
+.section-divider{border:none;border-top:1px solid var(--border);margin:0;}
+.uc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
+.uc-card{background:var(--card);border-radius:14px;padding:24px 20px;border:1px solid var(--border);}
+.uc-icon{font-size:28px;margin-bottom:12px;}
+.uc-card h3{font-family:'Boogaloo',sans-serif;font-size:18px;margin-bottom:6px;}
+.uc-card p{color:var(--muted);font-size:13px;line-height:1.6;}
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.mini-card{background:var(--card);border-radius:14px;padding:22px 20px;border:1px solid var(--border);text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:border-color 0.2s,transform 0.2s;}
+.mini-card:hover{border-color:var(--green);transform:translateY(-3px);}
+.mini-card.coming{opacity:0.65;cursor:default;}
+.mini-card.coming:hover{transform:none;border-color:var(--border);}
+.mini-type{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--green);margin-bottom:6px;}
+.mini-card h3{font-family:'Boogaloo',sans-serif;font-size:17px;margin-bottom:6px;}
+.mini-card p{color:var(--muted);font-size:13px;line-height:1.55;flex:1;}
+.mini-btn{display:inline-block;margin-top:14px;background:var(--green);color:#0d120d;padding:7px 16px;border-radius:18px;font-weight:800;font-size:12px;}
+.mini-btn.disabled{background:rgba(255,255,255,0.06);color:var(--muted);}
+.how-bg{background:rgba(124,198,58,0.03);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;}
+.step{text-align:center;padding:8px 12px;}
+.step-num{width:44px;height:44px;background:rgba(124,198,58,0.12);border:2px solid rgba(124,198,58,0.35);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Boogaloo',sans-serif;font-size:20px;color:var(--green);margin:0 auto 14px;}
+.step h3{font-family:'Boogaloo',sans-serif;font-size:18px;margin-bottom:8px;}
+.step p{color:var(--muted);font-size:13px;line-height:1.65;}
+.faq-list{max-width:660px;margin:0 auto;}
+.faq-item{border-bottom:1px solid var(--border);}
+.faq-item:first-child{border-top:1px solid var(--border);}
+.faq-item summary{padding:16px 4px;font-size:15px;font-weight:700;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.faq-item summary::-webkit-details-marker{display:none;}
+.faq-item summary::after{content:'+';font-size:20px;color:var(--green);flex-shrink:0;font-weight:400;}
+.faq-item[open] summary::after{content:'−';}
+.faq-item p{padding:0 4px 16px;color:var(--muted);font-size:14px;line-height:1.7;}
+.faq-item summary:hover{color:var(--green);}
+.contact-box{background:var(--card);border-radius:16px;padding:40px;border:1px solid var(--border);max-width:520px;margin:36px auto 0;text-align:center;}
+.contact-box h3{font-family:'Boogaloo',sans-serif;font-size:24px;margin-bottom:8px;}
+.contact-box>p{color:var(--muted);font-size:14px;margin-bottom:22px;line-height:1.6;}
+.contact-form select,.contact-form input,.contact-form textarea{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Nunito',sans-serif;font-size:14px;margin-bottom:12px;outline:none;transition:border-color 0.2s;resize:vertical;}
+.contact-form select option{background:var(--dark);}
+.contact-form input:focus,.contact-form textarea:focus,.contact-form select:focus{border-color:var(--green);}
+.contact-form textarea{min-height:80px;}
+.contact-form button{width:100%;background:var(--green);color:#fff;border:none;padding:13px;border-radius:24px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:background 0.2s;}
+.contact-form button:hover{background:#8fd44a;}
+#form-thanks{display:none;color:var(--green);font-weight:700;font-size:15px;margin-top:12px;}
+footer{border-top:1px solid var(--border);padding:26px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-top:40px;}
+.footer-brand{display:flex;align-items:center;gap:10px;}
+.footer-logo{height:24px;border-radius:4px;}
+.footer-copy{font-size:12px;color:var(--muted);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{color:var(--muted);font-size:12px;text-decoration:none;}
+.footer-links a:hover{color:var(--text);}
+.breadcrumb{font-size:13px;color:var(--muted);padding:14px 32px;}
+.breadcrumb a{color:var(--green);text-decoration:none;}
+.breadcrumb a:hover{text-decoration:underline;}
+@media(max-width:640px){nav .nav-links{display:none;}footer{flex-direction:column;align-items:center;text-align:center;}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="index.html">
+    <img class="nav-logo" src="data:image/png;base64,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" alt="Asher Arcade logo">
+    <span class="nav-name">ASHER ARCADE</span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html#what-we-build">What We Build</a>
+    <a href="index.html#games">Games</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+  <a class="nav-cta" href="index.html#contact">Get Your Game</a>
+</nav>
+
+<p class="breadcrumb"><a href="index.html">Asher Arcade</a> &rsaquo; Wedding Games</p>
+
+<section class="hero">
+  <div class="hero-eyebrow">Custom games for weddings & engagements</div>
+  <h1>Your wedding, turned into<br><span>a game they'll never forget.</span></h1>
+  <p class="hero-sub">Personalized browser games your guests play on their phones at the reception — no download, no app, no setup. Just send the link.</p>
+  <div class="hero-btns">
+    <a class="btn-primary" href="index.html#contact">🎮 Get Your Game</a>
+    <a class="btn-secondary" href="index.html#games">See Examples</a>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<div class="section">
+  <div class="section-label">Wedding Games</div>
+  <div class="section-title">Everything we build for weddings</div>
+  <div class="section-sub">From the rehearsal dinner to the reception, we have a game or app for every wedding moment.</div>
+  <div class="uc-grid">
+    <div class="uc-card">
+      <div class="uc-icon">🏎️</div>
+      <h3>Reception Racing Game</h3>
+      <p>Guests race custom characters built to look like the couple. Live leaderboard on the big screen. The perfect icebreaker between dinner and dancing.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">🃏</div>
+      <h3>Photo Memory Match</h3>
+      <p>A card-flip memory game featuring real photos of the couple, the wedding party, or the whole family. A keepsake guests play for years.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">🧠</div>
+      <h3>Couple Trivia</h3>
+      <p>How well do guests really know the bride and groom? Custom trivia built around your story — where you met, your first date, your inside jokes.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">🎉</div>
+      <h3>Engagement Reveal Puzzle</h3>
+      <p>A sliding puzzle guests solve to reveal a surprise — your engagement photo, wedding website, or a special message. Perfect for engagement announcements.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">📷</div>
+      <h3>PhotoDrop — Guest Photos</h3>
+      <p>Guests scan a QR code and upload photos from the day. Stored securely for 60 days so everyone can download their favorites. No app needed.</p>
+    </div>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<div class="section">
+  <div class="section-label">Games We've Built</div>
+  <div class="section-title">See real examples</div>
+  <div class="section-sub">Play the games below to get a feel for what yours could be.</div>
+  <div class="mini-grid">
+    <a class="mini-card" href="bragg_game.html" target="_blank">
+      <div class="mini-type">Wedding · Racing Game</div>
+      <h3>Bragg Racing</h3>
+      <p>A custom platformer built for Jackie & Dizzle's wedding. Race to the altar, top the leaderboard.</p>
+      <span class="mini-btn">▶ Play Now</span>
+    </a>
+    <a class="mini-card" href="match_game.html" target="_blank">
+      <div class="mini-type">Engagement · Memory Game</div>
+      <h3>Photo Booth Memory Match</h3>
+      <p>A memory card game built with real engagement photos for the Mullin & Burris family.</p>
+      <span class="mini-btn">▶ Play Now</span>
+    </a>
+    <a class="mini-card" href="Special_Announcement_S-A.html" target="_blank">
+      <div class="mini-type">Engagement · Puzzle Reveal</div>
+      <h3>Special Announcement Puzzle</h3>
+      <p>A sliding puzzle reveal — clear the board and uncover the surprise.</p>
+      <span class="mini-btn">▶ Play Now</span>
+    </a>
+    <a class="mini-card" href="photodrop.html" target="_blank">
+      <div class="mini-type">Wedding · Photo App</div>
+      <h3>PhotoDrop</h3>
+      <p>Guest photo upload app — scan, upload, download within 60 days.</p>
+      <span class="mini-btn">▶ Play Now</span>
+    </a>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<div class="how-bg">
+<div class="section">
+  <div class="section-label">The Process</div>
+  <div class="section-title">How it works</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h3>Tell us your story</h3><p>Fill out the form with your idea. The more detail you give us, the more personal we can make it.</p></div>
+    <div class="step"><div class="step-num">2</div><h3>We build it</h3><p>Custom art, characters, and gameplay. Most games are ready within 7 days.</p></div>
+    <div class="step"><div class="step-num">3</div><h3>Share the link</h3><p>Works on any phone, tablet, or computer. No download, no account, no friction.</p></div>
+  </div>
+</div>
+</div>
+
+<hr class="section-divider">
+
+<div class="section">
+  <div class="section-label">FAQ</div>
+  <div class="section-title">Questions about wedding games</div>
+  <div class="faq-list">
+    <details class="faq-item">
+      <summary>Can guests play during the reception on their own phones?</summary>
+      <p>Yes — that's exactly how it works. Guests open the link on their phone and play right from the browser. No download, no account. The leaderboard updates live so everyone can see who's winning.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What does a custom wedding character look like?</summary>
+      <p>We generate custom artwork based on photos or descriptions of the couple. Characters are stylized and fun — not photorealistic, but clearly recognizable as the people they're based on.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How far in advance do I need to order?</summary>
+      <p>Most games are ready within 7 days. We recommend ordering at least 2 weeks before the wedding to allow time for revisions. Rush orders (3-day turnaround) are available.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Can the game show on a TV or projector at the venue?</summary>
+      <p>Yes. The game link works in any browser, so you can pull it up on a laptop connected to a TV or projector. The leaderboard is visible on screen while guests compete from their phones.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How long is the game hosted?</summary>
+      <p>The Memory tier includes 1 year of hosting, then $20/yr to renew. The game lives at its own URL on asherarcade.com — you can share the link any time after the wedding too.</p>
+    </details>
+  </div>
+</div>
+
+<hr class="section-divider">
+
+<div id="contact" class="section">
+  <div class="section-label">Get Started</div>
+  <div class="section-title">Ready to build your wedding game?</div>
+  <div class="contact-box">
+    <h3>Tell us your idea</h3>
+    <p>Tell us about the couple, the vibe, and when the big day is. We'll get back to you within 24 hours with a quote.</p>
+    <form class="contact-form" id="contactForm">
+      <input type="text" id="cf-name" placeholder="Your name" required>
+      <input type="email" id="cf-email" placeholder="Your email" required>
+      <input type="text" id="cf-idea" placeholder="Tell us your idea">
+      <textarea id="cf-msg" placeholder="Any details — the more the better!"></textarea>
+      <button type="submit">Send My Idea →</button>
+    </form>
+    <div id="form-thanks">✓ Got it! We'll be in touch within 24 hours.</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">
+    <img class="footer-logo" src="data:image/png;base64,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" alt="Asher Arcade">
+    <span class="footer-copy">© 2026 Asher Arcade · asherarcade.com</span>
+  </div>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="index.html#contact">Contact</a>
+  </div>
+</footer>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4669X905fLc5A2ZxcwalMJODm36DUofz8U0bG_32fXSAS-9aO_hjzZf1UpCee6zlwtw/exec';
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var btn = this.querySelector('button[type="submit"]');
+  btn.textContent = 'Sending…'; btn.disabled = true;
+  var url = SCRIPT_URL
+    + '?name='  + encodeURIComponent(document.getElementById('cf-name').value.trim())
+    + '&email=' + encodeURIComponent(document.getElementById('cf-email').value.trim())
+    + '&type='  + encodeURIComponent('Wedding Games')
+    + '&idea='  + encodeURIComponent(document.getElementById('cf-idea').value.trim())
+    + '&msg='   + encodeURIComponent(document.getElementById('cf-msg').value.trim());
+  fetch(url, {method:'GET',mode:'no-cors'})
+    .then(function() { document.getElementById('contactForm').style.display='none'; document.getElementById('form-thanks').style.display='block'; })
+    .catch(function() { document.getElementById('contactForm').style.display='none'; document.getElementById('form-thanks').style.display='block'; });
+});
+document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+  a.addEventListener('click', function(e) {
+    var t = document.querySelector(this.getAttribute('href'));
+    if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+  });
+});
+</script>
+</body>
+</html>
