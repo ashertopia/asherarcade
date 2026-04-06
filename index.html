@@ -6,6 +6,7 @@
 <title>Asher Arcade — Custom Games for Weddings, Birthdays & More</title>
 <meta name="description" content="We build personalized browser games and apps for weddings, baby showers, birthdays, graduations, and churches. No download needed — share a link, guests play instantly. From $79.">
 <link rel="canonical" href="https://www.asherarcade.com/">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
@@ -140,7 +141,7 @@ nav{
   background:var(--card);border-radius:14px;padding:28px 22px;
   border:1px solid var(--border);
   transition:border-color 0.2s,transform 0.2s;
-  cursor:default;
+  text-decoration:none;color:inherit;display:block;
 }
 .product-card:hover{border-color:rgba(124,198,58,0.35);transform:translateY(-3px);}
 .product-icon{font-size:30px;margin-bottom:14px;}
@@ -464,6 +465,14 @@ footer{
   ]
 }
 </script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CWKRCXYXTG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CWKRCXYXTG');
+</script>
 </head>
 <body>
 
@@ -510,33 +519,33 @@ footer{
   <div class="section-sub">Every product is fully personalized, browser-based, and shareable with a link. No app, no install, no friction.</div>
   <div class="products-grid">
 
-    <div class="product-card">
+    <a class="product-card" href="birthday-game.html">
       <div class="product-icon">🎮</div>
       <h3>Custom Occasion Games</h3>
       <p>A personalized arcade game built around a real person or event. Characters that look like your people. Leaderboards your guests compete on. A keepsake they actually use.</p>
-      <span class="product-tag">Weddings · Baby Showers · Birthdays · Graduations</span>
-    </div>
+      <span class="product-tag">Weddings · Baby Showers · Birthdays · Graduations →</span>
+    </a>
 
-    <div class="product-card">
+    <a class="product-card" href="church-game.html">
       <div class="product-icon">🧠</div>
       <h3>Trivia Games</h3>
       <p>How well does everyone know the graduate? The happy couple? Custom trivia built around a real person — or around content your group should know, like a sermon series.</p>
-      <span class="product-tag">Grad Parties · Rehearsal Dinners · Youth Groups</span>
-    </div>
+      <span class="product-tag">Grad Parties · Rehearsal Dinners · Youth Groups →</span>
+    </a>
 
-    <div class="product-card">
+    <a class="product-card" href="index.html#contact">
       <div class="product-icon">🎉</div>
       <h3>Reveal &amp; Announce</h3>
       <p>A sliding puzzle your guests solve to unlock a surprise — a QR code, a website, a YouTube video. Perfect for engagements, gender reveals, April Fools, and anything you want to announce with a little drama.</p>
-      <span class="product-tag">Gender Reveals · Engagements · Announcements</span>
-    </div>
+      <span class="product-tag">Gender Reveals · Engagements · Announcements →</span>
+    </a>
 
-    <div class="product-card">
+    <a class="product-card" href="photodrop.html">
       <div class="product-icon">📷</div>
       <h3>Photo Collection App</h3>
       <p>Guests scan a QR code and upload photos from your event in seconds. No app, no account needed. Photos are stored securely in the cloud and available to download for 60 days.</p>
-      <span class="product-tag">Weddings · Graduations · Church Events · Parties</span>
-    </div>
+      <span class="product-tag">Weddings · Graduations · Church Events · Parties →</span>
+    </a>
 
   </div>
 </div>
