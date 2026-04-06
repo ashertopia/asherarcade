@@ -171,7 +171,7 @@ let starTimer=0; // frames of star invincibility remaining
 let P,obstacles=[],rails=[],particles=[],popups=[];
 let spd=BASE_SPD,bgOff=0,obsT=0,railT=0,spdT=0,lastSpaceUp=0,lastTapTime=0;
 
-function initP(){P={x:130,y:GROUND_Y-PH,vy:0,vx:0,onGround:true,state:'idle',stTimer:0,invT:0,grindRail:null,grindObs:null,justLeftGrind:0,flipCount:0};}
+function initP(){P={x:300,y:GROUND_Y-PH,vy:0,vx:0,onGround:true,state:'idle',stTimer:0,invT:0,grindRail:null,grindObs:null,justLeftGrind:0,flipCount:0};}
 
 // BACKGROUND + POLES
 // Poles appear every 640px of scroll, skater draws BEHIND them (drawn after player)
@@ -700,7 +700,7 @@ function update(){
   else if(touchForward)P.vx=2.5; // forward button held
   else if(towedChar){P.vx=Math.min(P.vx+0.08,1.5);} // auto-drift forward when towing so tow is visible
   else P.vx*=.82; // drift back to natural position
-  P.x=Math.max(38,Math.min(480,P.x+P.vx)); // push to ~75% of canvas width
+  P.x=Math.max(50,Math.min(490,P.x+P.vx)); // push to ~75% of canvas width
   // Record player position history for tow rope delayed follow
   towHistory.push({x:P.x,y:P.y});
   if(towHistory.length>TOW_DELAY+20)towHistory.shift();
