@@ -569,7 +569,7 @@
 
 <!-- ── THANK YOU SCREEN ── -->
 <div id="thankyou-screen">
-  <div class="ty-icon">💍</div>
+  <div class="ty-icon" id="ty-icon">💍</div>
   <div class="ty-ornament">
     <div class="ty-ornament-line"></div>
     <div class="ornament-diamond"></div>
@@ -586,8 +586,8 @@
   <div class="tip-section">
     <p class="tip-label">Enjoyed the experience?</p>
     <a class="btn-venmo" href="https://venmo.com/epecho" target="_blank" rel="noopener">
-      <span class="venmo-icon">V</span>
-      Leave a tip — @epecho
+      <span class="venmo-icon">☕</span>
+      Buy Me a Coffee — @epecho
     </a>
   </div>
 
@@ -604,25 +604,53 @@
 
 <script>
 // ── URL param parsing ──
-const params = new URLSearchParams(window.location.search);
-const eventName   = params.get('event')  || 'Your Event';
+const params      = new URLSearchParams(window.location.search);
+const eventName   = params.get('event')  || 'your-event';
 const folderId    = params.get('folder') || '';
-const coupleNames = params.get('couple') || '';
+const hostName    = params.get('name')   || '';
+const eventType   = params.get('type')   || 'event';
 const scriptUrl   = params.get('script') || '';
 
-// ── Personalize text ──
 const prettyEvent = eventName.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-document.getElementById('event-title').textContent =
-  coupleNames ? coupleNames + "\u2019s Wedding" : prettyEvent;
-document.getElementById('event-subtitle').textContent =
-  coupleNames ? 'Share your memories from ' + prettyEvent : 'Upload your memories from today';
-if (coupleNames) {
-  document.getElementById('ty-headline').textContent = 'Thank You';
-  document.getElementById('ty-from').textContent = '— With love, ' + coupleNames;
-  document.getElementById('ty-message').textContent =
-    "Your photos mean the world to us. We can\u2019t wait to relive every moment through your eyes.";
-}
-document.title = (coupleNames || prettyEvent) + ' · Photo Drop';
+
+// ── Event type content map ──
+const content = {
+  wedding: {
+    title:    hostName ? hostName + '\u2019s Wedding' : prettyEvent,
+    subtitle: 'Share your memories from today',
+    emoji:    '\uD83D\uDC8D',
+    headline: 'Thank You',
+    from:     hostName ? '\u2014 With love, ' + hostName : '\u2014 With love, from the couple',
+    message:  'Your photos mean the world to us. We can\u2019t wait to relive every moment through your eyes.'
+  },
+  graduation: {
+    title:    hostName ? 'Congrats, ' + hostName + '!' : prettyEvent,
+    subtitle: 'Capture the moment \u2014 share your photos',
+    emoji:    '\uD83C\uDF93',
+    headline: 'You\u2019re the Best!',
+    from:     hostName ? '\u2014 With gratitude, ' + hostName : '\u2014 With gratitude',
+    message:  'These memories will last a lifetime. Thank you for celebrating this milestone with me.'
+  },
+  event: {
+    title:    hostName ? hostName + '\u2019s ' + prettyEvent : prettyEvent,
+    subtitle: 'Share your photos from today',
+    emoji:    '\uD83C\uDF89',
+    headline: 'Thank You!',
+    from:     hostName ? '\u2014 ' + hostName : '\u2014 Thanks for coming',
+    message:  'So glad you were here. Thanks for sharing your photos and helping us remember this special day.'
+  }
+};
+
+const c = content[eventType] || content.event;
+
+// ── Apply to page ──
+document.getElementById('event-title').textContent    = c.title;
+document.getElementById('event-subtitle').textContent = c.subtitle;
+document.getElementById('ty-icon').textContent        = c.emoji;
+document.getElementById('ty-headline').textContent    = c.headline;
+document.getElementById('ty-from').textContent        = c.from;
+document.getElementById('ty-message').textContent     = c.message;
+document.title = c.title + ' \u00B7 Photo Drop';
 
 // ── File handling ──
 const fileInput   = document.getElementById('file-input');
