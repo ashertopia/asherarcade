@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Photo Drop — Asher Arcade</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-pale: #F5E8C0;
+    --cream: #FDFAF3;
+    --white: #FFFFFF;
+    --ink: #1A1614;
+    --ink-soft: #4A4340;
+    --border: rgba(201,168,76,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,168,76,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 24px 48px;
+  }
+
+  /* ── Header ── */
+  .arcade-tag {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 28px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.1s ease forwards;
+  }
+
+  .ornament {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0 6px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s ease forwards;
+  }
+  .ornament-line {
+    height: 1px;
+    width: 40px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .ornament-line.right {
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .ornament-diamond {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    transform: rotate(45deg);
+  }
+
+  .event-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 32px;
+    color: var(--ink);
+    text-align: center;
+    line-height: 1.15;
+    letter-spacing: 0.01em;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.3s ease forwards;
+  }
+
+  .event-subtitle {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.4s ease forwards;
+  }
+
+  /* ── Upload card ── */
+  .card {
+    width: 100%;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 32px 28px;
+    margin-top: 28px;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.05), 0 0 0 1px rgba(201,168,76,0.08);
+    opacity: 0;
+    animation: fadeUp 0.7s 0.5s ease forwards;
+  }
+
+  .card-label {
+    font-family: 'Jost', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 20px;
+  }
+
+  /* Name field */
+  .field-group {
+    margin-bottom: 20px;
+  }
+  .field-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+  .field-optional {
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    color: var(--gold);
+    text-transform: none;
+    margin-left: 4px;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    font-family: 'Jost', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--ink);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus {
+    border-color: var(--gold);
+    background: var(--white);
+  }
+  input[type="text"]::placeholder {
+    color: #B8B0A8;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+  }
+
+  /* Drop zone */
+  .drop-zone {
+    width: 100%;
+    min-height: 160px;
+    border: 1.5px dashed var(--gold);
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    background: rgba(201,168,76,0.03);
+    transition: background 0.2s, border-color 0.2s;
+    position: relative;
+    padding: 24px;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    background: rgba(201,168,76,0.07);
+    border-color: var(--gold-light);
+  }
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-icon {
+    font-size: 32px;
+    line-height: 1;
+  }
+  .drop-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .drop-hint {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  /* Preview strip */
+  .preview-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .thumb {
+    width: 60px; height: 60px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    animation: fadeIn 0.3s ease;
+  }
+  .thumb-count {
+    width: 60px; height: 60px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    color: var(--gold);
+    font-style: italic;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-top: 16px;
+    display: none;
+  }
+  .progress-wrap.visible { display: block; }
+  .progress-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .progress-bar-bg {
+    height: 3px;
+    background: var(--gold-pale);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* Submit button */
+  .btn-submit {
+    width: 100%;
+    padding: 16px;
+    margin-top: 24px;
+    background: linear-gradient(135deg, #C9A84C, #E8C97A, #C9A84C);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 2px;
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--white);
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    animation: shimmer 3s ease infinite;
+  }
+  .btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    animation: none;
+  }
+  .btn-submit:not(:disabled):active { transform: scale(0.98); }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ── Thank you screen ── */
+  #thankyou-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 24px 48px;
+    width: 100%;
+    max-width: 480px;
+    min-height: 100dvh;
+    justify-content: center;
+    gap: 0;
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    background: var(--cream);
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  #thankyou-screen.show {
+    display: flex;
+    opacity: 1;
+  }
+
+  .ty-icon { font-size: 48px; margin-bottom: 16px; animation: floatIn 0.6s ease; }
+
+  .ty-ornament {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .ty-ornament-line {
+    height: 1px;
+    width: 50px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+  .ty-ornament-line.r { background: linear-gradient(90deg, var(--gold), transparent); }
+
+  .ty-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 10px;
+    animation: fadeUp 0.6s 0.15s ease both;
+  }
+  .ty-from {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.25s ease both;
+  }
+  .ty-message {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    max-width: 300px;
+    margin-bottom: 36px;
+    animation: fadeUp 0.6s 0.35s ease both;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
+    animation: fadeIn 0.6s 0.4s ease both;
+  }
+
+  /* Venmo tip */
+  .tip-section {
+    animation: fadeUp 0.6s 0.45s ease both;
+    text-align: center;
+    width: 100%;
+  }
+  .tip-label {
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .btn-venmo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: #3D95CE;
+    border: none;
+    border-radius: 2px;
+    color: white;
+    font-family: 'Jost', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .btn-venmo:hover { opacity: 0.85; }
+  .venmo-icon {
+    width: 18px; height: 18px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+    color: #3D95CE;
+  }
+
+  /* Arcade promo */
+  .promo-section {
+    animation: fadeUp 0.6s 0.55s ease both;
+    text-align: center;
+    width: 100%;
+  }
+  .promo-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .promo-text {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  .btn-arcade {
+    display: inline-block;
+    padding: 12px 28px;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    color: var(--gold);
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-arcade:hover {
+    background: var(--gold);
+    color: var(--white);
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: auto;
+    padding-top: 40px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #C0B8B0;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.7s ease forwards;
+  }
+
+  /* Error */
+  .error-msg {
+    font-size: 12px;
+    color: #C0392B;
+    margin-top: 10px;
+    display: none;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .error-msg.show { display: block; }
+
+  /* Keyframes */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+  @keyframes floatIn {
+    from { opacity: 0; transform: scale(0.6) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── UPLOAD SCREEN ── -->
+<div class="page" id="upload-screen">
+
+  <span class="arcade-tag">Asher Arcade Presents</span>
+
+  <div class="ornament">
+    <div class="ornament-line"></div>
+    <div class="ornament-diamond"></div>
+    <div class="ornament-line right"></div>
+  </div>
+
+  <h1 class="event-title" id="event-title">Share Your Photos</h1>
+  <p class="event-subtitle" id="event-subtitle">Upload your memories from today</p>
+
+  <div class="card">
+    <div class="card-label">Photo Drop</div>
+
+    <div class="field-group">
+      <label class="field-label" for="guest-name">
+        Your Name <span class="field-optional">— optional</span>
+      </label>
+      <input type="text" id="guest-name" placeholder="e.g. Sarah & Tom" maxlength="60">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Select Photos</label>
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" multiple>
+        <span class="drop-icon">📷</span>
+        <span class="drop-text">Tap to choose photos</span>
+        <span class="drop-hint">or drag & drop</span>
+      </div>
+      <div class="preview-strip" id="preview-strip"></div>
+    </div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label" id="progress-label">Uploading...</div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <div class="error-msg" id="error-msg">Something went wrong. Please try again.</div>
+
+    <button class="btn-submit" id="btn-submit" disabled>Upload Photos</button>
+  </div>
+
+  <footer class="footer">Asher Arcade © 2026 · asherarcade.com</footer>
+</div>
+
+<!-- ── THANK YOU SCREEN ── -->
+<div id="thankyou-screen">
+  <div class="ty-icon">💍</div>
+  <div class="ty-ornament">
+    <div class="ty-ornament-line"></div>
+    <div class="ornament-diamond"></div>
+    <div class="ty-ornament-line r"></div>
+  </div>
+  <h2 class="ty-headline" id="ty-headline">Thank You</h2>
+  <p class="ty-from" id="ty-from">With love, from the couple</p>
+  <p class="ty-message" id="ty-message">
+    Your photos mean the world to us. We can't wait to relive every moment through your eyes.
+  </p>
+
+  <div class="divider"></div>
+
+  <div class="tip-section">
+    <p class="tip-label">Enjoyed the experience?</p>
+    <a class="btn-venmo" href="https://venmo.com/epecho" target="_blank" rel="noopener">
+      <span class="venmo-icon">V</span>
+      Leave a tip — @epecho
+    </a>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="promo-section">
+    <p class="promo-label">Want something like this for your event?</p>
+    <p class="promo-text">Custom games & apps for weddings, birthdays, and more.</p>
+    <a class="btn-arcade" href="https://asherarcade.com" target="_blank" rel="noopener">
+      Visit Asher Arcade
+    </a>
+  </div>
+</div>
+
+<script>
+// ── URL param parsing ──
+const params = new URLSearchParams(window.location.search);
+const eventName   = params.get('event')  || 'Your Event';
+const folderId    = params.get('folder') || '';
+const coupleNames = params.get('couple') || '';
+const scriptUrl   = params.get('script') || '';
+
+// ── Personalize text ──
+const prettyEvent = eventName.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+document.getElementById('event-title').textContent =
+  coupleNames ? coupleNames + "\u2019s Wedding" : prettyEvent;
+document.getElementById('event-subtitle').textContent =
+  coupleNames ? 'Share your memories from ' + prettyEvent : 'Upload your memories from today';
+if (coupleNames) {
+  document.getElementById('ty-headline').textContent = 'Thank You';
+  document.getElementById('ty-from').textContent = '— With love, ' + coupleNames;
+  document.getElementById('ty-message').textContent =
+    "Your photos mean the world to us. We can\u2019t wait to relive every moment through your eyes.";
+}
+document.title = (coupleNames || prettyEvent) + ' · Photo Drop';
+
+// ── File handling ──
+const fileInput   = document.getElementById('file-input');
+const dropZone    = document.getElementById('drop-zone');
+const previewStrip = document.getElementById('preview-strip');
+const btnSubmit   = document.getElementById('btn-submit');
+const errorMsg    = document.getElementById('error-msg');
+let selectedFiles = [];
+
+fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+
+function handleFiles(files) {
+  selectedFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  renderPreviews();
+  btnSubmit.disabled = selectedFiles.length === 0;
+  btnSubmit.textContent = selectedFiles.length > 0
+    ? `Upload ${selectedFiles.length} Photo${selectedFiles.length > 1 ? 's' : ''}`
+    : 'Upload Photos';
+}
+
+function renderPreviews() {
+  previewStrip.innerHTML = '';
+  const show = Math.min(selectedFiles.length, 6);
+  for (let i = 0; i < show; i++) {
+    const img = document.createElement('img');
+    img.className = 'thumb';
+    img.src = URL.createObjectURL(selectedFiles[i]);
+    previewStrip.appendChild(img);
+  }
+  if (selectedFiles.length > 6) {
+    const more = document.createElement('div');
+    more.className = 'thumb-count';
+    more.textContent = '+' + (selectedFiles.length - 6);
+    previewStrip.appendChild(more);
+  }
+}
+
+// ── Upload ──
+btnSubmit.addEventListener('click', startUpload);
+
+async function startUpload() {
+  if (!scriptUrl) {
+    showError('No Apps Script URL configured. Add ?script=YOUR_URL to the page URL.');
+    return;
+  }
+  if (selectedFiles.length === 0) return;
+
+  btnSubmit.disabled = true;
+  errorMsg.classList.remove('show');
+
+  const progressWrap = document.getElementById('progress-wrap');
+  const progressBar  = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+
+  progressWrap.classList.add('visible');
+
+  const guestName = document.getElementById('guest-name').value.trim() || 'Anonymous';
+
+  let uploaded = 0;
+  let failed = 0;
+
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const file = selectedFiles[i];
+    progressLabel.textContent = `Uploading ${i + 1} of ${selectedFiles.length}…`;
+
+    try {
+      const base64 = await fileToBase64(file);
+      const url = `${scriptUrl}?folder=${encodeURIComponent(folderId)}&name=${encodeURIComponent(guestName)}&filename=${encodeURIComponent(file.name)}&type=${encodeURIComponent(file.type)}&data=${encodeURIComponent(base64)}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.status === 'ok') {
+        uploaded++;
+      } else {
+        failed++;
+      }
+    } catch (e) {
+      failed++;
+    }
+
+    progressBar.style.width = Math.round(((i + 1) / selectedFiles.length) * 100) + '%';
+  }
+
+  if (uploaded === 0 && failed > 0) {
+    showError('Upload failed. Please check your connection and try again.');
+    btnSubmit.disabled = false;
+    progressWrap.classList.remove('visible');
+  } else {
+    progressLabel.textContent = `${uploaded} photo${uploaded !== 1 ? 's' : ''} uploaded!`;
+    setTimeout(showThankyou, 800);
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showError(msg) {
+  errorMsg.textContent = msg;
+  errorMsg.classList.add('show');
+}
+
+function showThankyou() {
+  const screen = document.getElementById('thankyou-screen');
+  screen.style.display = 'flex';
+  setTimeout(() => screen.classList.add('show'), 10);
+  document.getElementById('upload-screen').style.display = 'none';
+}
+</script>
+</body>
+</html>
