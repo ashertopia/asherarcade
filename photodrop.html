@@ -490,6 +490,42 @@
     animation: fadeUp 0.6s 0.7s ease forwards;
   }
 
+  /* Stay on page warning */
+  .upload-warning {
+    display: none;
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 2px;
+    padding: 10px 14px;
+    margin-top: 14px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: #4A4340;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .upload-warning.show { display: block; }
+
+  /* Upload more button */
+  .btn-upload-more {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 12px 28px;
+    border: 1px solid var(--gold);
+    border-radius: 2px;
+    color: var(--gold);
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-upload-more:hover { background: var(--gold); color: var(--white); }
+
   /* Error */
   .error-msg {
     font-size: 12px;
@@ -570,6 +606,9 @@
       </div>
     </div>
 
+    <div class="upload-warning" id="upload-warning">
+      ✦ Please don’t close or refresh this page until your upload is complete ✦
+    </div>
     <div class="error-msg" id="error-msg">Something went wrong. Please try again.</div>
 
     <button class="btn-submit" id="btn-submit" disabled>Upload Photos</button>
@@ -591,6 +630,11 @@
   <p class="ty-message" id="ty-message">
     Your photos mean the world to us. We can't wait to relive every moment through your eyes.
   </p>
+
+  <div class="promo-upload-more" style="text-align:center; margin-bottom: 8px;">
+    <p style="font-family:'Jost',sans-serif; font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:#7A7270; margin-bottom:10px;">Have more photos to share?</p>
+    <button class="btn-upload-more" onclick="resetToUpload()">Upload More Photos</button>
+  </div>
 
   <div class="divider"></div>
 
@@ -719,6 +763,8 @@ async function startUpload() {
 
   btnSubmit.disabled = true;
   errorMsg.classList.remove('show');
+  uploading = true;
+  document.getElementById('upload-warning').classList.add('show');
 
   const progressWrap  = document.getElementById('progress-wrap');
   const progressBar   = document.getElementById('progress-bar');
@@ -760,11 +806,15 @@ async function startUpload() {
   }
 
   if (uploaded === 0 && failed > 0) {
+    uploading = false;
+    document.getElementById('upload-warning').classList.remove('show');
     showError('Upload failed. Please check your connection and try again.');
     btnSubmit.disabled = false;
     progressWrap.classList.remove('visible');
   } else {
     progressLabel.textContent = `${uploaded} photo${uploaded !== 1 ? 's' : ''} uploaded!`;
+    uploading = false;
+    document.getElementById('upload-warning').classList.remove('show');
     setTimeout(showThankyou, 800);
   }
 }
@@ -788,6 +838,32 @@ function compressAndEncode(file) {
     img.onerror = reject;
     img.src = url;
   });
+}
+
+// Warn if user tries to leave mid-upload
+let uploading = false;
+window.addEventListener('beforeunload', e => {
+  if (uploading) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+function resetToUpload() {
+  const ty = document.getElementById('thankyou-screen');
+  const up = document.getElementById('upload-screen');
+  ty.classList.remove('show');
+  ty.style.display = 'none';
+  up.style.display = 'flex';
+  // Reset form
+  selectedFiles = [];
+  document.getElementById('preview-strip').innerHTML = '';
+  document.getElementById('guest-name').value = '';
+  document.getElementById('progress-wrap').classList.remove('visible');
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('upload-warning').classList.remove('show');
+  btnSubmit.disabled = true;
+  btnSubmit.textContent = 'Upload Photos';
 }
 
 function showError(msg) {
