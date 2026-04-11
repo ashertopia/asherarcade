@@ -776,34 +776,39 @@ async function startUpload() {
   let uploaded = 0;
   let failed   = 0;
 
-  for (let i = 0; i < selectedFiles.length; i++) {
-    const file = selectedFiles[i];
-    progressLabel.textContent = `Uploading ${i + 1} of ${selectedFiles.length}…`;
+  progressLabel.textContent = `Compressing…`;
+  progressBar.style.width = '20%';
 
-    try {
-      const base64 = await compressAndEncode(file);
+  // Compress all in parallel
+  const compressed = await Promise.all(selectedFiles.map(f => compressAndEncode(f)));
 
-      // POST with no-cors — sidesteps CORS preflight from GitHub Pages
-      // We can't read the response body with no-cors, so we count optimistically
-      await fetch(scriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' }, // text/plain avoids preflight
-        body: JSON.stringify({
-          folder:   folderId,
-          name:     guestName,
-          filename: file.name,
-          type:     file.type,
-          data:     base64
-        }),
-        mode: 'no-cors'
-      });
-      uploaded++;
-    } catch (e) {
-      failed++;
-    }
+  progressLabel.textContent = `Uploading ${selectedFiles.length} photo${selectedFiles.length > 1 ? 's' : ''}…`;
+  progressBar.style.width = '50%';
 
-    progressBar.style.width = Math.round(((i + 1) / selectedFiles.length) * 100) + '%';
+  // Send ONE batch request with all photos
+  const photos = selectedFiles.map((file, i) => ({
+    filename: file.name,
+    type:     file.type,
+    data:     compressed[i]
+  }));
+
+  try {
+    await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        folder: folderId,
+        name:   guestName,
+        photos: photos
+      }),
+      mode: 'no-cors'
+    });
+    uploaded = selectedFiles.length;
+  } catch(e) {
+    failed = selectedFiles.length;
   }
+
+  progressBar.style.width = '100%';
 
   if (uploaded === 0 && failed > 0) {
     uploading = false;
@@ -825,7 +830,7 @@ function compressAndEncode(file) {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
-      const MAX = 1200;
+      const MAX = 1600;
       let w = img.width, h = img.height;
       if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
       if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
@@ -833,7 +838,7 @@ function compressAndEncode(file) {
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/jpeg', 0.75).split(',')[1]);
+      resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
     };
     img.onerror = reject;
     img.src = url;
