@@ -1,0 +1,24 @@
+{
+  "name": "Walk the Word",
+  "short_name": "Walk the Word",
+  "description": "Walk biblical routes step by step. Seven days in Ephesus with Paul.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a12",
+  "theme_color": "#0a0a12",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0a12">
+<title>Walk the Word</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+<link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.css" rel="stylesheet">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #e8c96d;
+    --gold-dim: #7a6030;
+    --parchment: #f5ead6;
+    --parchment-dark: #e8d5b0;
+    --ink: #1a120a;
+    --bg-deep: #0a0a12;
+    --bg-mid: #12101a;
+    --bg-card: #1c1828;
+    --text-main: #e8dcc8;
+    --text-dim: #9a8f7a;
+    --accent-red: #8b2020;
+    --accent-blue: #1a4a6b;
+    --border: rgba(201,168,76,0.2);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg-deep);
+    color: var(--text-main);
+    font-family: 'Lora', Georgia, serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ===== SETUP SCREEN ===== */
+  #screen-setup {
+    background: linear-gradient(160deg, #0a0a12 0%, #1a1028 50%, #0d1520 100%);
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+
+  .setup-logo {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .setup-logo h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 40px rgba(201,168,76,0.4);
+  }
+
+  .setup-logo p {
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-top: 0.4rem;
+  }
+
+  .setup-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  .setup-step {
+    display: none;
+  }
+  .setup-step.active {
+    display: block;
+  }
+
+  .step-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .step-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .step-body {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+  }
+
+  .option-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .option-btn {
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-main);
+    font-family: 'Lora', serif;
+    font-size: 0.9rem;
+  }
+
+  .option-btn:hover, .option-btn.selected {
+    border-color: var(--gold);
+    background: rgba(201,168,76,0.1);
+    color: var(--gold);
+  }
+
+  .option-btn .icon { font-size: 1.5rem; display: block; margin-bottom: 0.4rem; }
+
+  .instruction-box {
+    background: rgba(26,74,107,0.2);
+    border: 1px solid rgba(26,74,107,0.5);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+
+  .instruction-box ol { padding-left: 1.2rem; }
+  .instruction-box li { margin-bottom: 0.4rem; }
+  .instruction-box a { color: var(--gold); }
+
+  input[type="text"], input[type="tel"], select {
+    width: 100%;
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--text-main);
+    font-family: 'Lora', serif;
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    outline: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--gold);
+  }
+
+  select option { background: var(--bg-mid); }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+    border: none;
+    border-radius: 8px;
+    padding: 0.9rem;
+    color: var(--ink);
+    font-family: 'Cinzel', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: var(--text-dim);
+    font-family: 'Lora', serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    margin-top: 0.75rem;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--gold-dim); color: var(--text-main); }
+
+  label.field-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    margin-bottom: 0.4rem;
+    font-style: italic;
+  }
+
+  /* ===== MAIN APP ===== */
+  #screen-app {
+    flex-direction: column;
+    background: var(--bg-deep);
+  }
+
+  /* Top Bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(to bottom, rgba(10,10,18,0.98), rgba(10,10,18,0));
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+  }
+
+  .topbar-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+  }
+
+  .topbar-exp {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-style: italic;
+  }
+
+  .topbar-menu-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.4rem 0.6rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+
+  /* Map */
+  #cesiumContainer {
+    width: 100%;
+    height: 50vh;
+    margin-top: 64px;
+    position: relative;
+  }
+
+  /* Progress Bar */
+  .progress-strip {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+  }
+
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .progress-miles {
+    font-size: 0.85rem;
+    color: var(--text-main);
+  }
+
+  .progress-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--gold-dim), var(--gold));
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+
+  /* Nav Tabs */
+  .nav-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-mid);
+  }
+
+  .nav-tab {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .nav-tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+
+  /* Content panels */
+  .content-panel { display: none; flex: 1; overflow-y: auto; padding-bottom: 2rem; }
+  .content-panel.active { display: block; }
+
+  /* Today card */
+  .today-header {
+    padding: 1.25rem 1.25rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .today-day-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+  }
+
+  .today-location {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    color: var(--gold);
+    margin: 0.25rem 0;
+  }
+
+  .today-tagline {
+    font-style: italic;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  /* Checkpoint cards */
+  .checkpoint-card {
+    margin: 1rem 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .checkpoint-card.unlocked { border-color: var(--gold-dim); }
+  .checkpoint-card.current { border-color: var(--gold); box-shadow: 0 0 20px rgba(201,168,76,0.15); }
+  .checkpoint-card.locked { opacity: 0.5; }
+
+  .checkpoint-card-header {
+    padding: 1rem 1.25rem 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .checkpoint-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-mid);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .checkpoint-icon.gold { background: rgba(201,168,76,0.15); border-color: var(--gold-dim); }
+
+  .checkpoint-info { flex: 1; }
+
+  .checkpoint-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: var(--text-main);
+  }
+
+  .checkpoint-name.gold { color: var(--gold); }
+
+  .checkpoint-distance {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 0.2rem;
+  }
+
+  .checkpoint-badge {
+    font-size: 0.68rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.08em;
+  }
+
+  .badge-current { background: rgba(201,168,76,0.15); color: var(--gold); border: 1px solid var(--gold-dim); }
+  .badge-done { background: rgba(50,100,50,0.2); color: #6aaa6a; border: 1px solid #3a6a3a; }
+  .badge-ahead { background: rgba(201,168,76,0.08); color: var(--text-dim); border: 1px solid var(--border); }
+
+  .checkpoint-body {
+    padding: 0 1.25rem 1rem;
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    display: none;
+  }
+
+  .checkpoint-card.unlocked .checkpoint-body,
+  .checkpoint-card.current .checkpoint-body {
+    display: block;
+  }
+
+  .verse-block {
+    background: rgba(201,168,76,0.06);
+    border-left: 3px solid var(--gold-dim);
+    padding: 0.75rem 1rem;
+    margin: 0.75rem 0;
+    border-radius: 0 6px 6px 0;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--parchment-dark);
+  }
+
+  .verse-ref {
+    display: block;
+    font-style: normal;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    margin-top: 0.4rem;
+  }
+
+  .art-block {
+    margin: 0.75rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .art-block img {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 280px;
+    object-fit: cover;
+  }
+
+  .art-caption {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-style: italic;
+    background: var(--bg-mid);
+  }
+
+  /* Morning summary */
+  .morning-card {
+    margin: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(139,32,32,0.15), rgba(26,74,107,0.15));
+    border: 1px solid var(--gold-dim);
+    border-radius: 10px;
+    padding: 1.25rem;
+  }
+
+  .morning-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+
+  .morning-body {
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text-main);
+  }
+
+  .steps-input-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    align-items: center;
+  }
+
+  .steps-input-row input {
+    flex: 1;
+    margin: 0;
+  }
+
+  .btn-log {
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    color: var(--ink);
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* Journey Map panel */
+  #panel-journey {
+    padding: 1rem 1.25rem;
+  }
+
+  .journey-day {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .journey-day-num {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    color: var(--gold-dim);
+    min-width: 48px;
+    padding-top: 0.1rem;
+  }
+
+  .journey-checkpoints {
+    flex: 1;
+    border-left: 1px solid var(--border);
+    padding-left: 1rem;
+  }
+
+  .journey-cp {
+    font-size: 0.85rem;
+    padding: 0.3rem 0;
+    color: var(--text-dim);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .journey-cp.done { color: var(--gold); }
+  .journey-cp.current { color: var(--text-main); font-weight: 600; }
+
+  /* Settings panel */
+  #panel-settings {
+    padding: 1.25rem;
+  }
+
+  .settings-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .settings-section-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.4rem;
+  }
+
+  .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .settings-key { font-size: 0.85rem; color: var(--text-dim); }
+  .settings-val { font-size: 0.85rem; color: var(--text-main); font-style: italic; }
+
+  .btn-danger {
+    background: rgba(139,32,32,0.2);
+    border: 1px solid rgba(139,32,32,0.5);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: #cc6666;
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 0.75rem;
+  }
+
+  /* Notification dot */
+  .notif-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  /* Loading */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-deep);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+
+  .loading-title {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .loading-sub {
+    font-style: italic;
+    color: var(--text-dim);
+    margin-bottom: 2rem;
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Cesium overrides */
+  .cesium-credit-container, .cesium-credit-logoContainer { display: none !important; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+  @media (max-width: 400px) {
+    .setup-logo h1 { font-size: 2rem; }
+    .option-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-title">Walk the Word</div>
+  <div class="loading-sub">Preparing your journey...</div>
+  <div class="loading-spinner"></div>
+</div>
+
+<!-- SETUP SCREEN -->
+<div class="screen" id="screen-setup">
+  <div class="setup-logo">
+    <h1>Walk the Word</h1>
+    <p>Walk with the Apostle. Step by step.</p>
+  </div>
+
+  <div class="setup-card">
+
+    <!-- Step 1: Choose experience -->
+    <div class="setup-step active" id="setup-step-1">
+      <div class="step-label">Step 1 of 5</div>
+      <div class="step-title">Choose Your Experience</div>
+      <div class="step-body">Select the journey you want to walk. New experiences will be added over time.</div>
+      <div style="margin-bottom:1rem;">
+        <label class="field-label">Experience</label>
+        <select id="sel-experience">
+          <option value="ephesus7">Ephesus - 7 Days with Paul (Acts 19)</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="setupNext(2)">Continue</button>
+    </div>
+
+    <!-- Step 2: Name -->
+    <div class="setup-step" id="setup-step-2">
+      <div class="step-label">Step 2 of 5</div>
+      <div class="step-title">Your Name</div>
+      <div class="step-body">This is just for your personal experience. Nothing is sent anywhere.</div>
+      <label class="field-label">First name</label>
+      <input type="text" id="inp-name" placeholder="e.g. Scott" maxlength="30">
+      <button class="btn-primary" onclick="setupNext(3)">Continue</button>
+      <button class="btn-secondary" onclick="setupNext(1)">Back</button>
+    </div>
+
+    <!-- Step 3: Platform -->
+    <div class="setup-step" id="setup-step-3">
+      <div class="step-label">Step 3 of 5</div>
+      <div class="step-title">Connect Your Steps</div>
+      <div class="step-body">Choose your phone's fitness platform so we know how far you've walked each day.</div>
+      <div class="option-grid">
+        <div class="option-btn" onclick="selectPlatform('googlefit',this)">
+          <span class="icon">🟢</span>Google Fit<br><small style="color:var(--text-dim);font-size:0.75rem">Android</small>
+        </div>
+        <div class="option-btn" onclick="selectPlatform('apple',this)">
+          <span class="icon">🍎</span>Apple Health<br><small style="color:var(--text-dim);font-size:0.75rem">iPhone</small>
+        </div>
+        <div class="option-btn" onclick="selectPlatform('manual',this)" style="grid-column:1/-1">
+          <span class="icon">✍️</span>I'll log steps manually
+        </div>
+      </div>
+      <div id="platform-instructions" style="display:none"></div>
+      <button class="btn-primary" onclick="setupNext(4)" id="btn-platform-next" style="display:none">Continue</button>
+      <button class="btn-secondary" onclick="setupNext(2)">Back</button>
+    </div>
+
+    <!-- Step 4: Notifications -->
+    <div class="setup-step" id="setup-step-4">
+      <div class="step-label">Step 4 of 5</div>
+      <div class="step-title">Checkpoint Alerts</div>
+      <div class="step-body">Get a text when you arrive at a landmark. Choose what works for you.</div>
+      <div class="option-grid">
+        <div class="option-btn" onclick="selectNotif('vtext',this)">
+          <span class="icon">📱</span>Verizon SMS<br><small style="color:var(--text-dim);font-size:0.75rem">via vtext.com</small>
+        </div>
+        <div class="option-btn" onclick="selectNotif('ntfy',this)">
+          <span class="icon">🔔</span>ntfy app<br><small style="color:var(--text-dim);font-size:0.75rem">Free, any carrier</small>
+        </div>
+        <div class="option-btn" onclick="selectNotif('none',this)" style="grid-column:1/-1">
+          <span class="icon">🚫</span>No alerts - I'll check the app
+        </div>
+      </div>
+      <div id="notif-instructions" style="display:none"></div>
+      <button class="btn-primary" onclick="setupNext(5)" id="btn-notif-next" style="display:none">Continue</button>
+      <button class="btn-secondary" onclick="setupNext(3)">Back</button>
+    </div>
+
+    <!-- Step 5: API Key -->
+    <div class="setup-step" id="setup-step-5">
+      <div class="step-label">Step 5 of 5</div>
+      <div class="step-title">Bible Text Access</div>
+      <div class="step-body">Walk the Word pulls live Bible verses (NLT) for each location. Enter your free API.Bible key below.</div>
+      <div class="instruction-box">
+        <ol>
+          <li>Go to <a href="https://api.bible" target="_blank">api.bible</a> and create a free account</li>
+          <li>Click "Add App" and name it anything</li>
+          <li>Copy the API key from your dashboard</li>
+          <li>Paste it below</li>
+        </ol>
+      </div>
+      <label class="field-label">Your API.Bible key</label>
+      <input type="text" id="inp-apikey" placeholder="Paste key here..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="btn-primary" onclick="finishSetup()">Begin the Journey</button>
+      <button class="btn-secondary" onclick="setupNext(4)">Back</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="screen" id="screen-app">
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Walk the Word</div>
+      <div class="topbar-exp" id="topbar-exp-label">Ephesus - Day 1</div>
+    </div>
+    <button class="topbar-menu-btn" onclick="switchTab('settings')">⚙</button>
+  </div>
+
+  <div id="cesiumContainer"></div>
+
+  <div class="progress-strip">
+    <div class="progress-meta">
+      <span class="progress-label">Journey Progress</span>
+      <span class="progress-miles" id="progress-text">0.0 mi of 21.0 mi</span>
+    </div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('today')" id="tab-today">TODAY</button>
+    <button class="nav-tab" onclick="switchTab('journey')" id="tab-journey">JOURNEY</button>
+    <button class="nav-tab" onclick="switchTab('settings')" id="tab-settings">SETTINGS</button>
+  </div>
+
+  <!-- TODAY panel -->
+  <div class="content-panel active" id="panel-today">
+
+    <div class="morning-card" id="morning-summary">
+      <div class="morning-title">☀ MORNING BRIEFING</div>
+      <div class="morning-body" id="morning-text">Loading your summary...</div>
+      <div class="steps-input-row">
+        <input type="tel" id="inp-steps-today" placeholder="Enter today's steps">
+        <button class="btn-log" onclick="logSteps()">LOG</button>
+      </div>
+    </div>
+
+    <div id="checkpoint-list"></div>
+
+  </div>
+
+  <!-- JOURNEY panel -->
+  <div class="content-panel" id="panel-journey">
+    <div id="journey-overview"></div>
+  </div>
+
+  <!-- SETTINGS panel -->
+  <div class="content-panel" id="panel-settings">
+    <div class="settings-section">
+      <div class="settings-section-title">Your Profile</div>
+      <div class="settings-row"><span class="settings-key">Name</span><span class="settings-val" id="set-name">-</span></div>
+      <div class="settings-row"><span class="settings-key">Experience</span><span class="settings-val">Ephesus - 7 Days</span></div>
+      <div class="settings-row"><span class="settings-key">Platform</span><span class="settings-val" id="set-platform">-</span></div>
+      <div class="settings-row"><span class="settings-key">Alerts</span><span class="settings-val" id="set-notif">-</span></div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Step Stride</div>
+      <div class="settings-row">
+        <span class="settings-key">Stride length</span>
+        <span class="settings-val">2.5 ft (avg)</span>
+      </div>
+      <div class="settings-row">
+        <span class="settings-key">Steps per mile</span>
+        <span class="settings-val">~2,112</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Share This Experience</div>
+      <div style="font-size:0.85rem;color:var(--text-dim);line-height:1.7;margin-bottom:0.75rem;">
+        Anyone you share this link with starts their own fresh journey. Your progress is stored only on your device and doesn't affect theirs.
+      </div>
+      <button class="btn-primary" onclick="shareApp()">Copy Link to Share</button>
+    </div>
+    <div class="settings-section">
+      <div class="settings-section-title">Data</div>
+      <button class="btn-danger" onclick="resetApp()">Reset All Progress</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// EXPERIENCE DATA - Ephesus 7 Days
+// ============================================================
+const EXPERIENCE = {
+  id: 'ephesus7',
+  title: 'Ephesus - 7 Days with Paul',
+  totalMiles: 21.0,
+  totalSteps: 44352,
+  checkpoints: [
+    {
+      id: 'harbor',
+      name: 'The Harbor Gate & Arcadian Way',
+      day: 1,
+      milesIn: 0,
+      icon: '⚓',
+      tagline: 'Where Paul first set foot in the city',
+      lat: 37.9415,
+      lng: 27.3402,
+      narrative: `You arrive at the harbor of ancient Ephesus, one of the greatest ports in the Roman world. Paul entered this city over the sea, probably from Macedonia, sailing into a harbor that received ships from Alexandria, Rome, Antioch, and every major city of the Mediterranean. The Arcadian Way — a grand colonnaded street 500 meters long and lit at night by 50 oil lamps — stretched from this harbor directly to the Great Theatre. It was one of only a few streets in the ancient world illuminated after dark, a mark of Ephesus's enormous wealth and status.\n\nEphesus was the capital of the Roman province of Asia, a city of perhaps 200,000 to 250,000 people. It was the seat of Roman administration for the entire region, home to a massive commercial harbor, a temple that was literally one of the Seven Wonders of the World, and a theatre that could seat 24,000. When Paul walked off that ship, he was not stepping into a backwater. He was stepping into one of the most important cities on the planet.\n\nHe had been here briefly before, on his Second Journey, but the Holy Spirit had redirected him. Now, on the Third Journey, the time was right. He would stay for more than two years — longer than anywhere else in his ministry.`,
+      verse: { text: 'Paul entered the synagogue and spoke boldly there for three months, arguing persuasively about the kingdom of God.', ref: 'Acts 19:8 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Arcadian_Way_Ephesus.jpg/800px-Arcadian_Way_Ephesus.jpg',
+        caption: 'The Arcadian Way, Ephesus — the grand colonnaded avenue from harbor to theatre, restored by Emperor Arcadius. Wikimedia Commons.'
+      }
+    },
+    {
+      id: 'theatre',
+      name: 'The Great Theatre',
+      day: 1,
+      milesIn: 2.0,
+      icon: '🎭',
+      tagline: 'Where 24,000 voices screamed against Paul',
+      lat: 37.9397,
+      lng: 27.3421,
+      narrative: `At the end of the Arcadian Way stands the Great Theatre of Ephesus — carved into the slope of Mount Pion, seating 24,000 people, with acoustics so precise that a whisper on stage could be heard at the top row. This is the site of one of the most dramatic events in the entire book of Acts.\n\nA silversmith named Demetrius ran a profitable trade selling small silver shrines of the goddess Artemis to pilgrims who came from across the Roman world. When Paul's preaching began to cut into his business — because people were turning from idols — Demetrius called a guild meeting. His speech was savvy: he appealed to economics first, civic pride second, religion third. He told the craftsmen that Paul was saying "man-made gods are no gods at all," and that this threatened not only their income but the glory of Artemis herself.\n\nThe crowd worked itself into a frenzy. They grabbed two of Paul's traveling companions — Gaius and Aristarchus — and dragged them into this theatre. The whole city erupted. Luke records that most of the people in the theatre didn't even know what they were rioting about. For two hours the crowd chanted "Great is Artemis of the Ephesians!" Paul wanted to go in and address them personally. His friends and even some of the city officials who liked him begged him not to.\n\nFinally the city clerk — a shrewd local official with real legal authority — quieted the crowd by reminding them that Ephesus had a legal reputation to protect. If they continued this unlawful assembly, Rome would hold the city accountable. He dismissed them.\n\nPaul left shortly after.`,
+      verse: { text: 'Soon the whole city was in an uproar. The people seized Gaius and Aristarchus, Paul\'s traveling companions from Macedonia, and all of them rushed into the theater together.', ref: 'Acts 19:29 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Ephesos_Großes_Theater.jpg/800px-Ephesos_Großes_Theater.jpg',
+        caption: 'The Great Theatre of Ephesus, capacity 24,000, scene of the silversmith riot recorded in Acts 19. Wikimedia Commons.'
+      }
+    },
+    {
+      id: 'agora',
+      name: 'The Commercial Agora',
+      day: 2,
+      milesIn: 4.5,
+      icon: '🏛',
+      tagline: "Where Paul worked leather alongside Priscilla and Aquila",
+      lat: 37.9392,
+      lng: 27.3410,
+      narrative: `The Commercial Agora of Ephesus was the beating economic heart of the city — a massive open square, each side 110 meters long, surrounded on all four sides by two-story colonnaded shops. Merchants sold everything from spices and silk from the East to grain, olive oil, pottery, and yes — silver religious figurines.\n\nAccording to tradition and confirmed by ancient sources, Paul was a tentmaker or leatherworker by trade. He had worked with Priscilla and Aquila in Corinth at exactly this craft. Here in Ephesus, these same friends had come ahead of him, and Paul would have known the rhythms of this agora — arriving before sunrise, setting up a workspace, working through the heat of the day, and using every conversation as an opportunity for the gospel.\n\nLuke tells us that Paul daily reasoned in the lecture hall of Tyrannus, but that this happened after his morning work. Some ancient manuscripts note that these discussions took place during the midday break hours — when the agora itself went quiet and the city rested from the sun. Paul apparently used that dead time for teaching.\n\nThere was a sundial and water clock at the center of this agora. Merchants used it to time their transactions. Paul used the same hours to build a church that would eventually receive one of his greatest letters and anchor early Christianity in Asia Minor for generations.`,
+      verse: { text: 'Paul left the synagogue and went next door to the house of Titius Justus, a worshiper of God. ...He had discussions daily in the lecture hall of Tyrannus. This went on for two years, so that all the Jews and Greeks who lived in the province of Asia heard the word of the Lord.', ref: 'Acts 19:9-10 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Ephesus_Agora.jpg/800px-Ephesus_Agora.jpg',
+        caption: 'Ruins of the Commercial Agora, Ephesus — where Paul may have worked and taught during the midday hours. Wikimedia Commons.'
+      }
+    },
+    {
+      id: 'celsus',
+      name: 'Library of Celsus',
+      day: 3,
+      milesIn: 7.0,
+      icon: '📜',
+      tagline: 'The third largest library in the ancient world',
+      lat: 37.9388,
+      lng: 27.3415,
+      narrative: `The Library of Celsus is the most photographed ruin in Turkey — a two-story marble facade of exquisite Roman craftsmanship, with statues representing Wisdom, Knowledge, Intelligence, and Excellence in the four niches of its lower level. It was built between 117 and 135 AD, somewhat after Paul's time, in honor of the Roman governor Tiberius Julius Celsus. When Paul walked these streets, the library was not yet standing — but its predecessor, a great civic reading room, was here in some form, because Ephesus was a city that prized learning.\n\nEphesus sat at the junction of the eastern and western worlds. Greek philosophy, Roman law, Jewish diaspora theology, Egyptian mystery religion, and the new faith called The Way all competed for minds here. Paul was not operating in a vacuum. He was making an intellectual and spiritual argument in one of the most sophisticated cities of his age.\n\nThe library eventually held 12,000 scrolls and was the third largest in the ancient Roman world, after Alexandria and Pergamum. Its elaborate double-wall construction regulated humidity to protect the manuscripts. A secret tunnel connected it to what scholars have politely called the "House of Pleasure" across the street — a detail the ancient city apparently thought worth the engineering investment.\n\nStand here and think about Paul arguing daily for two years that Jesus rose from the dead — in a city that had more scrolls, more philosophies, and more gods than most people in history ever encountered.`,
+      verse: { text: 'God did extraordinary miracles through Paul, so that even handkerchiefs and aprons that had touched him were taken to the sick, and their illnesses were cured and the evil spirits left them.', ref: 'Acts 19:11-12 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Library_of_Celsus_in_Ephesus_after_sunset.jpg/800px-Library_of_Celsus_in_Ephesus_after_sunset.jpg',
+        caption: 'Library of Celsus, Ephesus — the third largest library of the ancient Roman world. Built 117-135 AD. Wikimedia Commons.'
+      }
+    },
+    {
+      id: 'curetes',
+      name: 'Curetes Way & Temple of Hadrian',
+      day: 4,
+      milesIn: 10.5,
+      icon: '🏺',
+      tagline: 'The main street of the city where demons were cast out publicly',
+      lat: 37.9382,
+      lng: 27.3430,
+      narrative: `Curetes Way was the main processional street connecting the upper city to the lower city — paved in marble, lined with statues of local dignitaries, fountains, and the storefronts of the city's wealthiest merchants. The Temple of Hadrian stands here, one of the most elegant surviving facades in Ephesus, with its distinctive arched entrance framing a head of Medusa.\n\nThis was the street where Ephesus came alive — where the city's religious processions moved, where the elite displayed their wealth in their terrace-house windows above, and where the ordinary people of the city went about their daily lives.\n\nIt is in this general environment that Luke records something unusual even by Acts standards: unauthorized exorcists tried to invoke the name of Jesus. Seven sons of Sceva — a Jewish chief priest — were attempting to cast out evil spirits using Paul's name as a kind of magical formula. "In the name of Jesus, whom Paul preaches, I command you to come out!" The demon answered, "Jesus I know, and Paul I know about, but who are you?" And then the demon-possessed man attacked all seven of them, and they fled the house naked and bleeding.\n\nWord spread through the entire city. Luke says that fear fell on everyone — both Jews and Greeks. The name of the Lord Jesus was held in high honor. And many who had practiced sorcery publicly burned their scrolls. Luke counted up the value: 50,000 drachmas — roughly 137 years of wages for a single laborer. Publicly. Voluntarily.`,
+      verse: { text: 'When this became known to the Jews and Greeks living in Ephesus, they were all seized with fear, and the name of the Lord Jesus was held in high honor. Many of those who believed now came and openly confessed what they had done.', ref: 'Acts 19:17-18 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Ephesus_Curetes_Street.jpg/800px-Ephesus_Curetes_Street.jpg',
+        caption: "Curetes Way, Ephesus — the marble-paved main street of the city, scene of Paul's years of ministry. Wikimedia Commons."
+      }
+    },
+    {
+      id: 'artemis',
+      name: 'Temple of Artemis',
+      day: 5,
+      milesIn: 13.5,
+      icon: '🏛',
+      tagline: 'One of the Seven Wonders of the Ancient World',
+      lat: 37.9498,
+      lng: 27.3633,
+      narrative: `The Temple of Artemis at Ephesus was not just a religious site. It was an economic engine, a bank, a political center, and the defining identity of the entire city. Built of marble, it stood 425 feet long and 220 feet wide, supported by 127 columns each 56 feet high. Pliny the Elder wrote that it took 120 years to build. It was one of the Seven Wonders of the Ancient World — larger than the Parthenon in Athens, more revered than any temple in the Roman world except possibly the Capitol in Rome itself.\n\nToday almost nothing remains. One lonely reconstructed column stands in a marshy field. The British Museum holds some of its sculptural fragments. Most of the marble was carried off over centuries to build churches and mosques and city walls. But in Paul's day, this temple dominated the Ephesian landscape and Ephesian imagination in a way that is difficult to overstate.\n\nDemetrius the silversmith's riot was ultimately about this temple. The pilgrims who came from across the Roman world came to worship Artemis here. They bought silver shrines to take home. The city's entire economy — the harbor traffic, the merchants, the craftsmen, the inns — all fed off the temple's pilgrimage trade.\n\nWhen Paul preached that "man-made gods are no gods at all," he was not making a mild theological observation. He was making a claim that would, if believed, unravel the economic identity of the entire city. The miracle is not that there was a riot. The miracle is that the riot was eventually stopped by a city clerk citing legal procedure — and that Paul survived it.`,
+      verse: { text: '"You know, my friends, that we receive a good income from this business. And you can see and hear how this fellow Paul has convinced and led astray large numbers of people here in Ephesus and in practically the whole province of Asia."', ref: 'Acts 19:25-26 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ed/Artemission_Ephesus.jpg/800px-Artemission_Ephesus.jpg',
+        caption: 'The lone surviving column of the Temple of Artemis, Ephesus — once one of the Seven Wonders of the Ancient World. Wikimedia Commons.'
+      }
+    },
+    {
+      id: 'terrace',
+      name: 'The Terrace Houses',
+      day: 6,
+      milesIn: 16.5,
+      icon: '🏠',
+      tagline: 'Where the wealthy of Ephesus lived — and where house churches met',
+      lat: 37.9385,
+      lng: 27.3435,
+      narrative: `On the slope of Bulbul Mountain above Curetes Way, the wealthy residents of Ephesus built elaborate multi-story homes with private courtyards, heated floors, marble walls, elaborate frescoes, and mosaic floors. These Terrace Houses have been painstakingly excavated and are now covered by a modern structure to protect them. They are among the best-preserved examples of Roman domestic architecture anywhere in the world.\n\nBut the story of Paul in Ephesus is also a story of ordinary homes. The early church met in houses. Paul wrote to the Corinthians from Ephesus, mentioning "the churches in the province of Asia" greeting them — plural. Multiple house churches, scattered through the city. Priscilla and Aquila hosted one.\n\nThe people who followed Paul were not all wealthy. The Ephesian church included craftsmen, freedmen, slaves, merchants, and yes, perhaps some from the terrace houses. The letter to the Ephesians, which Paul likely wrote from prison in Rome, addresses a congregation that he knew personally — that he had built over two years with daily teaching and manual labor.\n\n"I always thank my God as I remember you in my prayers, because I hear about your love for all his holy people and your faith in the Lord Jesus." That love was built in houses like these — around tables, in courtyards, through the ordinary shared life of people who had turned from Artemis to the God of Israel and the Lord Jesus Christ.`,
+      verse: { text: 'For this reason I kneel before the Father, from whom every family in heaven and on earth derives its name. I pray that out of his glorious riches he may strengthen you with power through his Spirit in your inner being.', ref: 'Ephesians 3:14-16 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Ephesus_Terrace_houses.jpg/800px-Ephesus_Terrace_houses.jpg',
+        caption: 'Terrace House 2, Ephesus — mosaics and frescoes of the wealthy residential district above Curetes Way. Wikimedia Commons.'
+      }
+    },
+    {
+      id: 'marychurch',
+      name: "Church of Mary & Paul's Farewell",
+      day: 7,
+      milesIn: 19.0,
+      icon: '✝',
+      tagline: "Where the Ephesian church began — and where Paul said goodbye",
+      lat: 37.9422,
+      lng: 27.3385,
+      narrative: `Near the harbor, a large Roman building was eventually converted into what became known as the Church of Mary — one of the earliest dedicated Christian churches in the world. This is where the Council of Ephesus met in 431 AD to affirm that Mary was Theotokos — God-bearer. But its Christian roots go back much earlier, to the community Paul built.\n\nPaul did not leave Ephesus in a hurry. After the riot, he gathered the disciples, encouraged them, and then departed for Macedonia. But he stayed in contact. He wrote letters. He sent Timothy. He sent Tychicus. He sent Epaphras. The Ephesian church was not an experiment — it was the anchor of his eastern mission.\n\nOn his way back to Jerusalem for what he knew might be his final trip, Paul stopped at Miletus — just 30 miles south — and called for the elders of the Ephesian church to come to him. He could not go to Ephesus because he needed to be in Jerusalem by Pentecost. So they came to him.\n\nWhat follows in Acts 20 is the most personal speech Paul gives in the entire book. He wept. He reminded them of his work — how he taught publicly and from house to house, how he never coveted their silver or gold, how he labored with his own hands. He warned them that after his departure, savage wolves would come. He told them he was going to Jerusalem not knowing what would happen to him. "I consider my life worth nothing to me; my only aim is to finish the race and complete the task the Lord Jesus has given me." Then he knelt on the beach with them and prayed. And they all wept and embraced him and kissed him. And they walked him to the ship.\n\nThat was the last time they saw him.\n\nYou have walked through their city. You have stood where the riot happened, where the magic scrolls burned, where the silver shrines were sold. Now stand here and think about that beach farewell. Seven days. Two and a half miles a day. Paul spent two and a half years.`,
+      verse: { text: '"I consider my life worth nothing to me; my only aim is to finish the race and complete the task the Lord Jesus has given me — the task of testifying to the good news of God\'s grace."', ref: 'Acts 20:24 (NIV)' },
+      art: {
+        url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Church_of_Mary_Ephesus.jpg/800px-Church_of_Mary_Ephesus.jpg',
+        caption: "Church of Mary (Council Church), Ephesus — site of the First Council of Ephesus (431 AD), built near where Paul's Ephesian church gathered. Wikimedia Commons."
+      }
+    },
+    {
+      id: 'finish',
+      name: 'Journey Complete',
+      day: 7,
+      milesIn: 21.0,
+      icon: '🏆',
+      tagline: 'You walked with Paul through Ephesus',
+      lat: 37.9398,
+      lng: 27.3400,
+      narrative: `Seven days. Twenty-one miles. You walked through one of the most important cities in Christian history at the pace of a working person — the pace Paul himself walked it, day after day, for over two years.\n\nEphesus shaped the New Testament. Paul wrote 1 Corinthians from here. He wrote letters that became the letter to the Ephesians. John the Apostle likely lived here in his old age and wrote his Gospel and letters here. The Revelation letters include a message specifically to the church at Ephesus — warning them that despite their theological precision and hard work, they had left their first love.\n\nThat warning is for every generation of the church. You can know everything about the history, walk every street, stand in every ruin — and still miss the thing that matters most. Paul stayed two years not because Ephesus was a great city but because people there needed the gospel. The silversmith riot was the enemy's response to effectiveness, not a sign of failure.\n\nYou finished. Well done. Choose your next journey.`,
+      verse: { text: '"Yet I hold this against you: You have forsaken the love you had at first. Consider how far you have fallen! Repent and do the things you did at first."', ref: 'Revelation 2:4-5 (NIV)' },
+      art: null
+    }
+  ]
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let STATE = {
+  name: '',
+  platform: '',
+  notif: '',
+  notifPhone: '',
+  notifChannel: '',
+  apiKey: '',
+  experience: 'ephesus7',
+  totalSteps: 0,
+  dailyLogs: {},  // { 'YYYY-MM-DD': steps }
+  setupDone: false
+};
+
+const STEPS_PER_MILE = 2112;
+
+function stepsToMiles(s) { return s / STEPS_PER_MILE; }
+function milesToSteps(m) { return Math.round(m * STEPS_PER_MILE); }
+
+function saveState() {
+  localStorage.setItem('wtw_state', JSON.stringify(STATE));
+}
+
+function loadState() {
+  const raw = localStorage.getItem('wtw_state');
+  if (raw) {
+    try { STATE = { ...STATE, ...JSON.parse(raw) }; } catch(e) {}
+  }
+}
+
+function getTotalMiles() {
+  return stepsToMiles(STATE.totalSteps);
+}
+
+function getCurrentCheckpoint() {
+  const miles = getTotalMiles();
+  let current = EXPERIENCE.checkpoints[0];
+  for (let i = 0; i < EXPERIENCE.checkpoints.length; i++) {
+    if (miles >= EXPERIENCE.checkpoints[i].milesIn) {
+      current = EXPERIENCE.checkpoints[i];
+    } else {
+      break;
+    }
+  }
+  return current;
+}
+
+function getNextCheckpoint() {
+  const miles = getTotalMiles();
+  for (let i = 0; i < EXPERIENCE.checkpoints.length; i++) {
+    if (miles < EXPERIENCE.checkpoints[i].milesIn) {
+      return EXPERIENCE.checkpoints[i];
+    }
+  }
+  return null;
+}
+
+// ============================================================
+// SETUP FLOW
+// ============================================================
+let selectedPlatform = '';
+let selectedNotif = '';
+
+function setupNext(step) {
+  document.querySelectorAll('.setup-step').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('setup-step-' + step);
+  if (el) el.classList.add('active');
+}
+
+function selectPlatform(val, btn) {
+  selectedPlatform = val;
+  document.querySelectorAll('#setup-step-3 .option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const inst = document.getElementById('platform-instructions');
+  if (val === 'googlefit') {
+    inst.style.display = 'block';
+    inst.innerHTML = `<div class="instruction-box">
+      <strong style="color:var(--gold)">Connecting Google Fit (Android)</strong><br>
+      Walk the Word reads your daily step count automatically using Google Fit.<br><br>
+      <ol>
+        <li>Make sure Google Fit is installed and recording your steps</li>
+        <li>When prompted, allow Walk the Word to access your Google account</li>
+        <li>Steps will sync every time you open the app</li>
+      </ol>
+      <br><em style="color:var(--text-dim)">Note: For full auto-sync, use the companion Google Apps Script (instructions in Settings).</em>
+    </div>`;
+  } else if (val === 'apple') {
+    inst.style.display = 'block';
+    inst.innerHTML = `<div class="instruction-box">
+      <strong style="color:var(--gold)">Connecting Apple Health (iPhone)</strong><br>
+      <ol>
+        <li>Download <strong>Health Auto Export</strong> (free) from the App Store</li>
+        <li>Open it and enable "Steps" as an export metric</li>
+        <li>Set it to export daily to a Google Sheet (free setup walkthrough in the app)</li>
+        <li>Come back here and log your steps manually or via the sheet</li>
+      </ol>
+      <br><em style="color:var(--text-dim)">Apple does not allow web apps to read Health data directly. Health Auto Export bridges this gap for free.</em>
+    </div>`;
+  } else {
+    inst.style.display = 'block';
+    inst.innerHTML = `<div class="instruction-box">
+      <strong style="color:var(--gold)">Manual Logging</strong><br>
+      Check your step count in your phone's health app each day and enter it in the log box on the main screen. Takes about 10 seconds.
+    </div>`;
+  }
+  document.getElementById('btn-platform-next').style.display = 'block';
+}
+
+function selectNotif(val, btn) {
+  selectedNotif = val;
+  document.querySelectorAll('#setup-step-4 .option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+
+  const inst = document.getElementById('notif-instructions');
+  if (val === 'vtext') {
+    inst.style.display = 'block';
+    inst.innerHTML = `<div class="instruction-box">
+      <strong style="color:var(--gold)">Verizon SMS via vtext.com</strong><br>
+      You'll receive a text when you cross a checkpoint.<br><br>
+      <label class="field-label" style="margin-top:0.5rem">Your 10-digit Verizon number</label>
+      <input type="tel" id="inp-vtext-phone" placeholder="6155551234" maxlength="10" style="margin-bottom:0">
+      <br><em style="color:var(--text-dim);font-size:0.78rem">Texts are sent from a Google Apps Script you control. Setup instructions in Settings after you begin.</em>
+    </div>`;
+  } else if (val === 'ntfy') {
+    inst.style.display = 'block';
+    inst.innerHTML = `<div class="instruction-box">
+      <strong style="color:var(--gold)">ntfy.sh - Free Push Notifications</strong><br>
+      <ol>
+        <li>Install the <strong>ntfy</strong> app (free, iOS & Android)</li>
+        <li>Subscribe to a private channel name — make it something unique like <strong>walktheword-[yourname]</strong></li>
+        <li>Enter that channel name below</li>
+      </ol>
+      <label class="field-label" style="margin-top:0.5rem">Your ntfy channel name</label>
+      <input type="text" id="inp-ntfy-channel" placeholder="walktheword-scott" style="margin-bottom:0">
+    </div>`;
+  } else {
+    inst.style.display = 'block';
+    inst.innerHTML = `<div class="instruction-box">No alerts. Check the app each morning for your daily briefing.</div>`;
+  }
+  document.getElementById('btn-notif-next').style.display = 'block';
+}
+
+function finishSetup() {
+  const name = document.getElementById('inp-name').value.trim();
+  const apiKey = document.getElementById('inp-apikey').value.trim();
+
+  if (!name) { alert('Please enter your name.'); return; }
+  if (!selectedPlatform) { alert('Please go back and select a platform.'); return; }
+
+  let phone = '';
+  let channel = '';
+  if (selectedNotif === 'vtext') {
+    const phoneEl = document.getElementById('inp-vtext-phone');
+    if (phoneEl) phone = phoneEl.value.trim();
+  }
+  if (selectedNotif === 'ntfy') {
+    const chanEl = document.getElementById('inp-ntfy-channel');
+    if (chanEl) channel = chanEl.value.trim();
+  }
+
+  STATE.name = name;
+  STATE.platform = selectedPlatform;
+  STATE.notif = selectedNotif || 'none';
+  STATE.notifPhone = phone;
+  STATE.notifChannel = channel;
+  STATE.apiKey = apiKey;
+  STATE.setupDone = true;
+  saveState();
+
+  startApp();
+}
+
+// ============================================================
+// MAIN APP
+// ============================================================
+let viewer = null;
+
+function startApp() {
+  document.getElementById('screen-setup').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+
+  updateSettingsPanel();
+  renderCheckpoints();
+  renderJourney();
+  updateProgress();
+  updateMorningSummary();
+  initCesium();
+}
+
+function initCesium() {
+  try {
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlYWE1OWUxNy1mMWZiLTQzYjYtYTQ0OS1kMWFjYmFkNjc4NDgiLCJpZCI6NTc3MzMsImlhdCI6MTYyNzg0NTE4Mn0.XcKpgANiY19MC4bdFe3nbdrR9ckoamP1PIBi0-ZmT5I';
+    viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain(),
+      imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }),
+      animation: false,
+      baseLayerPicker: false,
+      fullscreenButton: false,
+      vrButton: false,
+      geocoder: false,
+      homeButton: false,
+      infoBox: false,
+      sceneModePicker: false,
+      selectionIndicator: false,
+      timeline: false,
+      navigationHelpButton: false,
+      navigationInstructionsInitiallyVisible: false,
+      creditContainer: document.createElement('div')
+    });
+
+    viewer.scene.globe.enableLighting = false;
+
+    // Plot route
+    const positions = EXPERIENCE.checkpoints.map(c =>
+      Cesium.Cartesian3.fromDegrees(c.lng, c.lat)
+    );
+
+    viewer.entities.add({
+      polyline: {
+        positions: positions,
+        width: 3,
+        material: new Cesium.PolylineGlowMaterialProperty({
+          glowPower: 0.2,
+          color: Cesium.Color.fromCssColorString('#c9a84c')
+        }),
+        clampToGround: true
+      }
+    });
+
+    // Add checkpoint markers
+    const miles = getTotalMiles();
+    EXPERIENCE.checkpoints.forEach((cp, i) => {
+      if (cp.id === 'finish') return;
+      const unlocked = miles >= cp.milesIn;
+      viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(cp.lng, cp.lat),
+        billboard: {
+          image: createMarkerCanvas(cp.icon, unlocked),
+          width: 40,
+          height: 40,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM
+        },
+        label: {
+          text: cp.name,
+          font: '11px serif',
+          fillColor: unlocked ? Cesium.Color.fromCssColorString('#c9a84c') : Cesium.Color.fromCssColorString('#666'),
+          outlineColor: Cesium.Color.BLACK,
+          outlineWidth: 2,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          pixelOffset: new Cesium.Cartesian2(0, -44),
+          show: false
+        }
+      });
+    });
+
+    // User position marker
+    const current = getCurrentCheckpoint();
+    if (current) {
+      viewer.entities.add({
+        id: 'user-position',
+        position: Cesium.Cartesian3.fromDegrees(current.lng, current.lat),
+        billboard: {
+          image: createUserMarker(),
+          width: 32,
+          height: 32,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM
+        }
+      });
+    }
+
+    // Fly to Ephesus
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(27.3415, 37.9420, 4000),
+      orientation: {
+        heading: Cesium.Math.toRadians(0),
+        pitch: Cesium.Math.toRadians(-35),
+        roll: 0
+      },
+      duration: 3
+    });
+
+  } catch(e) {
+    console.warn('Cesium init error:', e);
+    document.getElementById('cesiumContainer').innerHTML = `
+      <div style="background:#12101a;height:100%;display:flex;align-items:center;justify-content:center;color:#7a6030;font-style:italic;font-size:0.85rem;text-align:center;padding:1rem;">
+        3D map unavailable in this browser.<br>Your progress is still tracked below.
+      </div>`;
+  }
+}
+
+function createMarkerCanvas(emoji, unlocked) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 40; canvas.height = 40;
+  const ctx = canvas.getContext('2d');
+  ctx.beginPath();
+  ctx.arc(20, 20, 18, 0, Math.PI * 2);
+  ctx.fillStyle = unlocked ? 'rgba(201,168,76,0.9)' : 'rgba(40,35,50,0.9)';
+  ctx.fill();
+  ctx.strokeStyle = unlocked ? '#c9a84c' : '#444';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.font = '18px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, 20, 20);
+  return canvas;
+}
+
+function createUserMarker() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 32; canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+  ctx.beginPath();
+  ctx.arc(16, 16, 14, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.fill();
+  ctx.strokeStyle = '#c9a84c';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.font = '14px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🚶', 16, 16);
+  return canvas;
+}
+
+// ============================================================
+// STEP LOGGING
+// ============================================================
+function logSteps() {
+  const val = parseInt(document.getElementById('inp-steps-today').value);
+  if (isNaN(val) || val < 0) { alert('Enter a valid step count.'); return; }
+
+  const today = todayKey();
+  const prev = STATE.dailyLogs[today] || 0;
+  STATE.dailyLogs[today] = val;
+
+  // Recalculate total from all daily logs
+  STATE.totalSteps = Object.values(STATE.dailyLogs).reduce((a, b) => a + b, 0);
+  saveState();
+
+  document.getElementById('inp-steps-today').value = '';
+  updateProgress();
+  updateMorningSummary();
+  renderCheckpoints();
+  renderJourney();
+  sendCheckpointAlert();
+}
+
+function todayKey() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function sendCheckpointAlert() {
+  // This is a no-op in the PWA - handled by companion Apps Script
+  // The SMS logic lives in the Google Apps Script that polls daily steps
+}
+
+// ============================================================
+// UI UPDATES
+// ============================================================
+function updateProgress() {
+  const miles = getTotalMiles();
+  const pct = Math.min(100, (miles / EXPERIENCE.totalMiles) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent =
+    miles.toFixed(1) + ' mi of ' + EXPERIENCE.totalMiles.toFixed(1) + ' mi';
+}
+
+function updateMorningSummary() {
+  const miles = getTotalMiles();
+  const next = getNextCheckpoint();
+  const current = getCurrentCheckpoint();
+  const todaySteps = STATE.dailyLogs[todayKey()] || 0;
+  const name = STATE.name || 'Pilgrim';
+
+  let text = '';
+
+  if (miles === 0) {
+    text = `Welcome to Ephesus, ${name}. Paul arrived at this harbor on his Third Missionary Journey and stayed for over two years. Log your steps each day and walk through the city with him. Your first stop is the Harbor Gate — the Arcadian Way is just ahead.`;
+  } else if (!next) {
+    text = `${name}, you have completed the Ephesus journey — all ${EXPERIENCE.totalMiles} miles. Well done. Head to the Journey tab to review every stop, then look for new experiences coming soon.`;
+  } else {
+    const milesLeft = next.milesIn - miles;
+    const stepsLeft = milesToSteps(milesLeft);
+    const stepsPerDay = 5000;
+    const daysLeft = (stepsLeft / stepsPerDay).toFixed(1);
+
+    text = `${name} — you have walked ${miles.toFixed(1)} miles so far. `;
+    if (todaySteps > 0) {
+      text += `Today you logged ${todaySteps.toLocaleString()} steps. `;
+    }
+    text += `Your next stop is <strong>${next.name}</strong>. You need ${stepsLeft.toLocaleString()} more steps (about ${milesLeft.toFixed(1)} miles) to get there. At your pace that's roughly ${daysLeft} day${daysLeft === '1.0' ? '' : 's'} away. ${next.tagline}.`;
+  }
+
+  document.getElementById('morning-text').innerHTML = text;
+}
+
+function renderCheckpoints() {
+  const miles = getTotalMiles();
+  const list = document.getElementById('checkpoint-list');
+  list.innerHTML = '';
+
+  EXPERIENCE.checkpoints.forEach((cp, i) => {
+    const unlocked = miles >= cp.milesIn;
+    const isCurrent = unlocked && (i === EXPERIENCE.checkpoints.length - 1 || miles < EXPERIENCE.checkpoints[i+1].milesIn);
+    const isLocked = !unlocked;
+
+    let cls = 'checkpoint-card';
+    if (isCurrent) cls += ' current';
+    else if (unlocked) cls += ' unlocked';
+    else cls += ' locked';
+
+    let badge = '';
+    if (isCurrent) badge = '<span class="checkpoint-badge badge-current">YOU ARE HERE</span>';
+    else if (unlocked) badge = '<span class="checkpoint-badge badge-done">VISITED</span>';
+    else {
+      const milesAway = (cp.milesIn - miles).toFixed(1);
+      badge = `<span class="checkpoint-badge badge-ahead">${milesAway} mi ahead</span>`;
+    }
+
+    let body = '';
+    if (!isLocked) {
+      body = `<div class="checkpoint-body">
+        <p style="margin-bottom:0.75rem">${cp.narrative.replace(/\n\n/g, '</p><p style="margin-bottom:0.75rem">')}</p>
+        <div class="verse-block">
+          ${cp.verse.text}
+          <span class="verse-ref">— ${cp.verse.ref}</span>
+        </div>`;
+
+      if (cp.art) {
+        body += `<div class="art-block">
+          <img src="${cp.art.url}" alt="${cp.name}" loading="lazy" onerror="this.parentElement.style.display='none'">
+          <div class="art-caption">${cp.art.caption}</div>
+        </div>`;
+      }
+      body += `</div>`;
+    } else {
+      body = `<div class="checkpoint-body"></div>`;
+    }
+
+    const iconCls = unlocked ? 'checkpoint-icon gold' : 'checkpoint-icon';
+    const nameCls = unlocked ? 'checkpoint-name gold' : 'checkpoint-name';
+
+    list.innerHTML += `
+      <div class="${cls}">
+        <div class="checkpoint-card-header">
+          <div class="${iconCls}">${cp.icon}</div>
+          <div class="checkpoint-info">
+            <div class="${nameCls}">${cp.name}</div>
+            <div class="checkpoint-distance">Day ${cp.day} · ${cp.milesIn === 0 ? 'Start' : cp.milesIn + ' mi in'}</div>
+          </div>
+          ${badge}
+        </div>
+        ${body}
+      </div>`;
+  });
+}
+
+function renderJourney() {
+  const miles = getTotalMiles();
+  const container = document.getElementById('journey-overview');
+
+  const days = {};
+  EXPERIENCE.checkpoints.forEach(cp => {
+    if (!days[cp.day]) days[cp.day] = [];
+    days[cp.day].push(cp);
+  });
+
+  let html = `<div style="padding:1rem 1.25rem">
+    <div style="font-family:'Cinzel',serif;font-size:0.75rem;letter-spacing:0.15em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:1rem">7-Day Route Overview</div>`;
+
+  Object.keys(days).sort((a,b)=>a-b).forEach(day => {
+    html += `<div class="journey-day">
+      <div class="journey-day-num">DAY ${day}</div>
+      <div class="journey-checkpoints">`;
+    days[day].forEach(cp => {
+      const done = miles > cp.milesIn;
+      const curr = miles >= cp.milesIn && (miles < (EXPERIENCE.checkpoints.find(c => c.milesIn > cp.milesIn)?.milesIn || 999));
+      let cls = 'journey-cp';
+      if (done && !curr) cls += ' done';
+      if (curr) cls += ' current';
+      html += `<div class="${cls}">${cp.icon} ${cp.name} <span style="font-size:0.75rem;color:var(--text-dim)">${cp.milesIn === 0 ? '(Start)' : '(~' + cp.milesIn + ' mi)'}</span></div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+function updateSettingsPanel() {
+  const platforms = { googlefit: 'Google Fit (Android)', apple: 'Apple Health (iPhone)', manual: 'Manual Entry' };
+  const notifs = { vtext: 'Verizon SMS (vtext)', ntfy: 'ntfy push notifications', none: 'None - app only' };
+  document.getElementById('set-name').textContent = STATE.name;
+  document.getElementById('set-platform').textContent = platforms[STATE.platform] || STATE.platform;
+  document.getElementById('set-notif').textContent = notifs[STATE.notif] || STATE.notif;
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+function shareApp() {
+  const url = window.location.href.split('?')[0];
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => alert('Link copied! Share it with anyone. Their journey starts fresh on their device.'));
+  } else {
+    prompt('Copy this link:', url);
+  }
+}
+
+function resetApp() {
+  if (confirm('This will erase all your progress. Are you sure?')) {
+    localStorage.removeItem('wtw_state');
+    location.reload();
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load', () => {
+  loadState();
+
+  setTimeout(() => {
+    document.getElementById('loadingOverlay').style.display = 'none';
+
+    if (STATE.setupDone) {
+      startApp();
+    } else {
+      document.getElementById('screen-setup').classList.add('active');
+    }
+  }, 1200);
+});
+</script>
+</body>
+</html>
