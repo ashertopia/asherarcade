@@ -1172,22 +1172,85 @@ function drawTitle(dt) {
   ctx.font = '10px Fredoka One, cursive';
   ctx.fillText('60 seconds — score as high as you can!', W / 2, 270);
 
-  // Leaderboard — top 10
+  // Leaderboard — top 10 on title screen
   const lbCount = leaderboard.length ? Math.min(leaderboard.length, 10) : 0;
   const lbH = lbCount ? lbCount * 24 + 30 : 60;
+  drawLeaderboard(20, 295, W - 40, lbH, leaderboard, 10);
+
+  if (bestScore > 0) {
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '11px Fredoka One, cursive';
+    ctx.textAlign = 'center';
+    ctx.fillText('YOUR BEST: ' + bestScore, W / 2, 295 + lbH + 18);
+  }
+
+  // LET'S PLAY button (pulsing)
+  const pulse = 1 + Math.sin(titleBob * 1.8) * 0.03;
+  ctx.save();
+  ctx.translate(W / 2, 590);
+  ctx.scale(pulse, pulse);
+  playBtnRect = drawButton(0, 0, 240, 46, "LET'S PLAY!", GOLD, RED, '#1a0a2e', 22);
+  ctx.restore();
+  playBtnRect = { x: W / 2 - 120, y: 567, w: 240, h: 46 };
+
+  // Footer
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.font = '9px Fredoka One, cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText('ASHER ARCADE © 2026 • asherarcade.com', W / 2, H - 12);
+}
+
+
+
+// ============================================================
+// K. SCREEN — GAME OVER
+// ============================================================
+function drawGameOver(dt) {
+  titleBob += dt * 2;
+
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, BG); g.addColorStop(1, PURPLE);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  drawStars(Math.floor(titleBob * 20));
+
+  drawParticlesAndPopups();
+
+  // GAME OVER headline
+  ctx.save();
+  ctx.shadowColor = RED; ctx.shadowBlur = 16;
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold 42px Fredoka One, cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER!', W / 2, 62);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 26px Fredoka One, cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText('Score: ' + score, W / 2, 100);
+  if (score >= bestScore && score > 0) {
+    ctx.fillStyle = GOLD;
+    ctx.font = 'bold 14px Fredoka One, cursive';
+    ctx.fillText('NEW BEST!', W / 2, 122);
+  }
+
+  // Leaderboard — top 10 on game over screen
+  const lbCount = leaderboard.length ? Math.min(leaderboard.length, 10) : 0;
+  const lbH     = lbCount ? lbCount * 24 + 30 : 60;
   drawLeaderboard(20, 138, W - 40, lbH, leaderboard, 10);
 
-  // Buttons stacked below leaderboard (btnTop = top edge of first button)
+  // Buttons below leaderboard
   const btnTop = 138 + lbH + 14;
 
-  // ── 1. PLAY AGAIN  (primary CTA — big gold fill) ───────────────────────────────────────────
+  // ── 1. PLAY AGAIN  (big gold fill — primary CTA) ─────────────────────────────
   againBtnRect = drawButton(W / 2, btnTop + 23, 260, 46, 'PLAY AGAIN', GOLD, RED, '#1a0a2e', 22);
 
-  // ── 2. WANT YOUR OWN GAME  (same size, gold outline, no fill) ──────────────────────
+  // ── 2. WANT YOUR OWN GAME  (same size, gold outline, transparent) ──────────────
   gameBtnRect = drawButton(W / 2, btnTop + 83, 260, 46,
     'WANT YOUR OWN GAME?', 'rgba(0,0,0,0)', GOLD, GOLD, 16);
 
-  // ── 3. BUY ME A COFFEE  (small, purple — clearly secondary) ─────────────────────
+  // ── 3. BUY ME A COFFEE  (small, purple — tip jar) ─────────────────────────────
   const coffeeTop = btnTop + 142;
   coffeeBtnRect = { x: 70, y: coffeeTop, w: W - 140, h: 32 };
   roundRect(coffeeBtnRect.x, coffeeTop, coffeeBtnRect.w, coffeeBtnRect.h,
