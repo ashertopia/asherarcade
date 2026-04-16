@@ -686,8 +686,10 @@ function drawLeaderboard(x, y, w, h, entries, maxShow) {
   ctx.textAlign = 'center';
   ctx.fillText('TOP SCORES', x + w / 2, y + 20);
 
-  const medals = ['1st', '2nd', '3rd', '4th', '5th'];
-  const medalColors = [GOLD, '#C0C0C0', '#CD7F32', '#fff', '#fff'];
+  const medals = ['1st','2nd','3rd','4th','5th','6th','7th','8th','9th','10th'];
+  const medalColors = [GOLD,'#C0C0C0','#CD7F32','#fff','#fff',
+    'rgba(255,255,255,0.70)','rgba(255,255,255,0.65)','rgba(255,255,255,0.60)',
+    'rgba(255,255,255,0.55)','rgba(255,255,255,0.50)'];
 
   if (!entries || !entries.length) {
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
@@ -1159,289 +1161,49 @@ function drawTitle(dt) {
   }
 
   // How to play
-  roundRect(20, 218, W - 40, 52, 8, 'rgba(255,255,255,0.05)', 'rgba(245,197,24,0.2)', 1);
-  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  roundRect(20, 218, W - 40, 68, 8, 'rgba(255,255,255,0.05)', 'rgba(245,197,24,0.2)', 1);
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
   ctx.font = '11px Fredoka One, cursive';
   ctx.textAlign = 'center';
-  ctx.fillText('Tap the characters to BONK them!', W / 2, 238);
-  ctx.fillText('60 seconds — bonk as many as you can!', W / 2, 256);
+  ctx.fillText('Bonk faces +10  •  Golden glow = +30 BONUS!', W / 2, 237);
+  ctx.fillStyle = '#FF88BB';
+  ctx.fillText('Baby Emmaline = -50  •  Bomb = -100', W / 2, 254);
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.font = '10px Fredoka One, cursive';
+  ctx.fillText('60 seconds — score as high as you can!', W / 2, 270);
 
-  // Leaderboard
-  const lbCount = leaderboard.length ? Math.min(leaderboard.length, 5) : 0;
+  // Leaderboard — top 10
+  const lbCount = leaderboard.length ? Math.min(leaderboard.length, 10) : 0;
   const lbH = lbCount ? lbCount * 24 + 30 : 60;
-  drawLeaderboard(20, 282, W - 40, lbH, leaderboard, 5);
+  drawLeaderboard(20, 138, W - 40, lbH, leaderboard, 10);
 
-  if (bestScore > 0) {
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '11px Fredoka One, cursive';
-    ctx.textAlign = 'center';
-    ctx.fillText('YOUR BEST: ' + bestScore, W / 2, 282 + lbH + 18);
-  }
+  // Buttons stacked below leaderboard (btnTop = top edge of first button)
+  const btnTop = 138 + lbH + 14;
 
-  // Play button
-  const pulse = 1 + Math.sin(titleBob * 1.8) * 0.03;
-  ctx.save();
-  ctx.translate(W / 2, 590);
-  ctx.scale(pulse, pulse);
-  playBtnRect = drawButton(0, 0, 240, 46, "LET'S PLAY!", GOLD, RED, '#1a0a2e', 22);
-  // Adjust rect to screen coords
-  playBtnRect = { x: W / 2 - 120, y: 590 - 23, w: 240, h: 46 };
-  ctx.restore();
+  // ── 1. PLAY AGAIN  (primary CTA — big gold fill) ───────────────────────────────────────────
+  againBtnRect = drawButton(W / 2, btnTop + 23, 260, 46, 'PLAY AGAIN', GOLD, RED, '#1a0a2e', 22);
 
-  // Footer
-  ctx.fillStyle = 'rgba(255,255,255,0.2)';
-  ctx.font = '9px Fredoka One, cursive';
-  ctx.textAlign = 'center';
-  ctx.fillText('ASHER ARCADE \u00A9 2026 \u2022 asherarcade.com', W / 2, 628);
-}
+  // ── 2. WANT YOUR OWN GAME  (same size, gold outline, no fill) ──────────────────────
+  gameBtnRect = drawButton(W / 2, btnTop + 83, 260, 46,
+    'WANT YOUR OWN GAME?', 'rgba(0,0,0,0)', GOLD, GOLD, 16);
 
-function drawGame(dt) {
-  ctx.fillStyle = BG;
-  ctx.fillRect(0, 0, W, H);
-  drawCarnivalBG(frame);
-
-  ctx.save();
-  if (shakeAmount > 0) {
-    ctx.translate((Math.random() - 0.5) * shakeAmount * 2, (Math.random() - 0.5) * shakeAmount * 2);
-  }
-
-  // HUD
-  roundRect(0, 0, W, HUD_H, 0, 'rgba(20,5,45,0.95)');
-  ctx.fillStyle = GOLD;
+  // ── 3. BUY ME A COFFEE  (small, purple — clearly secondary) ─────────────────────
+  const coffeeTop = btnTop + 142;
+  coffeeBtnRect = { x: 70, y: coffeeTop, w: W - 140, h: 32 };
+  roundRect(coffeeBtnRect.x, coffeeTop, coffeeBtnRect.w, coffeeBtnRect.h,
+            16, '#2A1060', '#7040B0', 2);
+  ctx.fillStyle = 'rgba(200,160,255,0.88)';
   ctx.font = 'bold 12px Fredoka One, cursive';
-  ctx.textAlign = 'left';
-  ctx.fillText('BONK-A-', 10, 20);
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 16px Fredoka One, cursive';
-  ctx.fillText('DRAGUN', 10, 40);
-
-  ctx.fillStyle = GOLD;
-  ctx.font = 'bold 30px Fredoka One, cursive';
-  ctx.textAlign = 'center';
-  ctx.fillText(score, W / 2, 38);
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  ctx.font = '9px Fredoka One, cursive';
-  ctx.fillText('SCORE', W / 2, 52);
-
-  if (bestScore > 0) {
-    ctx.fillStyle = 'rgba(255,255,255,0.25)';
-    ctx.font = '9px Fredoka One, cursive';
-    ctx.textAlign = 'left';
-    ctx.fillText('BEST ' + bestScore, 10, 55);
-  }
-
-  // Timer bar (right side of HUD)
-  const timerFrac = Math.max(0, timeLeft / GAME_TIME);
-  const barW = 80, barH = 14;
-  const barX = W - 10 - barW, barY = 14;
-  ctx.save();
-  // Background track
-  roundRect(barX - 2, barY - 2, barW + 4, barH + 4, 4, 'rgba(0,0,0,0.4)');
-  // Fill color: gold → orange → red
-  let timerColor;
-  if (timerFrac > 0.5) timerColor = GOLD;
-  else if (timerFrac > 0.25) timerColor = '#FF8800';
-  else timerColor = RED;
-  ctx.fillStyle = timerColor;
-  ctx.beginPath();
-  ctx.roundRect(barX, barY, barW * timerFrac, barH, 3);
-  ctx.fill();
-  // Countdown number
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 12px Fredoka One, cursive';
-  ctx.textAlign = 'center';
-  ctx.fillText(Math.ceil(timeLeft) + 's', barX + barW / 2, barY + barH - 1);
-  ctx.restore();
-
-  ctx.fillStyle = GOLD;
-  ctx.fillRect(0, HUD_H - 2, W, 2);
-
-  // Grid — draw row by row
-  for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-      const idx = row * COLS + col;
-      const h = holes[idx];
-      const m = moles.find(mo => mo.hole === idx);
-
-      // Mound back (drawn before character)
-      drawMoundBack(h.cx, h.pipeTopY);
-
-      // Character / special type
-      if (m && m.rise > 2) {
-        const charY = h.pipeTopY - m.rise;
-        const mtype = m.type || 'normal';
-
-        ctx.save();
-        ctx.beginPath();
-        ctx.rect(h.cx - CHAR_DRAW / 2 - 4, h.pipeTopY - MAX_RISE - 10, CHAR_DRAW + 8, MAX_RISE + HOLE_RY + 4);
-        ctx.clip();
-
-        if (mtype === 'bomb') {
-          // ── BOMB: drawn procedurally, no photo ──────────────────────────
-          let bsx = 1, bsy = 1;
-          if (m.hit) { bsx = 1.6; bsy = 0.5; }  // splat on hit
-          ctx.translate(h.cx, charY + CHAR_DRAW / 2);
-          ctx.scale(bsx, bsy);
-          ctx.translate(-h.cx, -(charY + CHAR_DRAW / 2));
-          drawBomb(h.cx, charY);
-        } else {
-          // ── PHOTO CHARACTER (normal / baby / golden) ─────────────────────
-          const imgKey = (mtype === 'baby') ? 'emmaline' : m.char;
-          const oc = charCanvases[imgKey];
-          if (oc) {
-            ctx.imageSmoothingEnabled = true;
-            let sx = 1, sy = 1;
-            if (m.hit) { sx = 1.3; sy = 0.7; }
-
-            if (mtype === 'golden') {
-              // Gold glow aura
-              ctx.shadowColor = '#F5C518';
-              ctx.shadowBlur  = 22;
-            } else if (mtype === 'baby') {
-              // Pink soft glow for baby
-              ctx.shadowColor = '#FF88BB';
-              ctx.shadowBlur  = 14;
-            }
-
-            const scl = (mtype === 'baby') ? 0.62 : 1.0;   // baby = smaller
-            ctx.translate(h.cx, charY + CHAR_DRAW * scl / 2 + (mtype === 'baby' ? 10 : 0));
-            ctx.scale(sx * scl, sy * scl);
-            ctx.drawImage(oc, -CHAR_DRAW / 2, -CHAR_DRAW / 2, CHAR_DRAW, CHAR_DRAW);
-            ctx.shadowBlur = 0;
-          }
-        }
-        ctx.restore();
-
-        // ── TYPE BADGES (drawn after clip, float above hole) ─────────────
-        if (!m.hit && m.rise > 30 && mtype !== 'normal') {
-          const badgeY = charY + 2;   // just above top of character
-          ctx.save();
-          ctx.textAlign = 'center';
-          ctx.font = 'bold 10px Fredoka One, cursive';
-          if (mtype === 'bomb') {
-            // Red WARNING badge
-            ctx.fillStyle = '#CC0000';
-            ctx.shadowColor = '#FF0000';
-            ctx.shadowBlur  = 8;
-            ctx.beginPath();
-            ctx.roundRect(h.cx - 28, badgeY - 15, 56, 16, 4);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText('-100  AVOID!', h.cx, badgeY - 3);
-          } else if (mtype === 'baby') {
-            // Pink BABY badge
-            ctx.fillStyle = '#EE4499';
-            ctx.shadowColor = '#FF88CC';
-            ctx.shadowBlur  = 6;
-            ctx.beginPath();
-            ctx.roundRect(h.cx - 26, badgeY - 15, 52, 16, 4);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText('BABY  -50', h.cx, badgeY - 3);
-          } else if (mtype === 'golden') {
-            // Gold BONUS badge
-            ctx.fillStyle = '#C8900A';
-            ctx.shadowColor = '#F5C518';
-            ctx.shadowBlur  = 8;
-            ctx.beginPath();
-            ctx.roundRect(h.cx - 28, badgeY - 15, 56, 16, 4);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#1A0A2E';
-            ctx.fillText('+30  BONUS!', h.cx, badgeY - 3);
-          }
-          ctx.restore();
-        }
-      }
-
-      // Mound front crescent (drawn after character)
-      drawMoundFront(h.cx, h.pipeTopY);
-    }
-  }
-
-  // Particles and popups
-  drawParticlesAndPopups();
-
-  // Mallet
-  if (mouseX > -100) drawMallet(mouseX, mouseY, malletSwing);
-
-  ctx.restore(); // end shake
-
-  ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.font = '9px Fredoka One, cursive';
-  ctx.textAlign = 'center';
-  ctx.fillText('asherarcade.com', W / 2, H - 10);
-}
-
-function drawGameOver(dt) {
-  titleBob += dt * 2;
-
-  const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, BG); g.addColorStop(1, PURPLE);
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  drawStars(Math.floor(titleBob * 20));
-
-  drawParticlesAndPopups();
-
-  // GAME OVER
-  ctx.save();
-  ctx.shadowColor = RED; ctx.shadowBlur = 16;
-  ctx.fillStyle = GOLD;
-  ctx.font = 'bold 42px Fredoka One, cursive';
-  ctx.textAlign = 'center';
-  ctx.fillText('GAME OVER!', W / 2, 62);
-  ctx.shadowBlur = 0;
-  ctx.restore();
-
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 26px Fredoka One, cursive';
-  ctx.fillText('Score: ' + score, W / 2, 100);
-  if (score > 0 && score >= bestScore) {
-    ctx.fillStyle = GOLD;
-    ctx.font = 'bold 14px Fredoka One, cursive';
-    ctx.fillText('NEW BEST!', W / 2, 122);
-  }
-
-  // Leaderboard
-  const lbCount = leaderboard.length ? Math.min(leaderboard.length, 5) : 0;
-  const lbH = lbCount ? lbCount * 24 + 30 : 60;
-  drawLeaderboard(20, 138, W - 40, lbH, leaderboard, 5);
-
-  const btnStart = 138 + lbH + 20;
-
-  // Buy Me a Coffee
-  coffeeBtnRect = { x: 40, y: btnStart, w: W - 80, h: 40 };
-  roundRect(coffeeBtnRect.x, coffeeBtnRect.y, coffeeBtnRect.w, coffeeBtnRect.h, 20, '#FFDD00', '#d4a800', 2);
-  ctx.fillStyle = '#1a0a2e';
-  ctx.font = 'bold 16px Fredoka One, cursive';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('Buy Me a Coffee', W / 2, btnStart + 20);
+  ctx.fillText('Buy Me a Coffee', W / 2, coffeeTop + 16);
   ctx.textBaseline = 'alphabetic';
-
-  // Get Your Own Game
-  const gameY = btnStart + 54;
-  gameBtnRect = { x: 20, y: gameY, w: W - 40, h: 50 };
-  roundRect(gameBtnRect.x, gameBtnRect.y, gameBtnRect.w, gameBtnRect.h, 10, 'rgba(245,197,24,0.08)', GOLD, 2);
-  ctx.fillStyle = GOLD;
-  ctx.font = 'bold 12px Fredoka One, cursive';
-  ctx.textAlign = 'center';
-  ctx.fillText('Want your own custom game?', W / 2, gameY + 20);
-  ctx.fillStyle = '#fff';
-  ctx.font = '12px Fredoka One, cursive';
-  ctx.fillText('asherarcade.com', W / 2, gameY + 38);
-
-  // Play Again
-  const againY = gameY + 72;
-  againBtnRect = drawButton(W / 2, againY, 240, 44, 'PLAY AGAIN', GOLD, RED, '#1a0a2e', 20);
 
   // Footer
   ctx.fillStyle = 'rgba(255,255,255,0.2)';
   ctx.font = '9px Fredoka One, cursive';
   ctx.textAlign = 'center';
-  ctx.fillText('ASHER ARCADE \u00A9 2026 \u2022 asherarcade.com', W / 2, H - 12);
+  ctx.fillText('ASHER ARCADE © 2026 • asherarcade.com', W / 2, H - 12);
 }
 
 // ============================================================
