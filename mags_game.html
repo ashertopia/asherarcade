@@ -544,9 +544,10 @@ function drawHUD(){
 // INPUT
 const keys={};
 let txS=0,tyS=0,ttS=0,tiltG=0,tiltOn=false;
-let touchForward=false; // left btn held = push Mag right
-let activeTouches={}; // id->zone
-const BTN_W=160; // left 160px = forward button; rest = jump
+let touchLeft=false;
+let touchRight=false;
+let activeTouches={}; // id->{zone,sx,sy,ts}
+const MOVE_EDGE_W=170; // left/right edge bands for steering on touch devices
 
 document.addEventListener('keydown',e=>{
   if(keys[e.code])return;
@@ -575,10 +576,14 @@ if(!('ontouchstart' in window)){
 }
 
 // ── Touch controls on canvas element ──
-// Split screen: left half = PUSH (move Mag right), right half = JUMP
-// Canvas may be CSS-rotated 90deg on portrait phones.
-// We use raw clientX vs screen midpoint — no coordinate mapping needed for push/jump zones.
-// For dead screen we map through getBoundingClientRect with rotation correction.
+// Uses canvas-space coordinates (works even when canvas is rotated in portrait).
+// Left edge band = move left, right edge band = move right, middle = jump/flip tap.
+
+function getTouchZone(gx){
+  if(gx<MOVE_EDGE_W)return 'left';
+  if(gx>W-MOVE_EDGE_W)return 'right';
+  return 'jump';
+}
 
 function getCanvasCoords(clientX, clientY){
   const r=canvas.getBoundingClientRect();
@@ -604,15 +609,12 @@ canvas.addEventListener('touchstart',e=>{
       continue;
     }
     if(GS.state!=='playing')continue;
-    // Use RAW screen X vs screen midpoint — works regardless of canvas rotation
-    const screenMid=window.innerWidth/2;
-    if(t.clientX < screenMid){
-      activeTouches[t.identifier]='fwd';
-      touchForward=true;
-    } else {
-      activeTouches[t.identifier]='jump';
-      txS=t.clientX;tyS=t.clientY;ttS=Date.now();
-    }
+    const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
+    const now=Date.now();
+    const zone=getTouchZone(gx);
+    activeTouches[t.identifier]={zone,sx:gx,sy:gy,ts:now};
+    if(zone==='left')touchLeft=true;
+    if(zone==='right')touchRight=true;
   }
 },{passive:false});
 
@@ -625,11 +627,14 @@ canvas.addEventListener('touchend',e=>{
       continue;
     }
     if(GS.state!=='playing'){delete activeTouches[t.identifier];continue;}
-    const zone=activeTouches[t.identifier];
+    const touch=activeTouches[t.identifier];
+    if(!touch)continue;
+    const zone=touch.zone;
     if(zone==='jump'){
+      const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
       const now=Date.now();
-      const dist=Math.hypot(t.clientX-txS,t.clientY-tyS);
-      if(dist<80&&now-ttS<350){
+      const dist=Math.hypot(gx-touch.sx,gy-touch.sy);
+      if(dist<62&&now-touch.ts<350){
         if(now-lastTapTime<350&&!P.onGround){doFlip();}
         else{doJump();}
         lastTapTime=now;
@@ -637,10 +642,17 @@ canvas.addEventListener('touchend',e=>{
     }
     delete activeTouches[t.identifier];
   }
-  touchForward=Object.values(activeTouches).some(z=>z==='fwd');
+  touchLeft=Object.values(activeTouches).some(t=>t.zone==='left');
+  touchRight=Object.values(activeTouches).some(t=>t.zone==='right');
 },{passive:false});
 
 canvas.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
+canvas.addEventListener('touchcancel',e=>{
+  e.preventDefault();
+  for(const t of e.changedTouches)delete activeTouches[t.identifier];
+  touchLeft=Object.values(activeTouches).some(t=>t.zone==='left');
+  touchRight=Object.values(activeTouches).some(t=>t.zone==='right');
+},{passive:false});
 
 canvas.addEventListener('click',e=>{
   const r=canvas.getBoundingClientRect();
@@ -697,12 +709,12 @@ function update(){
   if(P.justLeftGrind>0)P.justLeftGrind--;
 
   // Lean
-if(tiltOn)P.vx=Math.max(-3,Math.min(3,tiltG*.12));
-else if((keys['ArrowLeft']||keys['KeyA']||touchLeft)&&!(keys['ArrowRight']||keys['KeyD']||touchRight))P.vx=-2.5;
-else if((keys['ArrowRight']||keys['KeyD']||touchRight)&&!(keys['ArrowLeft']||keys['KeyA']||touchLeft))P.vx=2.5;
-// Keep mobile movement fully player-controlled (no automatic right drift).
-else if(towedChar&&'ontouchstart' in window){P.vx*=.82;}
-else P.vx*=.82; // drift back to natural position
+  if(tiltOn)P.vx=Math.max(-3,Math.min(3,tiltG*.12));
+  else if((keys['ArrowLeft']||keys['KeyA']||touchLeft)&&!(keys['ArrowRight']||keys['KeyD']||touchRight))P.vx=-2.5;
+  else if((keys['ArrowRight']||keys['KeyD']||touchRight)&&!(keys['ArrowLeft']||keys['KeyA']||touchLeft))P.vx=2.5;
+  // Keep mobile movement fully player-controlled (no automatic right drift).
+  else if(towedChar&&'ontouchstart' in window){P.vx*=.82;}
+  else P.vx*=.82; // drift back to natural position
   P.x=Math.max(50,Math.min(490,P.x+P.vx)); // push to ~75% of canvas width
   // Record player position history for tow rope delayed follow
   towHistory.push({x:P.x,y:P.y});
@@ -1045,7 +1057,7 @@ function fetchLB(){GS.lbOK=false;fetch(SCRIPT+'?key='+KEY).then(r=>r.json()).the
 function submitScore(){fetch(SCRIPT+'?key='+KEY+'&name='+encodeURIComponent(GS.name||'ANON')+'&score='+Math.floor(GS.score),{mode:'no-cors'}).catch(()=>{});GS.submitted=true;setTimeout(()=>fetchLB(),1500);}
 
 // FLOW
-function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchForward=false;activeTouches={};obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
+function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchLeft=false;touchRight=false;activeTouches={};obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
     oldLady={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0};
     dog={triggered:false,x:W+60,visible:false,waveFrame:0,nextAt:DOG_SCORE,chasing:false};initP();}
 function restartGame(){hideNameInput();GS.state='title';GS.lbOK=false;fetchLB();}
