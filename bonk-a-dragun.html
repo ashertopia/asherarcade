@@ -1268,9 +1268,14 @@ function loop(timestamp) {
 // M. INIT
 // ============================================================
 fetchLB();
-let _fontsReady = false, _imgsReady2 = false;
+let _fontsReady = false, _imgsReady2 = false, _loopStarted = false;
 function _checkReady() {
-  if (_fontsReady && _imgsReady2) { state = 'title'; requestAnimationFrame(loop); }
+  if (_loopStarted) return;                          // ← only ever fires once
+  if (_fontsReady && _imgsReady2) {
+    _loopStarted = true;
+    state = 'title';
+    requestAnimationFrame(loop);
+  }
 }
 initCharacters(() => { _imgsReady2 = true; _checkReady(); });
 document.fonts.load('bold 20px "Fredoka One"').then(() => {
@@ -1278,7 +1283,7 @@ document.fonts.load('bold 20px "Fredoka One"').then(() => {
 }).catch(() => {
   _fontsReady = true; _checkReady();
 });
-// Fallback: start after 4s regardless
+// Fallback: start after 4s if still loading (guard prevents re-triggering if already started)
 setTimeout(() => { _fontsReady = true; _imgsReady2 = true; _checkReady(); }, 4000);
 </script>
 </body>
