@@ -1203,6 +1203,152 @@ function drawTitle(dt) {
 
 
 // ============================================================
+// J2. SCREEN — PLAYING
+// ============================================================
+function drawGame(dt) {
+  // ── Screen shake offset ─────────────────────────────────────────────────────
+  const sx = shakeAmount > 0 ? (Math.random() - 0.5) * shakeAmount * 2 : 0;
+  const sy = shakeAmount > 0 ? (Math.random() - 0.5) * shakeAmount * 2 : 0;
+  ctx.save();
+  ctx.translate(sx, sy);
+
+  // ── Background ────────────────────────────────────────────────────────────
+  drawCarnivalBG(frame);
+
+  // ── HUD ────────────────────────────────────────────────────────────────
+  // HUD background bar
+  const hudGrad = ctx.createLinearGradient(0, 0, 0, HUD_H);
+  hudGrad.addColorStop(0, 'rgba(20,5,50,0.97)');
+  hudGrad.addColorStop(1, 'rgba(10,2,30,0.97)');
+  ctx.fillStyle = hudGrad;
+  ctx.fillRect(0, 0, W, HUD_H);
+  ctx.fillStyle = GOLD;
+  ctx.fillRect(0, HUD_H - 2, W, 2);  // gold underline
+
+  // Game title (small)
+  ctx.fillStyle = 'rgba(245,197,24,0.5)';
+  ctx.font = 'bold 9px Fredoka One, cursive';
+  ctx.textAlign = 'center';
+  ctx.fillText('BONK-A-DRAGUN', W / 2, 13);
+
+  // Score
+  ctx.fillStyle = GOLD;
+  ctx.font = 'bold 30px Fredoka One, cursive';
+  ctx.textAlign = 'left';
+  ctx.fillText(score, 18, 48);
+  ctx.fillStyle = 'rgba(245,197,24,0.55)';
+  ctx.font = '10px Fredoka One, cursive';
+  ctx.fillText('PTS', 18, 60);
+
+  // Timer bar + number (right side)
+  const timerFrac = Math.max(0, timeLeft / GAME_TIME);
+  const barW = 110, barH = 12, barX = W - barW - 16, barY = 20;
+  // Track bg
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  roundRect(barX, barY, barW, barH, 6, 'rgba(255,255,255,0.1)', null, 0);
+  // Fill color: green → yellow → red
+  let barColor;
+  if (timerFrac > 0.5) barColor = '#44CC44';
+  else if (timerFrac > 0.25) barColor = GOLD;
+  else barColor = RED;
+  roundRect(barX, barY, Math.max(6, barW * timerFrac), barH, 6, barColor, null, 0);
+  // Timer number
+  ctx.fillStyle = timerFrac < 0.25 ? RED : '#fff';
+  ctx.font = 'bold 22px Fredoka One, cursive';
+  ctx.textAlign = 'right';
+  ctx.fillText(Math.ceil(timeLeft), W - 16, 52);
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  ctx.font = '10px Fredoka One, cursive';
+  ctx.fillText('SEC', W - 16, 62);
+
+  // Best score (center-right of HUD)
+  if (bestScore > 0) {
+    ctx.fillStyle = 'rgba(245,197,24,0.35)';
+    ctx.font = '9px Fredoka One, cursive';
+    ctx.textAlign = 'center';
+    ctx.fillText('BEST: ' + bestScore, W / 2, 54);
+  }
+
+  // ── Draw all holes (back layer — before characters) ───────────────────────────
+  for (const h of holes) {
+    drawMoundBack(h.cx, h.pipeTopY);
+  }
+
+  // ── Draw characters (they rise from holes) ───────────────────────────────
+  for (const m of moles) {
+    const h = holes[m.hole];
+    if (!h) continue;
+    const drawY = h.pipeTopY - m.rise;
+
+    // Clip so character only shows above the hole rim
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(h.cx - HOLE_RX - 6, 0, (HOLE_RX + 6) * 2, h.pipeTopY + HOLE_RY);
+    ctx.clip();
+
+    if (m.type === 'bomb') {
+      // Draw bomb sprite
+      drawBomb(h.cx, drawY, m.timer, m.hit);
+    } else {
+      // Draw character photo
+      const oc = charCanvases[m.char];
+      if (oc) {
+        ctx.save();
+        if (m.type === 'golden') {
+          // Gold glow
+          ctx.shadowColor = GOLD;
+          ctx.shadowBlur = 18;
+        } else if (m.type === 'baby') {
+          // Pink glow for baby Emmaline
+          ctx.shadowColor = '#FF88BB';
+          ctx.shadowBlur = 14;
+        }
+        if (m.hit) ctx.globalAlpha = 0.4;
+        const drawSize = m.type === 'baby' ? CHAR_DRAW * 0.62 : CHAR_DRAW;
+        ctx.drawImage(oc, h.cx - drawSize / 2, drawY - drawSize * 0.82, drawSize, drawSize);
+        ctx.restore();
+      }
+      // Type badge (golden star / baby label)
+      if (m.type === 'golden' && !m.hit) {
+        ctx.fillStyle = GOLD;
+        ctx.font = 'bold 11px Fredoka One, cursive';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = '#FF8800'; ctx.shadowBlur = 8;
+        ctx.fillText('★ BONUS', h.cx, drawY - CHAR_DRAW * 0.82 - 6);
+        ctx.shadowBlur = 0;
+      }
+      if (m.type === 'baby' && !m.hit) {
+        ctx.fillStyle = '#FF88BB';
+        ctx.font = 'bold 10px Fredoka One, cursive';
+        ctx.textAlign = 'center';
+        ctx.fillText("DON'T HIT!", h.cx, drawY - CHAR_DRAW * 0.62 * 0.82 - 6);
+      }
+    }
+    ctx.restore();
+
+    // Draw hole front layer OVER the character
+    drawMoundFront(h.cx, h.pipeTopY);
+  }
+
+  // Draw front layer for holes with NO mole too (keeps consistent look)
+  const moleHoles = new Set(moles.map(m => m.hole));
+  for (let i = 0; i < holes.length; i++) {
+    if (!moleHoles.has(i)) {
+      // No mole here — front layer already drawn in back pass (drawMoundBack draws full hole)
+      // Only need front layer when a mole is present (drawn above)
+    }
+  }
+
+  // ── Particles & popups ──────────────────────────────────────────────────────────
+  drawParticlesAndPopups();
+
+  // ── Mallet cursor ───────────────────────────────────────────────────────────
+  drawMallet(mouseX, mouseY, malletSwing);
+
+  ctx.restore(); // end shake
+}
+
+// ============================================================
 // K. SCREEN — GAME OVER
 // ============================================================
 function drawGameOver(dt) {
