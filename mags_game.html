@@ -697,12 +697,12 @@ function update(){
   if(P.justLeftGrind>0)P.justLeftGrind--;
 
   // Lean
-  if(tiltOn)P.vx=Math.max(-3,Math.min(3,tiltG*.12));
-  else if(keys['ArrowLeft']||keys['KeyA'])P.vx=-2.5;
-  else if(keys['ArrowRight']||keys['KeyD'])P.vx=2.5;
-  else if(touchForward)P.vx=2.5; // forward button held
-  else if(towedChar&&'ontouchstart' in window){P.vx=Math.min(P.vx+0.08,1.5);} // auto-drift on touch only
-  else P.vx*=.82; // drift back to natural position
+if(tiltOn)P.vx=Math.max(-3,Math.min(3,tiltG*.12));
+else if((keys['ArrowLeft']||keys['KeyA']||touchLeft)&&!(keys['ArrowRight']||keys['KeyD']||touchRight))P.vx=-2.5;
+else if((keys['ArrowRight']||keys['KeyD']||touchRight)&&!(keys['ArrowLeft']||keys['KeyA']||touchLeft))P.vx=2.5;
+// Keep mobile movement fully player-controlled (no automatic right drift).
+else if(towedChar&&'ontouchstart' in window){P.vx*=.82;}
+else P.vx*=.82; // drift back to natural position
   P.x=Math.max(50,Math.min(490,P.x+P.vx)); // push to ~75% of canvas width
   // Record player position history for tow rope delayed follow
   towHistory.push({x:P.x,y:P.y});
