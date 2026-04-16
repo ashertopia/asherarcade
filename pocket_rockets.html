@@ -53,13 +53,7 @@ const IMG_LOGO   = new Image(); IMG_LOGO.src   = 'data:image/png;base64,iVBORw0K
 
 const SHEET_URL='https://script.google.com/macros/s/AKfycbwXL5EDGT4fRgHtIbAgBkppzmViYckWJ961HW32OT1zoj6gtMxQ7FouFyc-Zb-m3QJHyw/exec';
 let leaderboard=[];
-async function fetchLeaderboard(){try{const r=await fetch(SHEET_URL+'?action=get');const d=await r.json();if(Array.isArray(d))leaderboard=d.slice(0,10).map(row=>{
-  // Strip ISO timestamps from any field, keep only name and score
-  const clean=row.map(v=>String(v||'').replace(/\d{4}-\d{2}-\d{2}T[\d:.Z]+/g,'').trim());
-  const name=clean.find(v=>v&&!/^\d+-\d+$/.test(v)&&v.length>0)||'?';
-  const scoreVal=clean.find(v=>/^\d+-\d+$/.test(v))||'0-0';
-  return[name,scoreVal];
-});}catch(e){}}
+async function fetchLeaderboard(){try{const r=await fetch(SHEET_URL+'?action=get');const d=await r.json();if(Array.isArray(d))leaderboard=d.slice(0,10).map(row=>[String(row[0]||'?'),String(row[1]||'0-0')]);}catch(e){}}
 async function submitScore(name,pts){try{await fetch(SHEET_URL+'?name='+encodeURIComponent(name)+'&score='+pts);await fetchLeaderboard();}catch(e){}}
 fetchLeaderboard();
 
