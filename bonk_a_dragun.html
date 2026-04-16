@@ -202,6 +202,8 @@ function sfxBonk() { beep(200, 0.05, 0.5, 'sawtooth'); setTimeout(() => beep(120
 function sfxMiss() { beep(150, 0.2, 0.3, 'sine'); }
 function sfxEnd() { [400, 300, 200, 140].forEach((f, i) => setTimeout(() => beep(f, 0.18, 0.3, 'sawtooth'), i * 130)); }
 function sfxStart() { [300, 420, 540, 680].forEach((f, i) => setTimeout(() => beep(f, 0.1, 0.2, 'sine'), i * 80)); }
+function sfxBoom()  { [60, 40, 25].forEach((f, i) => setTimeout(() => beep(f, 0.5, 0.25, 'sawtooth'), i * 70)); beep(120, 0.35, 0.4, 'sine'); }
+function sfxBaby()  { beep(660, 0.06, 0.15, 'sine'); setTimeout(() => beep(540, 0.06, 0.15, 'sine'), 80); }
 
 // ============================================================
 // E. DRAWING HELPERS
@@ -392,6 +394,90 @@ function drawMoundFront(cx, baseY) {
 
 
 
+
+function drawBomb(cx, topY) {
+  // topY = top of the 90px drawing area (same coord as charY when drawing characters)
+  // Bomb body centre sits ~40px below topY, matching the face region of character photos.
+  const cy  = topY + 40;
+  const r   = 28;
+  const t   = frame * 0.05;   // frame-based animation (no Date.now needed)
+
+  // ── Danger pulse ring (pulsing red halo) ─────────────────────────────────
+  const halo = 4 + Math.sin(t * 10) * 3;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + halo, 0, Math.PI * 2);
+  ctx.fillStyle = Math.sin(t * 14) > 0 ? 'rgba(255,20,0,0.22)' : 'rgba(255,80,0,0.10)';
+  ctx.fill();
+  ctx.restore();
+
+  // ── Short fuse cord ───────────────────────────────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cx + 16, cy - r + 3);
+  ctx.quadraticCurveTo(cx + 24, cy - r - 8, cx + 20, cy - r - 18);
+  ctx.strokeStyle = '#7A5018';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+  ctx.restore();
+
+  // ── Fuse spark (alternates orange / yellow each frame) ────────────────────
+  const sparkR = 4 + Math.sin(t * 28) * 1.5;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx + 20, cy - r - 18, sparkR + 3, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,100,0,0.35)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx + 20, cy - r - 18, sparkR, 0, Math.PI * 2);
+  ctx.fillStyle = Math.sin(t * 32) > 0 ? '#FF8800' : '#FFE000';
+  ctx.fill();
+  ctx.restore();
+
+  // ── Bomb body (dark sphere with highlight) ────────────────────────────────
+  ctx.save();
+  const bg = ctx.createRadialGradient(cx - 9, cy - 11, 3, cx, cy, r + 2);
+  bg.addColorStop(0,   '#4E4E4E');
+  bg.addColorStop(0.35,'#1E1E1E');
+  bg.addColorStop(1,   '#050505');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fillStyle = bg;
+  ctx.fill();
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.restore();
+
+  // ── Top sphere highlight ──────────────────────────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx - 8, cy - 11, 9, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(110,110,110,0.30)';
+  ctx.fill();
+  ctx.restore();
+
+  // ── Skull X-eyes (red) ────────────────────────────────────────────────────
+  ctx.save();
+  ctx.strokeStyle = '#FF2200';
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx - 13, cy - 9); ctx.lineTo(cx -  5, cy - 1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx -  5, cy - 9); ctx.lineTo(cx - 13, cy - 1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx +  5, cy - 9); ctx.lineTo(cx + 13, cy - 1); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + 13, cy - 9); ctx.lineTo(cx +  5, cy - 1); ctx.stroke();
+  ctx.restore();
+
+  // ── Skull frown ───────────────────────────────────────────────────────────
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy + 9, 9, 0.22, Math.PI - 0.22);
+  ctx.strokeStyle = '#FF2200';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+  ctx.restore();
+}
 
 function drawMallet(x, y, swing) {
   ctx.save();
@@ -827,12 +913,40 @@ function handleTap(x, y) {
     if (x >= charLeft && x <= charRight && y >= charTop && y <= charBottom) {
       m.hit = true;
       m.state = 'falling';
-      score += 10;
-      sfxBonk();
-      spawnParticles(h.cx, h.pipeTopY - m.rise / 2, 12, GOLD, { speed: 80, upBias: 60, decay: 2 });
-      spawnPopup(h.cx, h.pipeTopY - m.rise - 10, '+10', GOLD, 20);
-      spawnPopup(h.cx, h.pipeTopY - m.rise + 10, 'BONK!', '#FF6644', 14);
-      shakeAmount = 4;
+      const mtype = m.type || 'normal';
+      const hitY  = h.pipeTopY - m.rise;
+
+      if (mtype === 'bomb') {
+        score      -= 100;
+        shakeAmount = 10;
+        sfxBoom();
+        spawnParticles(h.cx, hitY + 40, 20, '#FF3300', { speed: 130, upBias: -20, decay: 1.4, size: 4 });
+        spawnParticles(h.cx, hitY + 40,  8, '#FF9900', { speed:  80, upBias:  40, decay: 1.8, size: 3 });
+        spawnPopup(h.cx, hitY,      '-100',  '#FF2200', 28);
+        spawnPopup(h.cx, hitY + 22, 'BOOM!', '#FF7700', 20);
+      } else if (mtype === 'baby') {
+        score      -= 50;
+        shakeAmount = 6;
+        sfxBaby();
+        spawnParticles(h.cx, hitY + 30, 14, '#FF69B4', { speed: 70, upBias: 50, decay: 1.8, size: 3 });
+        spawnPopup(h.cx, hitY,      '-50',              '#FF2288', 26);
+        spawnPopup(h.cx, hitY + 22, "DON'T HIT",        '#FF69B4', 13);
+        spawnPopup(h.cx, hitY + 38, 'THE BABY!',        '#FF69B4', 13);
+      } else if (mtype === 'golden') {
+        score      += 30;
+        shakeAmount = 3;
+        sfxBonk();
+        spawnParticles(h.cx, hitY + 20, 18, GOLD, { speed: 110, upBias: 80, decay: 1.6, size: 4 });
+        spawnPopup(h.cx, hitY,      '+30',    GOLD,      26);
+        spawnPopup(h.cx, hitY + 22, 'BONUS!', '#FFE060', 18);
+      } else {
+        score      += 10;
+        shakeAmount = 4;
+        sfxBonk();
+        spawnParticles(h.cx, hitY + 20, 12, GOLD, { speed: 80, upBias: 60, decay: 2 });
+        spawnPopup(h.cx, hitY,      '+10',   GOLD,      20);
+        spawnPopup(h.cx, hitY + 18, 'BONK!', '#FF6644', 14);
+      }
       break;
     }
   }
@@ -921,13 +1035,40 @@ function riseSpeed() {
   return Math.min(320, 160 + Math.floor(score / 20) * 20);
 }
 
+function getSpawnType() {
+  if (score < 30) return 'normal';
+  const r = Math.random();
+  if (score < 70) {
+    if (r < 0.09) return 'bomb';
+    if (r < 0.17) return 'golden';
+    return 'normal';
+  }
+  // score 70+: add baby Emmaline
+  if (r < 0.12) return 'bomb';
+  if (r < 0.21) return 'golden';
+  if (r < 0.29) return 'baby';
+  return 'normal';
+}
+
+function typeUpTime(type) {
+  switch (type) {
+    case 'bomb':   return Math.max(0.9,  1.8 - score * 0.003);
+    case 'golden': return Math.max(0.75, 1.6 - score * 0.004);
+    case 'baby':   return 2.8;  // long — give players time to see + avoid
+    default:       return upTime();
+  }
+}
+
 function spawnMole() {
   const busy = new Set(moles.map(m => m.hole));
   const free = holes.map((_, i) => i).filter(i => !busy.has(i));
   if (!free.length) return;
-  const hole = free[Math.floor(Math.random() * free.length)];
-  const char = CHAR_NAMES[Math.floor(Math.random() * CHAR_NAMES.length)];
-  moles.push({ hole, char, state: 'rising', rise: 0, timer: upTime(), hit: false });
+  const hole  = free[Math.floor(Math.random() * free.length)];
+  const type  = getSpawnType();
+  // Baby type is always Emmaline; others are random characters
+  const char  = (type === 'baby') ? 'emmaline'
+                                  : CHAR_NAMES[Math.floor(Math.random() * CHAR_NAMES.length)];
+  moles.push({ hole, char, type, state: 'rising', rise: 0, timer: typeUpTime(type), hit: false });
 }
 
 function update(dt) {
@@ -948,7 +1089,7 @@ function update(dt) {
       m.timer -= dt;
       if (m.timer <= 0) {
         m.state = 'falling';
-        sfxMiss();
+        if (!m.type || m.type === 'normal' || m.type === 'golden') sfxMiss();
       }
     } else if (m.state === 'falling') {
       m.rise = Math.max(0, m.rise - (rs + 80) * dt);
@@ -1125,25 +1266,94 @@ function drawGame(dt) {
       // Mound back (drawn before character)
       drawMoundBack(h.cx, h.pipeTopY);
 
-      // Character
+      // Character / special type
       if (m && m.rise > 2) {
+        const charY = h.pipeTopY - m.rise;
+        const mtype = m.type || 'normal';
+
         ctx.save();
         ctx.beginPath();
-        // Clip character so it never extends below the rim centre line
         ctx.rect(h.cx - CHAR_DRAW / 2 - 4, h.pipeTopY - MAX_RISE - 10, CHAR_DRAW + 8, MAX_RISE + HOLE_RY + 4);
         ctx.clip();
 
-        const charY = h.pipeTopY - m.rise;
-        const oc = charCanvases[m.char];
-        if (oc) {
-          ctx.imageSmoothingEnabled = true;
-          let sx = 1, sy = 1;
-          if (m.hit) { sx = 1.3; sy = 0.7; }
+        if (mtype === 'bomb') {
+          // ── BOMB: drawn procedurally, no photo ──────────────────────────
+          let bsx = 1, bsy = 1;
+          if (m.hit) { bsx = 1.6; bsy = 0.5; }  // splat on hit
           ctx.translate(h.cx, charY + CHAR_DRAW / 2);
-          ctx.scale(sx, sy);
-          ctx.drawImage(oc, -CHAR_DRAW / 2, -CHAR_DRAW / 2, CHAR_DRAW, CHAR_DRAW);
+          ctx.scale(bsx, bsy);
+          ctx.translate(-h.cx, -(charY + CHAR_DRAW / 2));
+          drawBomb(h.cx, charY);
+        } else {
+          // ── PHOTO CHARACTER (normal / baby / golden) ─────────────────────
+          const imgKey = (mtype === 'baby') ? 'emmaline' : m.char;
+          const oc = charCanvases[imgKey];
+          if (oc) {
+            ctx.imageSmoothingEnabled = true;
+            let sx = 1, sy = 1;
+            if (m.hit) { sx = 1.3; sy = 0.7; }
+
+            if (mtype === 'golden') {
+              // Gold glow aura
+              ctx.shadowColor = '#F5C518';
+              ctx.shadowBlur  = 22;
+            } else if (mtype === 'baby') {
+              // Pink soft glow for baby
+              ctx.shadowColor = '#FF88BB';
+              ctx.shadowBlur  = 14;
+            }
+
+            const scl = (mtype === 'baby') ? 0.62 : 1.0;   // baby = smaller
+            ctx.translate(h.cx, charY + CHAR_DRAW * scl / 2 + (mtype === 'baby' ? 10 : 0));
+            ctx.scale(sx * scl, sy * scl);
+            ctx.drawImage(oc, -CHAR_DRAW / 2, -CHAR_DRAW / 2, CHAR_DRAW, CHAR_DRAW);
+            ctx.shadowBlur = 0;
+          }
         }
         ctx.restore();
+
+        // ── TYPE BADGES (drawn after clip, float above hole) ─────────────
+        if (!m.hit && m.rise > 30 && mtype !== 'normal') {
+          const badgeY = charY + 2;   // just above top of character
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.font = 'bold 10px Fredoka One, cursive';
+          if (mtype === 'bomb') {
+            // Red WARNING badge
+            ctx.fillStyle = '#CC0000';
+            ctx.shadowColor = '#FF0000';
+            ctx.shadowBlur  = 8;
+            ctx.beginPath();
+            ctx.roundRect(h.cx - 28, badgeY - 15, 56, 16, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText('-100  AVOID!', h.cx, badgeY - 3);
+          } else if (mtype === 'baby') {
+            // Pink BABY badge
+            ctx.fillStyle = '#EE4499';
+            ctx.shadowColor = '#FF88CC';
+            ctx.shadowBlur  = 6;
+            ctx.beginPath();
+            ctx.roundRect(h.cx - 26, badgeY - 15, 52, 16, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText('BABY  -50', h.cx, badgeY - 3);
+          } else if (mtype === 'golden') {
+            // Gold BONUS badge
+            ctx.fillStyle = '#C8900A';
+            ctx.shadowColor = '#F5C518';
+            ctx.shadowBlur  = 8;
+            ctx.beginPath();
+            ctx.roundRect(h.cx - 28, badgeY - 15, 56, 16, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#1A0A2E';
+            ctx.fillText('+30  BONUS!', h.cx, badgeY - 3);
+          }
+          ctx.restore();
+        }
       }
 
       // Mound front crescent (drawn after character)
