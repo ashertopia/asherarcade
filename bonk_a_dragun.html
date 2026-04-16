@@ -479,6 +479,85 @@ function drawBomb(cx, topY) {
   ctx.restore();
 }
 
+// ============================================================
+// GOLDEN x2 COIN SPRITE
+// ============================================================
+// cx/topY match the same coordinate system as drawBomb:
+// topY = charTopY (h.pipeTopY - m.rise), coin centre sits ~45px below topY.
+function drawGolden(cx, topY) {
+  const cy  = topY + 45;
+  const r   = 30;
+  const t   = frame * 0.05;
+  const pulse = 1 + Math.sin(t * 6) * 0.06;
+
+  // Outer glow halo
+  ctx.save();
+  ctx.globalAlpha = 0.28 + Math.sin(t * 8) * 0.12;
+  const halo = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, r * 2.2);
+  halo.addColorStop(0, '#FFE040');
+  halo.addColorStop(1, 'rgba(255,160,0,0)');
+  ctx.fillStyle = halo;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 2.2 * pulse, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Coin body
+  ctx.save();
+  ctx.scale(pulse, pulse);
+  const coinX = cx / pulse, coinY = cy / pulse;
+  // Coin shadow/depth rim
+  ctx.beginPath();
+  ctx.arc(coinX + 2, coinY + 3, r, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(120, 60, 0, 0.45)';
+  ctx.fill();
+  // Main coin face
+  const coinGrad = ctx.createRadialGradient(coinX - 8, coinY - 10, 4, coinX, coinY, r);
+  coinGrad.addColorStop(0,    '#FFF0A0');
+  coinGrad.addColorStop(0.25, '#FFD700');
+  coinGrad.addColorStop(0.65, '#F5A800');
+  coinGrad.addColorStop(1,    '#C07000');
+  ctx.beginPath();
+  ctx.arc(coinX, coinY, r, 0, Math.PI * 2);
+  ctx.fillStyle = coinGrad;
+  ctx.fill();
+  // Coin rim
+  ctx.strokeStyle = '#FF8C00';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  ctx.restore();
+
+  // ×2 text on coin
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  // Shadow
+  ctx.fillStyle = 'rgba(100,50,0,0.5)';
+  ctx.font = 'bold 26px Fredoka One, cursive';
+  ctx.fillText('×2', cx + 1.5, cy + 2.5);
+  // Main text
+  ctx.fillStyle = '#7A3A00';
+  ctx.fillText('×2', cx, cy);
+  ctx.textBaseline = 'alphabetic';
+  ctx.restore();
+
+  // Sparkle stars around coin (4 rotating sparkles)
+  ctx.save();
+  for (let i = 0; i < 4; i++) {
+    const angle = t * 2 + (i * Math.PI / 2);
+    const dist  = r + 14 + Math.sin(t * 4 + i) * 4;
+    const sx    = cx + Math.cos(angle) * dist;
+    const sy2   = cy + Math.sin(angle) * dist;
+    const sr    = 2.5 + Math.sin(t * 7 + i * 1.3) * 1.5;
+    ctx.globalAlpha = 0.6 + Math.sin(t * 9 + i) * 0.4;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(sx, sy2, sr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 function drawMallet(x, y, swing) {
   ctx.save();
   ctx.translate(x, y);
@@ -931,16 +1010,16 @@ function handleTap(x, y) {
         shakeAmount = 6;
         sfxBaby();
         spawnParticles(h.cx, hitY + 30, 14, '#FF69B4', { speed: 70, upBias: 50, decay: 1.8, size: 3 });
-        spawnPopup(h.cx, hitY,      '-50',              '#FF2288', 26);
-        spawnPopup(h.cx, hitY + 22, "DON'T HIT",        '#FF69B4', 13);
-        spawnPopup(h.cx, hitY + 38, 'THE BABY!',        '#FF69B4', 13);
+        spawnPopup(h.cx, hitY,      "Don't hit the baby!", '#FF2288', 16);
+        spawnPopup(h.cx, hitY + 24, '-50',                 '#FF69B4', 22);
       } else if (mtype === 'golden') {
-        score      += 30;
+        score      += 20;
         shakeAmount = 3;
         sfxBonk();
         spawnParticles(h.cx, hitY + 20, 18, GOLD, { speed: 110, upBias: 80, decay: 1.6, size: 4 });
-        spawnPopup(h.cx, hitY,      '+30',    GOLD,      26);
-        spawnPopup(h.cx, hitY + 22, 'BONUS!', '#FFE060', 18);
+        spawnParticles(h.cx, hitY + 20,  8, '#FFF', { speed:  60, upBias: 60, decay: 2.0, size: 2 });
+        spawnPopup(h.cx, hitY,      '+20',   GOLD,      26);
+        spawnPopup(h.cx, hitY + 22, '×2 BONUS!', '#FFE060', 18);
       } else {
         score      += 10;
         shakeAmount = 4;
@@ -1055,7 +1134,7 @@ function getSpawnType() {
 function typeUpTime(type) {
   switch (type) {
     case 'bomb':   return Math.max(0.9,  1.8 - score * 0.003);
-    case 'golden': return Math.max(0.75, 1.6 - score * 0.004);
+    case 'golden': return 5.0;   // fixed 5s — gives player time to aim
     case 'baby':   return 2.8;  // long — give players time to see + avoid
     default:       return upTime();
   }
@@ -1165,7 +1244,7 @@ function drawTitle(dt) {
   ctx.fillStyle = 'rgba(255,255,255,0.75)';
   ctx.font = '11px Fredoka One, cursive';
   ctx.textAlign = 'center';
-  ctx.fillText('Bonk faces +10  •  Golden glow = +30 BONUS!', W / 2, 237);
+  ctx.fillText('Bonk faces +10  •  ×2 Coin = DOUBLE POINTS!', W / 2, 237);
   ctx.fillStyle = '#FF88BB';
   ctx.fillText('Baby Emmaline = -50  •  Bomb = -100', W / 2, 254);
   ctx.fillStyle = 'rgba(255,255,255,0.55)';
@@ -1286,31 +1365,16 @@ function drawGame(dt) {
       drawBomb(h.cx, charTopY);
     } else {
       const oc = charCanvases[m.char];
-      if (oc) {
+      if (m.type === 'golden') {
+        // Golden has its own sprite — no character photo
+        drawGolden(h.cx, charTopY);
+      } else if (oc) {
+        // Normal / baby character photo (no glow — baby is a surprise!)
         ctx.save();
-        if (m.type === 'golden') {
-          ctx.shadowColor = GOLD; ctx.shadowBlur = 18;
-        } else if (m.type === 'baby') {
-          ctx.shadowColor = '#FF88BB'; ctx.shadowBlur = 14;
-        }
         if (m.hit) ctx.globalAlpha = 0.4;
         const drawSize = m.type === 'baby' ? CHAR_DRAW * 0.62 : CHAR_DRAW;
         ctx.drawImage(oc, h.cx - drawSize / 2, charTopY, drawSize, drawSize);
         ctx.restore();
-      }
-      if (m.type === 'golden' && !m.hit) {
-        ctx.fillStyle = GOLD;
-        ctx.font = 'bold 11px Fredoka One, cursive';
-        ctx.textAlign = 'center';
-        ctx.shadowColor = '#FF8800'; ctx.shadowBlur = 8;
-        ctx.fillText('★ BONUS', h.cx, charTopY - 4);
-        ctx.shadowBlur = 0;
-      }
-      if (m.type === 'baby' && !m.hit) {
-        ctx.fillStyle = '#FF88BB';
-        ctx.font = 'bold 10px Fredoka One, cursive';
-        ctx.textAlign = 'center';
-        ctx.fillText("DON'T HIT!", h.cx, charTopY - 4);
       }
     }
     ctx.restore(); // end clip
