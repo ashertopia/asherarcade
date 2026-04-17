@@ -621,7 +621,7 @@ canvas.addEventListener('touchstart',e=>{
   e.preventDefault();
   AC.resume();
   for(const t of e.changedTouches){
-    if(GS.state==='title'&&GS.lbOK){startGame();return;}
+    if(GS.state==='title'){startGame();return;}
     if(GS.state==='dead'){
       const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
       txS=gx;tyS=gy;ttS=Date.now();
@@ -700,7 +700,7 @@ canvas.addEventListener('touchcancel',e=>{
 canvas.addEventListener('click',e=>{
   const r=canvas.getBoundingClientRect();
   const x=(e.clientX-r.left)*(W/r.width),y=(e.clientY-r.top)*(H/r.height);
-  if(GS.state==='title'&&GS.lbOK){startGame();return;}
+  if(GS.state==='title'){startGame();return;}
   if(GS.state==='dead'){handleDeadTouch(x,y);}
 });
 
@@ -1051,11 +1051,10 @@ function drawTitle(){
   tc(mx,H-74,'LAND ON RAILS & CARS = GRIND','4px Press Start 2P',C.pk);
   tc(mx,H-61,'JUMP OFF GRIND = BONUS!','4px Press Start 2P',C.yl);
   tc(mx,H-48,'PICK UP FRIENDS = DOUBLE POINTS','4px Press Start 2P',C.pk);
-  if(GS.lbOK){
-    const pulse=0.96+Math.sin(GS.frame*.09)*.04,bw=rw-24;
-    ctx.save();ctx.translate(mx,H-22);ctx.scale(pulse,pulse);
-    drawBtn(-bw/2,-16,bw,26,C.pk,C.wh,"LET'S SHRED! 🛹",'7px Press Start 2P',C.wh);ctx.restore();
-  }
+  // Always show play button — don't wait for leaderboard
+  const pulse=0.96+Math.sin(GS.frame*.09)*.04,bw=rw-24;
+  ctx.save();ctx.translate(mx,H-22);ctx.scale(pulse,pulse);
+  drawBtn(-bw/2,-16,bw,26,C.pk,C.wh,"LET'S SHRED! 🛹",'7px Press Start 2P',C.wh);ctx.restore();
 }
 
 // DEAD SCREEN — fully stacked, precise y coords, no overlaps
@@ -1127,8 +1126,11 @@ function loop(){
   requestAnimationFrame(loop);
 }
 
-buildCharQueue();fetchLB();
-loadImages().then(()=>requestAnimationFrame(loop));
+buildCharQueue();
+loadImages().then(()=>{
+  requestAnimationFrame(loop);
+  setTimeout(fetchLB,100); // defer LB fetch until after first render
+});
 </script>
 </body>
 </html>
