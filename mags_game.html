@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <title>Mag's Endless Skate</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"></noscript>
 <style>*{margin:0;padding:0;box-sizing:border-box;}body{background:#0d0010;display:flex;justify-content:center;align-items:center;min-height:100vh;min-height:-webkit-fill-available;overflow:hidden;touch-action:none;}canvas{display:block;}</style>
 </head>
 <body>
@@ -508,13 +511,22 @@ function drawHUD(){
     ctx.font='11px sans-serif';ctx.textAlign='center';
     ctx.fillText(towedChar==='dog'?'🐕🛡️':towedChar==='kevin'?'🤙🛡️':'👵🛡️',W-38,43);ctx.textAlign='left';
   }
-  // Touch zone hints — tiny translucent labels at bottom corners, touch device only
+  // Joystick (mobile only)
   if('ontouchstart' in window&&GS.state==='playing'){
-    ctx.save();ctx.globalAlpha=0.22;ctx.fillStyle='#fff';
-    ctx.font='7px Press Start 2P';ctx.textAlign='left';
-    ctx.fillText('◀▶ PUSH',8,H-6);
-    ctx.textAlign='right';
-    ctx.fillText('TAP JUMP ▲',W-8,H-6);
+    const jc=joyCenter();
+    ctx.save();
+    // Outer ring
+    ctx.beginPath();ctx.arc(jc.x,jc.y,JOY_R,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,0,0,0.35)';ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=2;ctx.stroke();
+    // Knob — deflected by joyDx
+    const kx=jc.x+joyDx*(JOY_R-14);
+    ctx.beginPath();ctx.arc(kx,jc.y,18,0,Math.PI*2);
+    ctx.fillStyle=joyActive?'rgba(255,45,120,0.7)':'rgba(255,255,255,0.3)';ctx.fill();
+    // Jump hint on right
+    ctx.globalAlpha=0.2;ctx.fillStyle='#fff';
+    ctx.font='7px Press Start 2P';ctx.textAlign='right';
+    ctx.fillText('TAP JUMP',W-8,H-6);
     ctx.restore();
   }
   const s=Math.max(0,Math.floor((spd-BASE_SPD)*10));
@@ -548,6 +560,12 @@ let touchLeft=false;
 let touchRight=false;
 let activeTouches={}; // id->{zone,sx,sy,ts}
 const MOVE_EDGE_W=170; // left/right edge bands for steering on touch devices
+// Joystick state (mobile only)
+const JOY_R=52;       // joystick outer radius px (canvas coords)
+const JOY_X=80;       // joystick center x
+const JOY_Y_OFF=52;   // joystick center offset from bottom
+let joyActive=false, joyTouchId=null;
+let joyDx=0;          // -1..1 normalized horizontal deflection
 
 document.addEventListener('keydown',e=>{
   if(keys[e.code])return;
@@ -584,6 +602,7 @@ function getTouchZone(gx){
   if(gx>W-MOVE_EDGE_W)return 'right';
   return 'jump';
 }
+function joyCenter(){return {x:JOY_X, y:H-JOY_Y_OFF};}
 
 function getCanvasCoords(clientX, clientY){
   const r=canvas.getBoundingClientRect();
@@ -611,10 +630,19 @@ canvas.addEventListener('touchstart',e=>{
     if(GS.state!=='playing')continue;
     const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
     const now=Date.now();
-    const zone=getTouchZone(gx);
-    activeTouches[t.identifier]={zone,sx:gx,sy:gy,ts:now};
-    if(zone==='left')touchLeft=true;
-    if(zone==='right')touchRight=true;
+    const jc=joyCenter();
+    // If touch is within joystick area — claim it as joystick
+    if(!joyActive&&Math.hypot(gx-jc.x,gy-jc.y)<JOY_R*1.6){
+      joyActive=true; joyTouchId=t.identifier;
+      const dx=Math.max(-1,Math.min(1,(gx-jc.x)/JOY_R));
+      joyDx=dx;
+      if(dx<-0.2)touchLeft=true;
+      else if(dx>0.2)touchRight=true;
+      activeTouches[t.identifier]={zone:'joy',sx:gx,sy:gy,ts:now};
+    } else {
+      // Right side — jump
+      activeTouches[t.identifier]={zone:'jump',sx:gx,sy:gy,ts:now};
+    }
   }
 },{passive:false});
 
@@ -630,7 +658,10 @@ canvas.addEventListener('touchend',e=>{
     const touch=activeTouches[t.identifier];
     if(!touch)continue;
     const zone=touch.zone;
-    if(zone==='jump'){
+    if(zone==='joy'&&t.identifier===joyTouchId){
+      joyActive=false; joyTouchId=null; joyDx=0;
+      touchLeft=false; touchRight=false;
+    } else if(zone==='jump'){
       const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
       const now=Date.now();
       const dist=Math.hypot(gx-touch.sx,gy-touch.sy);
@@ -642,16 +673,28 @@ canvas.addEventListener('touchend',e=>{
     }
     delete activeTouches[t.identifier];
   }
-  touchLeft=Object.values(activeTouches).some(t=>t.zone==='left');
-  touchRight=Object.values(activeTouches).some(t=>t.zone==='right');
+  if(!joyActive){touchLeft=false;touchRight=false;}
 },{passive:false});
 
-canvas.addEventListener('touchmove',e=>{e.preventDefault();},{passive:false});
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(!joyActive||GS.state!=='playing')return;
+  for(const t of e.changedTouches){
+    if(t.identifier!==joyTouchId)continue;
+    const {gx,gy}=getCanvasCoords(t.clientX,t.clientY);
+    const jc=joyCenter();
+    const dx=Math.max(-1,Math.min(1,(gx-jc.x)/JOY_R));
+    joyDx=dx;
+    touchLeft  = dx < -0.2;
+    touchRight = dx >  0.2;
+  }
+},{passive:false});
 canvas.addEventListener('touchcancel',e=>{
   e.preventDefault();
-  for(const t of e.changedTouches)delete activeTouches[t.identifier];
-  touchLeft=Object.values(activeTouches).some(t=>t.zone==='left');
-  touchRight=Object.values(activeTouches).some(t=>t.zone==='right');
+  for(const t of e.changedTouches){
+    if(t.identifier===joyTouchId){joyActive=false;joyTouchId=null;joyDx=0;touchLeft=false;touchRight=false;}
+    delete activeTouches[t.identifier];
+  }
 },{passive:false});
 
 canvas.addEventListener('click',e=>{
@@ -1057,7 +1100,7 @@ function fetchLB(){GS.lbOK=false;fetch(SCRIPT+'?key='+KEY).then(r=>r.json()).the
 function submitScore(){fetch(SCRIPT+'?key='+KEY+'&name='+encodeURIComponent(GS.name||'ANON')+'&score='+Math.floor(GS.score),{mode:'no-cors'}).catch(()=>{});GS.submitted=true;setTimeout(()=>fetchLB(),1500);}
 
 // FLOW
-function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchLeft=false;touchRight=false;activeTouches={};obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
+function startGame(){Object.assign(GS,{state:'playing',score:0,lives:3,combo:0,mult:1,comboT:0,frame:0,name:'',submitted:false});spd=BASE_SPD;obsT=0;railT=0;spdT=0;bgOff=0;buildCharQueue();touchLeft=false;touchRight=false;activeTouches={};joyActive=false;joyTouchId=null;joyDx=0;obstacles=[];rails=[];particles=[];popups=[];waveGuy={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0,armAngle:0};
     oldLady={shown:false,triggered:false,x:W+60,visible:false,waveFrame:0};
     dog={triggered:false,x:W+60,visible:false,waveFrame:0,nextAt:DOG_SCORE,chasing:false};initP();}
 function restartGame(){hideNameInput();GS.state='title';GS.lbOK=false;fetchLB();}
