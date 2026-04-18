@@ -152,10 +152,15 @@ function fetchLB(){
 fetchLB();
 
 function submitScore(name,sc){
-  fetch(SCRIPT_URL+'?name='+encodeURIComponent(name)+'&score='+sc,{mode:'no-cors'}).catch(function(){});
+  // Use Image ping — reliable GET from GitHub Pages, no CORS preflight
+  var img=new Image();
+  img.src=SCRIPT_URL+'?name='+encodeURIComponent(name)+'&score='+encodeURIComponent(sc);
+  // Optimistic local update so player sees their score immediately
   leaderboard.push({name:name,score:sc});
   leaderboard.sort(function(a,b){return b.score-a.score;});
   leaderboard=leaderboard.slice(0,10);
+  // Re-fetch after 2s to confirm server has it
+  setTimeout(fetchLB,2000);
 }
 
 // ── NAME MODAL ──
