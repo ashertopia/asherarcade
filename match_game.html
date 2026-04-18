@@ -320,23 +320,31 @@ function onTap(tx, ty) {
     const a = cards[flippedCards[0]];
     const b = cards[flippedCards[1]];
     if (a.pairIndex === b.pairIndex) {
-      // Match!
+      // Match! Lock flipping during the match animation
+      canFlip = false;
       matchCount++;
       setTimeout(() => {
         a.matched = true; b.matched = true;
+        a.flipped = true; b.flipped = true;   // ensure they stay face-up
+        a.flipDir = 1;    b.flipDir = 1;
         a.glowT = 1; b.glowT = 1;
         spawnMatchParticles(a); spawnMatchParticles(b);
         flippedCards = [];
+        canFlip = true;
         if (matchCount === PAIRS) triggerWin();
       }, 400);
     } else {
-      // Mismatch
+      // Mismatch — capture indices so timeout can't act on wrong cards
+      const idxA = flippedCards[0];
+      const idxB = flippedCards[1];
       canFlip = false;
       flipLockTimer = 900;
       setTimeout(() => {
-        a.flipped = false; a.flipDir = -1;
-        b.flipped = false; b.flipDir = -1;
-        a.shakeT = 1; b.shakeT = 1;
+        const ca = cards[idxA];
+        const cb = cards[idxB];
+        // Only flip back if not already matched (guard against race)
+        if (!ca.matched) { ca.flipped = false; ca.flipDir = -1; ca.shakeT = 1; }
+        if (!cb.matched) { cb.flipped = false; cb.flipDir = -1; cb.shakeT = 1; }
         flippedCards = [];
         canFlip = true;
       }, 900);
