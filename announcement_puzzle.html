@@ -313,22 +313,32 @@ function occupancy(excId) {
   return g;
 }
 
-// Returns [min, max] positions (col for h, row for v)
-// Exit extends range to -len or GRID only for the designated exit direction/track
-function getRange(p, occ) {
+// Walls are computed ONCE at drag start from startPos (piece's known-good position).
+// Fixed walls mean a fast swipe can never skip past a blocker.
+function computeWalls(p, occ, startPos) {
   if(p.dir==='h') {
-    let min=0, max=GRID-p.len;
-    for(let c=p.col-1;c>=0;c--)   {if(occ[p.row][c]){min=c+1;break;}}
-    for(let c=p.col+p.len;c<GRID;c++) {if(occ[p.row][c]){max=c-p.len;break;}}
-    if(p.ex==='left'  && p.et===p.row) min=-p.len;
-    if(p.ex==='right' && p.et===p.row) max=GRID;
+    let min = 0, max = GRID - p.len;
+    let blockedLeft = false, blockedRight = false;
+    for(let c = startPos - 1; c >= 0; c--) {
+      if(occ[p.row][c]) { min = c + 1; blockedLeft = true; break; }
+    }
+    for(let c = startPos + p.len; c < GRID; c++) {
+      if(occ[p.row][c]) { max = c - p.len; blockedRight = true; break; }
+    }
+    if(p.ex==='left'  && p.et===p.row && !blockedLeft)  min = -p.len;
+    if(p.ex==='right' && p.et===p.row && !blockedRight) max = GRID;
     return [min, max];
   } else {
-    let min=0, max=GRID-p.len;
-    for(let r=p.row-1;r>=0;r--)   {if(occ[r][p.col]){min=r+1;break;}}
-    for(let r=p.row+p.len;r<GRID;r++) {if(occ[r][p.col]){max=r-p.len;break;}}
-    if(p.ex==='up'   && p.et===p.col) min=-p.len;
-    if(p.ex==='down' && p.et===p.col) max=GRID;
+    let min = 0, max = GRID - p.len;
+    let blockedUp = false, blockedDown = false;
+    for(let r = startPos - 1; r >= 0; r--) {
+      if(occ[r][p.col]) { min = r + 1; blockedUp = true; break; }
+    }
+    for(let r = startPos + p.len; r < GRID; r++) {
+      if(occ[r][p.col]) { max = r - p.len; blockedDown = true; break; }
+    }
+    if(p.ex==='up'   && p.et===p.col && !blockedUp)   min = -p.len;
+    if(p.ex==='down' && p.et===p.col && !blockedDown)  max = GRID;
     return [min, max];
   }
 }
@@ -341,8 +351,10 @@ function onDown(e) {
   if(!p||p.removed) return;
   e.preventDefault();
   const [sx,sy] = getXY(e);
-  // Store the pixel offset from the pointer to the piece's current grid position
-  drag = {p, sx, sy, startCol:p.col, startRow:p.row};
+  const occ = occupancy(p.id);
+  const startPos = p.dir==='h' ? p.col : p.row;
+  const [min,max] = computeWalls(p, occ, startPos);
+  drag = {p, sx, sy, startCol:p.col, startRow:p.row, min, max};
   p.el.classList.add('dragging');
   p.el.style.zIndex = 200;
 }
@@ -351,14 +363,8 @@ function onMove(e) {
   if(!drag) return;
   e.preventDefault();
   const [cx,cy] = getXY(e);
-  const {p, sx, sy, startCol, startRow} = drag;
-
-  // Recalculate occupancy fresh every move so pieces always block each other
-  const occ = occupancy(p.id);
-  const [min,max] = getRange(p, occ);
-
+  const {p, sx, sy, startCol, startRow, min, max} = drag;
   if(p.dir==='h') {
-    // Desired column from drag delta, clamped by live collision range
     const desired = startCol + Math.round((cx - sx) / TILE);
     const newCol = Math.max(min, Math.min(max, desired));
     if(newCol !== p.col) { p.col = newCol; place(); }
@@ -372,7 +378,6 @@ function onMove(e) {
     p.el.classList.toggle('at-exit', atExit);
   }
 }
-
 function onUp() {
   if(!drag) return;
   const {p} = drag;
