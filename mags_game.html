@@ -746,7 +746,11 @@ function doFlip(){
 
 // UPDATE
 function update(){
-  GS.frame++;bgOff+=spd;
+  GS.frame++;
+  // On touch devices, compensate bg scroll for player lateral movement
+  // so background doesn't appear to speed up when joystick is pushed
+  const bgScrollComp=('ontouchstart' in window)?Math.max(0,P.vx):0;
+  bgOff+=spd-bgScrollComp;
   spdT++;if(spdT>280){spdT=0;spd=Math.min(spd+.35,15);}
   if(GS.comboT>0)GS.comboT--;else{GS.combo=0;GS.mult=1;}
   if(P.justLeftGrind>0)P.justLeftGrind--;
