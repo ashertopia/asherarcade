@@ -318,20 +318,20 @@ function occupancy(excId){
   return g;
 }
 
-function getRange(p,occ){
+function computeWalls(p,occ,startPos){
   if(p.dir==='h'){
-    let min=0,max=GRID-p.len;
-    for(let c=p.col-1;c>=0;c--){if(occ[p.row][c]){min=c+1;break;}}
-    for(let c=p.col+p.len;c<GRID;c++){if(occ[p.row][c]){max=c-p.len;break;}}
-    if(p.ex==='left' &&p.et===p.row)min=-p.len;
-    if(p.ex==='right'&&p.et===p.row)max=GRID;
+    let min=0,max=GRID-p.len,bL=false,bR=false;
+    for(let c=startPos-1;c>=0;c--){if(occ[p.row][c]){min=c+1;bL=true;break;}}
+    for(let c=startPos+p.len;c<GRID;c++){if(occ[p.row][c]){max=c-p.len;bR=true;break;}}
+    if(p.ex==='left' &&p.et===p.row&&!bL)min=-p.len;
+    if(p.ex==='right'&&p.et===p.row&&!bR)max=GRID;
     return[min,max];
   }else{
-    let min=0,max=GRID-p.len;
-    for(let r=p.row-1;r>=0;r--){if(occ[r][p.col]){min=r+1;break;}}
-    for(let r=p.row+p.len;r<GRID;r++){if(occ[r][p.col]){max=r-p.len;break;}}
-    if(p.ex==='up'  &&p.et===p.col)min=-p.len;
-    if(p.ex==='down'&&p.et===p.col)max=GRID;
+    let min=0,max=GRID-p.len,bU=false,bD=false;
+    for(let r=startPos-1;r>=0;r--){if(occ[r][p.col]){min=r+1;bU=true;break;}}
+    for(let r=startPos+p.len;r<GRID;r++){if(occ[r][p.col]){max=r-p.len;bD=true;break;}}
+    if(p.ex==='up'  &&p.et===p.col&&!bU)min=-p.len;
+    if(p.ex==='down'&&p.et===p.col&&!bD)max=GRID;
     return[min,max];
   }
 }
@@ -344,7 +344,10 @@ function onDown(e){
   if(!p||p.removed)return;
   e.preventDefault();
   const[sx,sy]=getXY(e);
-  drag={p,sx,sy,startCol:p.col,startRow:p.row};
+  const occ=occupancy(p.id);
+  const startPos=p.dir==='h'?p.col:p.row;
+  const[min,max]=computeWalls(p,occ,startPos);
+  drag={p,sx,sy,startCol:p.col,startRow:p.row,min,max};
   p.el.classList.add('dragging');
   p.el.style.zIndex=200;
 }
@@ -353,21 +356,19 @@ function onMove(e){
   if(!drag)return;
   e.preventDefault();
   const[cx,cy]=getXY(e);
-  const{p,sx,sy,startCol,startRow}=drag;
-  // Recalculate occupancy fresh every move so pieces always block each other
-  const occ=occupancy(p.id);
-  const[min,max]=getRange(p,occ);
+  const{p,sx,sy,startCol,startRow,min,max}=drag;
   if(p.dir==='h'){
-    const nc=Math.max(min,Math.min(max,startCol+Math.round((cx-sx)/TILE)));
+    const desired=startCol+Math.round((cx-sx)/TILE);
+    const nc=Math.max(min,Math.min(max,desired));
     if(nc!==p.col){p.col=nc;place();}
     p.el.classList.toggle('at-exit',(p.ex==='left'&&nc<=-(p.len-1))||(p.ex==='right'&&nc>=GRID-1));
   }else{
-    const nr=Math.max(min,Math.min(max,startRow+Math.round((cy-sy)/TILE)));
+    const desired=startRow+Math.round((cy-sy)/TILE);
+    const nr=Math.max(min,Math.min(max,desired));
     if(nr!==p.row){p.row=nr;place();}
     p.el.classList.toggle('at-exit',(p.ex==='up'&&nr<=-(p.len-1))||(p.ex==='down'&&nr>=GRID-1));
   }
 }
-
 function onUp(){
   if(!drag)return;
   const{p}=drag;
