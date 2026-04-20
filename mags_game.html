@@ -747,10 +747,7 @@ function doFlip(){
 // UPDATE
 function update(){
   GS.frame++;
-  // On touch devices, compensate bg scroll for player lateral movement
-  // so background doesn't appear to speed up when joystick is pushed
-  const bgScrollComp=('ontouchstart' in window)?Math.max(0,P.vx):0;
-  bgOff+=spd-bgScrollComp;
+  bgOff+=spd;
   spdT++;if(spdT>280){spdT=0;spd=Math.min(spd+.35,15);}
   if(GS.comboT>0)GS.comboT--;else{GS.combo=0;GS.mult=1;}
   if(P.justLeftGrind>0)P.justLeftGrind--;
@@ -897,6 +894,7 @@ function update(){
         if(towedChar==='kevin'){
           // Kevin riding + grab dog = x4 multiplier AND dog tow (double shield!)
           GS.mult=Math.min(GS.mult*4,16); // x4 multiplier, cap at 16x
+          if(ladyTow.active){ladyTow.active=false;oldLady.visible=false;} // only one secondary at a time
           dogTow.active=true;dogTow.frame=0;
           // Keep Kevin AND add dog — towedChar stays 'kevin', dog just boosts score
           addScore(1000,'🐕+🤙 x4 POINTS!',C.yl);sfxPowerup('star');
@@ -904,7 +902,7 @@ function update(){
           dog.visible=false;
         } else {
           // Normal tow — release lady if held, grab dog
-          if(towedChar==='lady'){ladyTow.active=false;}
+          if(towedChar==='lady'){ladyTow.active=false;oldLady.visible=false;}
           dogTow.active=true;dogTow.frame=0;towedChar='dog';
           dog.visible=false;
           addScore(500,'DOG TOWED! 🐕',C.yl);sfxPowerup('star');
@@ -944,10 +942,20 @@ function update(){
       // Tow triggers on any contact — ground OR low jump (within 40px of ground)
       const nearGround = P.y+PH > GROUND_Y-80;
       if(nearGround){
-        if(towedChar==='dog'){dogTow.active=false;}
-        ladyTow.active=true;ladyTow.frame=0;towedChar='lady';
-        addScore(750,'GG TOWED! 👵',C.pk);sfxPowerup('star');
-        popup(P.x,P.y-50,'🛡️ SHIELD!',C.pk);
+        if(towedChar==='kevin'){
+          // Kevin riding + grab lady = x4 multiplier AND lady tow (double shield!)
+          GS.mult=Math.min(GS.mult*4,16);
+          if(dogTow.active){dogTow.active=false;} // only one secondary at a time
+          ladyTow.active=true;ladyTow.frame=0;
+          // Keep Kevin AND add lady — towedChar stays 'kevin'
+          addScore(1000,'👵+🤙 x4 POINTS!',C.yl);sfxPowerup('star');
+          popup(P.x,P.y-50,'x4 SCORE! 🔥',C.yl);
+        } else {
+          if(towedChar==='dog'){dogTow.active=false;}
+          ladyTow.active=true;ladyTow.frame=0;towedChar='lady';
+          addScore(750,'GG TOWED! 👵',C.pk);sfxPowerup('star');
+          popup(P.x,P.y-50,'🛡️ SHIELD!',C.pk);
+        }
       } else {
         // High jump over — no tow, keep scrolling
         oldLady.visible=true; // don't hide, let her scroll off
@@ -989,12 +997,29 @@ function hitObs(){
   // If towing someone, they absorb the crash (shield hit) — release them instead of losing life
   if(towedChar){
     sfxCrash();
+    // Double-shield case (Kevin + dog/lady) — lose the secondary first, keep Kevin
+    if(towedChar==='kevin' && (dogTow.active || ladyTow.active)){
+      if(dogTow.active){
+        dogTow.active=false;
+        popup(P.x,P.y-40,'DOG LOST!','#FFE600');
+      } else {
+        ladyTow.active=false;oldLady.visible=false;
+        popup(P.x,P.y-40,'LADY LOST!','#FFE600');
+      }
+      P.invT=200;P.vy=-5;P.state='crash';P.stTimer=60;
+      P.grindRail=null;P.grindObs=null;P.onGround=false;
+      sparks(P.x,P.y+50,'#FFE600');
+      return;
+    }
     if(towedChar==='dog'){dogTow.active=false;}
     else if(towedChar==='lady'){ladyTow.active=false;oldLady.visible=false;}
     else if(towedChar==='kevin'){
       // Kevin crash animation — he slides off left while Mag takes over
       kevTow.crashing=true;kevTow.crashX=P.x-60;kevTow.crashFrame=0;
       kevTow.active=false;
+      // Safety: clear any lingering secondary tow state
+      dogTow.active=false;
+      ladyTow.active=false;oldLady.visible=false;
     }
     towedChar=null;
     P.invT=200;P.vy=-5;P.state='crash';P.stTimer=60;
