@@ -53,7 +53,13 @@ const IMG_LOGO   = new Image(); IMG_LOGO.src   = 'data:image/png;base64,iVBORw0K
 
 const SHEET_URL='https://script.google.com/macros/s/AKfycbwXL5EDGT4fRgHtIbAgBkppzmViYckWJ961HW32OT1zoj6gtMxQ7FouFyc-Zb-m3QJHyw/exec';
 let leaderboard=[];
-async function fetchLeaderboard(){try{const r=await fetch(SHEET_URL+'?action=get');const d=await r.json();if(Array.isArray(d))leaderboard=d.slice(0,10).map(row=>[String(row[0]||'?'),String(row[1]||'0-0')]);}catch(e){}}
+async function fetchLeaderboard(){try{const r=await fetch(SHEET_URL+'?action=get');const d=await r.json();if(!Array.isArray(d))return;
+  // Sheet columns: A=name, B=score ("5-2"), C=timestamp. Ignore C, sort by most player goals.
+  leaderboard=d.map(row=>[String(row[0]||'').trim()||'?',String(row[1]||'').trim()])
+    .filter(([n,s])=>/^\d+-\d+$/.test(s)&&n!=='?'&&!/^name$/i.test(n))
+    .sort((a,b)=>{const [ap,an]=a[1].split('-').map(Number),[bp,bn]=b[1].split('-').map(Number);return bp-ap||an-bn;})
+    .slice(0,10);
+}catch(e){}}
 async function submitScore(name,pts){try{await fetch(SHEET_URL+'?name='+encodeURIComponent(name)+'&score='+pts);await fetchLeaderboard();}catch(e){}}
 fetchLeaderboard();
 
