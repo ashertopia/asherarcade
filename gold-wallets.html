@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AURUM — Solid Gold Wallets. Heirloom-Grade Luxury.</title>
+<meta name="description" content="AURUM crafts solid gold wallets engineered for a lifetime. Hand-finished in 18k and 24k gold. Bespoke commissions and signature collection.">
+<style>
+  :root{
+    --bg:#0a0a0a;
+    --bg-2:#111;
+    --panel:#15130d;
+    --line:#2a241a;
+    --text:#f4ecd9;
+    --muted:#a89c84;
+    --gold:#d4af37;
+    --gold-2:#f4d97a;
+    --gold-3:#a07a1f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+
+  /* NAV */
+  .nav{
+    position:sticky;top:0;z-index:50;
+    background:rgba(10,10,10,.85);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1280px;margin:0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;
+  }
+  .logo{display:flex;align-items:center;gap:12px}
+  .logo-mark{
+    width:44px;height:44px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,var(--gold-2),var(--gold) 40%,var(--gold-3) 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 2px #1a1a1a, 0 0 0 3px var(--gold-3), 0 6px 20px rgba(212,175,55,.25);
+    font-weight:900;color:#1a1300;font-size:13px;letter-spacing:.5px;
+  }
+  .logo-text{font-weight:800;letter-spacing:6px;font-size:14px}
+  .nav-links{display:flex;gap:28px;font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+  .nav-links a:hover{color:var(--gold-2)}
+  .nav-cta{
+    background:transparent;color:var(--gold-2);
+    border:1px solid var(--gold-3);
+    padding:9px 16px;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;
+    cursor:pointer;transition:.2s;
+  }
+  .nav-cta:hover{background:var(--gold);color:#1a1300;border-color:var(--gold)}
+  .menu-toggle{display:none;background:none;border:none;color:var(--text);font-size:24px;cursor:pointer}
+
+  /* HERO */
+  .hero{
+    position:relative;overflow:hidden;
+    min-height:88vh;
+    display:flex;align-items:center;
+    background:
+      radial-gradient(ellipse at 70% 40%, rgba(212,175,55,.18), transparent 55%),
+      radial-gradient(ellipse at 20% 80%, rgba(212,175,55,.08), transparent 60%),
+      linear-gradient(180deg,#000 0%,#0a0905 100%);
+  }
+  .hero::before{
+    content:"";position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(115deg, rgba(212,175,55,.03) 0 2px, transparent 2px 6px);
+    pointer-events:none;
+  }
+  .hero-inner{
+    position:relative;z-index:2;
+    max-width:1280px;margin:0 auto;width:100%;
+    padding:80px 24px;
+    display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;
+  }
+  .eyebrow{
+    color:var(--gold-2);font-size:12px;letter-spacing:4px;
+    text-transform:uppercase;margin-bottom:18px;
+  }
+  .hero h1{
+    font-size:clamp(36px,5.5vw,72px);
+    line-height:1.02;font-weight:900;letter-spacing:-1px;
+    text-transform:uppercase;
+  }
+  .hero h1 .accent{
+    background:linear-gradient(180deg,var(--gold-2),var(--gold) 60%,var(--gold-3));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p.lede{
+    margin:22px 0 28px;color:var(--muted);max-width:520px;font-size:16px;
+    text-transform:uppercase;letter-spacing:1.5px;
+  }
+  .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+  .btn{
+    display:inline-block;padding:14px 22px;
+    font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700;
+    cursor:pointer;border:1px solid transparent;transition:.2s;
+  }
+  .btn-primary{
+    background:linear-gradient(180deg,var(--gold-2),var(--gold));
+    color:#1a1300;border-color:var(--gold);
+  }
+  .btn-primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
+  .btn-ghost{background:transparent;color:var(--text);border-color:var(--line)}
+  .btn-ghost:hover{border-color:var(--gold);color:var(--gold-2)}
+  .made-line{
+    color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    border-left:2px solid var(--gold);padding-left:12px;
+  }
+
+  /* hero visual: stylized wallet stack */
+  .hero-visual{
+    position:relative;height:480px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .wallet{
+    position:absolute;
+    width:340px;height:220px;border-radius:14px;
+    background:linear-gradient(135deg,#3a2c0e 0%,#7a5e1c 30%,#d4af37 55%,#f4d97a 70%,#a07a1f 100%);
+    box-shadow:
+      0 30px 60px rgba(0,0,0,.6),
+      inset 0 1px 0 rgba(255,255,255,.4),
+      inset 0 -1px 0 rgba(0,0,0,.5);
+    border:1px solid rgba(255,235,170,.3);
+  }
+  .wallet::after{
+    content:"AURUM";
+    position:absolute;bottom:18px;right:22px;
+    font-weight:900;letter-spacing:5px;font-size:13px;color:rgba(20,15,0,.65);
+  }
+  .wallet::before{
+    content:"";position:absolute;top:50%;left:0;right:0;height:1px;
+    background:rgba(20,15,0,.3);
+  }
+  .wallet.w1{transform:rotate(-12deg) translate(-60px,30px);width:320px;height:200px;opacity:.85}
+  .wallet.w2{transform:rotate(4deg) translate(20px,-10px);z-index:2}
+  .wallet.w3{
+    transform:rotate(15deg) translate(80px,40px);width:300px;height:190px;opacity:.7;
+    background:linear-gradient(135deg,#1a1a1a,#2a2418 60%,#7a5e1c 100%);
+  }
+  .wallet.w3::after{color:rgba(212,175,55,.7)}
+
+  /* TRUST STRIP */
+  .trust{
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    background:#070605;
+  }
+  .trust-inner{
+    max-width:1280px;margin:0 auto;padding:28px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:30px;flex-wrap:wrap;
+  }
+  .trust-label{
+    color:var(--gold-2);font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  }
+  .trust-logos{display:flex;gap:40px;flex-wrap:wrap;align-items:center}
+  .trust-logos span{
+    color:var(--muted);font-weight:700;letter-spacing:3px;font-size:14px;
+    text-transform:uppercase;font-style:italic;
+    border-bottom:1px solid var(--gold-3);padding-bottom:2px;
+  }
+
+  /* SECTIONS */
+  section.feature{
+    border-bottom:1px solid var(--line);
+    padding:90px 24px;
+    background:linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
+  }
+  .feature-inner{
+    max-width:1280px;margin:0 auto;
+    display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;
+  }
+  .feature.reverse .feature-inner{grid-template-columns:1fr 1fr}
+  .feature.reverse .copy{order:2}
+  .feature.reverse .visual{order:1}
+  .copy h2{
+    font-size:clamp(28px,3.4vw,42px);
+    text-transform:uppercase;font-weight:900;letter-spacing:-.5px;
+    margin-bottom:8px;
+  }
+  .copy h2 .accent{color:var(--gold-2)}
+  .copy .sub{
+    color:var(--gold-2);font-size:11px;letter-spacing:3px;text-transform:uppercase;
+    margin-bottom:20px;font-weight:700;
+  }
+  .copy p{color:var(--muted);max-width:520px;margin-bottom:24px;font-size:15px}
+
+  /* product card visual */
+  .visual{position:relative;height:420px;display:flex;align-items:center;justify-content:center}
+  .product-card{
+    position:relative;width:100%;max-width:480px;height:380px;border-radius:6px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(212,175,55,.2), transparent 70%),
+      linear-gradient(180deg,#1a1610 0%,#0a0805 100%);
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .product-card .wallet{position:relative;transform:none;width:280px;height:180px}
+  .product-card .corner-tag{
+    position:absolute;top:14px;left:14px;
+    color:var(--gold-2);font-size:10px;letter-spacing:2px;
+    border:1px solid var(--gold-3);padding:4px 8px;text-transform:uppercase;
+  }
+
+  /* COLLECTION GRID */
+  .collection{padding:90px 24px;background:#080706;border-bottom:1px solid var(--line)}
+  .collection-inner{max-width:1280px;margin:0 auto}
+  .collection-head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:20px}
+  .collection-head h2{
+    font-size:clamp(28px,3.4vw,42px);
+    text-transform:uppercase;font-weight:900;letter-spacing:-.5px;
+  }
+  .collection-head h2 .accent{color:var(--gold-2)}
+  .collection-head .sub{color:var(--muted);max-width:420px;font-size:14px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .card{
+    background:var(--panel);border:1px solid var(--line);
+    padding:0;overflow:hidden;cursor:pointer;transition:.3s;
+    display:flex;flex-direction:column;
+  }
+  .card:hover{transform:translateY(-4px);border-color:var(--gold-3);box-shadow:0 20px 40px rgba(0,0,0,.5)}
+  .card .pic{
+    height:220px;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 40%, rgba(212,175,55,.18), transparent 65%), #050403;
+    border-bottom:1px solid var(--line);
+  }
+  .card .pic .wallet{position:relative;transform:none;width:230px;height:148px}
+  .card.dark .pic .wallet{background:linear-gradient(135deg,#0a0a0a,#2a2418 60%,#a07a1f 100%)}
+  .card.rose .pic .wallet{background:linear-gradient(135deg,#3a1a0e,#9c5a2c 50%,#f4c79a 100%)}
+  .card.white .pic .wallet{background:linear-gradient(135deg,#1a1a1a,#5a5a5a 40%,#dcdcdc 70%,#f7f7f7 100%)}
+  .card-body{padding:20px}
+  .card-body h3{
+    font-size:18px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;
+  }
+  .card-body .meta{color:var(--muted);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px}
+  .card-body .price{color:var(--gold-2);font-weight:700;font-size:16px;letter-spacing:1px}
+  .card-body .row{display:flex;justify-content:space-between;align-items:center}
+  .pill{
+    font-size:10px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--gold-2);border:1px solid var(--gold-3);padding:3px 8px;
+  }
+
+  /* SPECS */
+  .specs{padding:90px 24px;background:#0a0805;border-bottom:1px solid var(--line)}
+  .specs-inner{max-width:1280px;margin:0 auto;text-align:center}
+  .specs h2{font-size:clamp(26px,3vw,38px);text-transform:uppercase;letter-spacing:-.5px;font-weight:900}
+  .specs h2 .accent{color:var(--gold-2)}
+  .specs > .specs-inner > .sub{color:var(--muted);margin:14px auto 50px;max-width:560px}
+  .spec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:left}
+  .spec{padding:24px;border:1px solid var(--line);background:#0d0a05}
+  .spec .num{
+    font-size:34px;font-weight:900;
+    background:linear-gradient(180deg,var(--gold-2),var(--gold-3));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:8px;
+  }
+  .spec h4{font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+  .spec p{color:var(--muted);font-size:13px}
+
+  /* CTA STRIP */
+  .cta-strip{
+    padding:80px 24px;
+    background:
+      radial-gradient(ellipse at 50% 50%, rgba(212,175,55,.15), transparent 70%),
+      #0a0805;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+  }
+  .cta-strip h2{font-size:clamp(28px,3.4vw,44px);text-transform:uppercase;letter-spacing:-.5px;font-weight:900;max-width:760px;margin:0 auto}
+  .cta-strip h2 .accent{color:var(--gold-2)}
+  .cta-strip p{color:var(--muted);margin:18px auto 28px;max-width:520px}
+
+  /* FOOTER */
+  footer{background:#050403;padding:50px 24px 30px;color:var(--muted);font-size:13px}
+  .foot-inner{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
+  .foot-inner h5{color:var(--gold-2);font-size:11px;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px}
+  .foot-inner ul{list-style:none}
+  .foot-inner li{margin-bottom:8px}
+  .foot-inner li a:hover{color:var(--gold-2)}
+  .foot-bottom{
+    max-width:1280px;margin:40px auto 0;
+    border-top:1px solid var(--line);padding-top:20px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:12px;
+  }
+
+  /* MODAL (quote form) */
+  .modal{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+    z-index:100;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal.open{display:flex}
+  .modal-box{
+    background:#0d0a05;border:1px solid var(--gold-3);
+    max-width:480px;width:100%;padding:32px;position:relative;
+  }
+  .modal-box h3{text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .modal-box p{color:var(--muted);font-size:14px;margin-bottom:22px}
+  .modal-box label{display:block;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .modal-box input,.modal-box textarea,.modal-box select{
+    width:100%;background:#050403;border:1px solid var(--line);
+    color:var(--text);padding:10px 12px;margin-bottom:16px;font-family:inherit;font-size:14px;
+  }
+  .modal-box input:focus,.modal-box textarea:focus,.modal-box select:focus{outline:none;border-color:var(--gold)}
+  .modal-close{
+    position:absolute;top:10px;right:14px;background:none;border:none;
+    color:var(--muted);font-size:22px;cursor:pointer;
+  }
+  .ok-msg{display:none;color:var(--gold-2);text-align:center;padding:20px;font-size:14px;letter-spacing:1px}
+  .ok-msg.show{display:block}
+
+  /* RESPONSIVE */
+  @media (max-width:880px){
+    .nav-links{display:none}
+    .menu-toggle{display:block}
+    .hero-inner{grid-template-columns:1fr;padding:50px 20px}
+    .hero-visual{height:340px;order:-1}
+    .wallet{width:240px;height:150px}
+    .wallet.w1{width:230px;height:140px}
+    .wallet.w3{width:220px;height:138px}
+    .feature-inner{grid-template-columns:1fr;gap:30px}
+    .feature.reverse .copy{order:1}
+    .feature.reverse .visual{order:2}
+    .grid{grid-template-columns:1fr}
+    .spec-grid{grid-template-columns:repeat(2,1fr)}
+    .foot-inner{grid-template-columns:1fr 1fr;gap:30px}
+    .visual{height:300px}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-mark">AU</div>
+      <div class="logo-text">AURUM</div>
+    </a>
+    <div class="nav-links">
+      <a href="#bespoke">Bespoke</a>
+      <a href="#collection">Collection</a>
+      <a href="#craft">Craft</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <button class="nav-cta" onclick="openQuote()">Request Quote</button>
+    <button class="menu-toggle" onclick="document.querySelector('.nav-links').style.display = document.querySelector('.nav-links').style.display === 'flex' ? 'none' : 'flex'">☰</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">Solid Gold · Hand-Forged Since 1974</div>
+      <h1>
+        When ordinary<br>
+        isn't an option.<br>
+        <span class="accent">Choose AURUM.</span>
+      </h1>
+      <p class="lede">Heirloom-grade wallets, crafted in 18k & 24k gold</p>
+      <div class="cta-row">
+        <button class="btn btn-primary" onclick="openQuote()">Commission a Bespoke Piece</button>
+        <a href="#collection" class="btn btn-ghost">Shop the Collection</a>
+      </div>
+      <div class="made-line">Hand-finished in Florence · Aerospace-precision tolerances</div>
+    </div>
+    <div class="hero-visual">
+      <div class="wallet w1"></div>
+      <div class="wallet w2"></div>
+      <div class="wallet w3"></div>
+    </div>
+  </div>
+</header>
+
+<!-- TRUST -->
+<section class="trust">
+  <div class="trust-inner">
+    <div class="trust-label">Selected by the world's most discerning</div>
+    <div class="trust-logos">
+      <span>ROBB REPORT</span>
+      <span>GQ</span>
+      <span>FORBES</span>
+      <span>VOGUE</span>
+      <span>WALL ST. JOURNAL</span>
+    </div>
+  </div>
+</section>
+
+<!-- BESPOKE -->
+<section class="feature" id="bespoke">
+  <div class="feature-inner">
+    <div class="copy">
+      <div class="sub">Bespoke <span style="color:var(--gold-2)">·</span> Wallets</div>
+      <h2>Engineered for <span class="accent">your exact requirements</span></h2>
+      <p>From hidden compartments and biometric clasps to monogrammed inlays, our master goldsmiths collaborate with you to design and forge a one-of-one piece in solid 18k or 24k gold. Each commission carries a numbered certificate of authenticity and lifetime service guarantee.</p>
+      <button class="btn btn-ghost" onclick="openQuote()">Request Information →</button>
+    </div>
+    <div class="visual">
+      <div class="product-card">
+        <div class="corner-tag">One-of-One</div>
+        <div class="wallet"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STANDARD -->
+<section class="feature reverse" id="signature">
+  <div class="feature-inner">
+    <div class="copy">
+      <div class="sub">Signature <span style="color:var(--gold-2)">·</span> Collection</div>
+      <h2>Ready-to-carry <span class="accent">heirlooms</span></h2>
+      <p>Three iconic silhouettes — Bifold, Cardholder, and Money Clip — each milled from a single billet of solid gold, weighed and certified to the gram. Available in classic 24k yellow, rose gold, and rare white-gold finishes.</p>
+      <a href="#collection" class="btn btn-ghost">View the Collection →</a>
+    </div>
+    <div class="visual">
+      <div class="product-card">
+        <div class="corner-tag">In Stock</div>
+        <div class="wallet"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COLLECTION GRID -->
+<section class="collection" id="collection">
+  <div class="collection-inner">
+    <div class="collection-head">
+      <h2>The <span class="accent">Signature</span> Collection</h2>
+      <p class="sub">Three timeless forms. Solid gold construction. Numbered and certified.</p>
+    </div>
+    <div class="grid">
+      <div class="card" onclick="openQuote('Aureus Bifold')">
+        <div class="pic"><div class="wallet"></div></div>
+        <div class="card-body">
+          <h3>Aureus Bifold</h3>
+          <div class="meta">24k Yellow Gold · 142g</div>
+          <div class="row">
+            <div class="price">$18,400</div>
+            <div class="pill">In Stock</div>
+          </div>
+        </div>
+      </div>
+      <div class="card rose" onclick="openQuote('Sovereign Cardholder')">
+        <div class="pic"><div class="wallet"></div></div>
+        <div class="card-body">
+          <h3>Sovereign Cardholder</h3>
+          <div class="meta">18k Rose Gold · 86g</div>
+          <div class="row">
+            <div class="price">$9,250</div>
+            <div class="pill">In Stock</div>
+          </div>
+        </div>
+      </div>
+      <div class="card white" onclick="openQuote('Platinum Clip')">
+        <div class="pic"><div class="wallet"></div></div>
+        <div class="card-body">
+          <h3>Platinum Clip</h3>
+          <div class="meta">18k White Gold · 54g</div>
+          <div class="row">
+            <div class="price">$6,400</div>
+            <div class="pill">Made to Order</div>
+          </div>
+        </div>
+      </div>
+      <div class="card dark" onclick="openQuote('Noir Bifold')">
+        <div class="pic"><div class="wallet"></div></div>
+        <div class="card-body">
+          <h3>Noir Bifold</h3>
+          <div class="meta">Black Rhodium over 18k · 138g</div>
+          <div class="row">
+            <div class="price">$21,900</div>
+            <div class="pill">Limited · 25</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" onclick="openQuote('Imperial Long-Wallet')">
+        <div class="pic"><div class="wallet"></div></div>
+        <div class="card-body">
+          <h3>Imperial Long-Wallet</h3>
+          <div class="meta">24k Yellow Gold · 210g</div>
+          <div class="row">
+            <div class="price">$28,750</div>
+            <div class="pill">Made to Order</div>
+          </div>
+        </div>
+      </div>
+      <div class="card rose" onclick="openQuote('Heritage Coin Purse')">
+        <div class="pic"><div class="wallet"></div></div>
+        <div class="card-body">
+          <h3>Heritage Coin Purse</h3>
+          <div class="meta">18k Rose Gold · 64g</div>
+          <div class="row">
+            <div class="price">$7,800</div>
+            <div class="pill">In Stock</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPECS -->
+<section class="specs" id="craft">
+  <div class="specs-inner">
+    <h2>The <span class="accent">AURUM</span> Standard</h2>
+    <p class="sub">Every piece passes a 47-point inspection before it leaves our atelier.</p>
+    <div class="spec-grid">
+      <div class="spec">
+        <div class="num">.999</div>
+        <h4>Pure Gold</h4>
+        <p>Refined in-house from LBMA-certified bullion to guarantee provenance and purity.</p>
+      </div>
+      <div class="spec">
+        <div class="num">±5μm</div>
+        <h4>Tolerances</h4>
+        <p>CNC-milled, then hand-burnished to aerospace-grade dimensional precision.</p>
+      </div>
+      <div class="spec">
+        <div class="num">100yr</div>
+        <h4>Service Guarantee</h4>
+        <p>Free polishing, repair, and re-finishing for a century from date of purchase.</p>
+      </div>
+      <div class="spec">
+        <div class="num">1/1</div>
+        <h4>Numbered</h4>
+        <p>Every piece is laser-etched with a unique serial and certificate of authenticity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<section class="cta-strip">
+  <h2>Carry something that <span class="accent">outlasts you.</span></h2>
+  <p>Speak with a master goldsmith about your commission. Bespoke pieces typically deliver in 8–12 weeks.</p>
+  <button class="btn btn-primary" onclick="openQuote()">Begin Your Commission</button>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="foot-inner">
+    <div>
+      <div class="logo" style="margin-bottom:14px">
+        <div class="logo-mark">AU</div>
+        <div class="logo-text">AURUM</div>
+      </div>
+      <p style="max-width:340px">Solid gold wallets, hand-forged in Florence and finished in our New York atelier. Heirloom-grade pieces engineered for a lifetime — and the next.</p>
+    </div>
+    <div>
+      <h5>Shop</h5>
+      <ul>
+        <li><a href="#collection">Bifolds</a></li>
+        <li><a href="#collection">Cardholders</a></li>
+        <li><a href="#collection">Money Clips</a></li>
+        <li><a href="#bespoke">Bespoke</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Atelier</h5>
+      <ul>
+        <li><a href="#craft">Craftsmanship</a></li>
+        <li><a href="#">Provenance</a></li>
+        <li><a href="#">Press</a></li>
+        <li><a href="#">Journal</a></li>
+      </ul>
+    </div>
+    <div>
+      <h5>Contact</h5>
+      <ul>
+        <li>concierge@aurum.example</li>
+        <li>+1 (212) 555-0188</li>
+        <li>By appointment only</li>
+        <li>Mon–Sat · 10–6 EST</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <div>© 2026 AURUM Goldsmiths · All rights reserved</div>
+    <div>Privacy · Terms · Provenance Statement</div>
+  </div>
+</footer>
+
+<!-- QUOTE MODAL -->
+<div class="modal" id="quoteModal" onclick="if(event.target===this)closeQuote()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeQuote()">×</button>
+    <form onsubmit="submitQuote(event)" id="quoteForm">
+      <h3>Request a <span style="color:var(--gold-2)">Commission</span></h3>
+      <p>A senior goldsmith will respond within one business day.</p>
+      <label>Full Name</label>
+      <input required type="text" name="name">
+      <label>Email</label>
+      <input required type="email" name="email">
+      <label>Piece of Interest</label>
+      <select name="piece" id="pieceSelect">
+        <option>Bespoke (one-of-one)</option>
+        <option>Aureus Bifold</option>
+        <option>Sovereign Cardholder</option>
+        <option>Platinum Clip</option>
+        <option>Noir Bifold</option>
+        <option>Imperial Long-Wallet</option>
+        <option>Heritage Coin Purse</option>
+      </select>
+      <label>Notes</label>
+      <textarea name="notes" rows="3" placeholder="Engraving, monogram, special requests…"></textarea>
+      <button type="submit" class="btn btn-primary" style="width:100%">Submit Inquiry</button>
+    </form>
+    <div class="ok-msg" id="okMsg">
+      Thank you. Your inquiry has been received.<br>
+      We'll be in touch within one business day.
+    </div>
+  </div>
+</div>
+
+<script>
+  function openQuote(piece){
+    document.getElementById('quoteModal').classList.add('open');
+    document.getElementById('quoteForm').style.display='block';
+    document.getElementById('okMsg').classList.remove('show');
+    if(piece){
+      const sel = document.getElementById('pieceSelect');
+      for(const o of sel.options){if(o.value===piece){sel.value=piece;break}}
+    }
+  }
+  function closeQuote(){
+    document.getElementById('quoteModal').classList.remove('open');
+  }
+  function submitQuote(e){
+    e.preventDefault();
+    document.getElementById('quoteForm').style.display='none';
+    document.getElementById('okMsg').classList.add('show');
+    setTimeout(closeQuote, 2400);
+  }
+  document.addEventListener('keydown', e => { if(e.key==='Escape') closeQuote(); });
+</script>
+</body>
+</html>
