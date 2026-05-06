@@ -236,6 +236,9 @@
 (() => {
   const canvas = document.getElementById('sand');
   const ctx = canvas.getContext('2d', { alpha: false });
+  // Persistent off-screen canvas: bare colored lines that don't fade
+  const pCanvas = document.createElement('canvas');
+  const pCtx = pCanvas.getContext('2d');
   const uiStack = document.getElementById('uiStack');
   const uiColors = document.getElementById('uiColors');
   const uiSym = document.getElementById('uiSym');
@@ -277,6 +280,15 @@
   }
 
   function resize() {
+    // Preserve any existing persistent picture across resize
+    let saved = null;
+    if (pCanvas.width > 0 && pCanvas.height > 0) {
+      saved = document.createElement('canvas');
+      saved.width = pCanvas.width;
+      saved.height = pCanvas.height;
+      saved.getContext('2d').drawImage(pCanvas, 0, 0);
+    }
+
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth;
     H = window.innerHeight;
@@ -287,7 +299,19 @@
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    pCanvas.width = canvas.width;
+    pCanvas.height = canvas.height;
+    pCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
     paintBg();
+
+    if (saved) {
+      pCtx.save();
+      pCtx.setTransform(1, 0, 0, 1, 0, 0);
+      pCtx.drawImage(saved, 0, 0, pCanvas.width, pCanvas.height);
+      pCtx.restore();
+    }
   }
 
   // ─── Drawing ───────────────────────────────────────────
@@ -302,19 +326,28 @@
   function drawSegment(x1, y1, x2, y2, color) {
     if (Math.hypot(x2 - x1, y2 - y1) < 0.4) return;
 
+    // Fresh stroke with soft glow on the visible canvas (this fades)
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-
     ctx.shadowColor = color;
-    ctx.shadowBlur = 3;
+    ctx.shadowBlur = 4;
     ctx.strokeStyle = color;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
-
     ctx.shadowBlur = 0;
+
+    // Bare colored line on the persistent canvas (this stays)
+    pCtx.lineCap = 'round';
+    pCtx.lineJoin = 'round';
+    pCtx.strokeStyle = color;
+    pCtx.lineWidth = 2;
+    pCtx.beginPath();
+    pCtx.moveTo(x1, y1);
+    pCtx.lineTo(x2, y2);
+    pCtx.stroke();
   }
 
   function drawSymmetric(x, y, isStart) {
@@ -338,19 +371,15 @@
 
   // ─── Slow fade ─────────────────────────────────────────
   function fadeStep() {
-    ctx.fillStyle = 'rgba(8, 4, 26, 0.018)';
+    // Fade the fresh-stroke glow on the visible canvas (1-2 sec settle)
+    ctx.fillStyle = 'rgba(8, 4, 26, 0.04)';
     ctx.fillRect(0, 0, W, H);
 
-    const twinkles = 4;
-    for (let i = 0; i < twinkles; i++) {
-      const x = Math.random() * W;
-      const y = Math.random() * H;
-      const a = 0.05 + Math.random() * 0.12;
-      ctx.fillStyle = `rgba(220, 230, 255, ${a})`;
-      ctx.beginPath();
-      ctx.arc(x, y, Math.random() < 0.9 ? 0.5 : 1, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // Restore the persistent colored picture on top, so lines never disappear
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(pCanvas, 0, 0);
+    ctx.restore();
 
     requestAnimationFrame(fadeStep);
   }
@@ -430,12 +459,18 @@
   });
 
   document.getElementById('clear').addEventListener('click', () => {
+    // Wipe the persistent picture so it stops being restored each frame
+    pCtx.save();
+    pCtx.setTransform(1, 0, 0, 1, 0, 0);
+    pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+    pCtx.restore();
+
     let t = 0;
     const smooth = () => {
-      ctx.fillStyle = 'rgba(8, 4, 26, 0.22)';
+      ctx.fillStyle = 'rgba(8, 4, 26, 0.28)';
       ctx.fillRect(0, 0, W, H);
       t++;
-      if (t < 16) requestAnimationFrame(smooth);
+      if (t < 14) requestAnimationFrame(smooth);
       else paintBg();
     };
     smooth();
