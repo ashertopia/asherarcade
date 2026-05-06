@@ -103,6 +103,35 @@
     box-shadow: 0 0 14px rgba(255,255,255,0.7);
   }
 
+  .swatch-toggle {
+    width: 28px;
+    height: 28px;
+    margin: 0 6px 0 2px;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .swatch-toggle.rainbow {
+    background: conic-gradient(from 0deg, #ff3a8c, #ffa83a, #ffe23a, #7cff3a, #3affe0, #00b4ff, #a86cff, #ff3ad9, #ff3a8c);
+  }
+
+  .divider {
+    width: 1px;
+    height: 22px;
+    background: rgba(255,255,255,0.12);
+    margin: 0 4px;
+  }
+
+  #uiColors {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+  }
+  #uiColors.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
   .btn {
     appearance: none;
     border: none;
@@ -192,6 +221,8 @@
     <button class="swatch rainbow" data-color="rainbow" aria-label="Rainbow"></button>
   </div>
   <div class="ui" id="uiSym">
+    <button class="swatch swatch-toggle" id="colorToggle" style="--c:#ff3a3a" aria-label="Pick color"></button>
+    <span class="divider"></span>
     <button class="btn active" data-sym="1" aria-label="Single">●</button>
     <button class="btn" data-sym="2" aria-label="Mirror x2">●●</button>
     <button class="btn" data-sym="4" aria-label="Mirror x4">✦</button>
@@ -333,6 +364,7 @@
   function onDown(e) {
     if (e.target.closest('.ui-stack')) return;
     e.preventDefault();
+    uiColors.classList.remove('open');
     drawing = true;
     lastPts = [];
     const p = pointerPos(e);
@@ -372,6 +404,12 @@
     });
   });
 
+  const colorToggle = document.getElementById('colorToggle');
+
+  colorToggle.addEventListener('click', () => {
+    uiColors.classList.toggle('open');
+  });
+
   uiColors.querySelectorAll('.swatch').forEach(sw => {
     sw.addEventListener('click', () => {
       uiColors.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
@@ -379,10 +417,15 @@
       const c = sw.dataset.color;
       if (c === 'rainbow') {
         rainbowMode = true;
+        colorToggle.classList.add('rainbow');
+        colorToggle.style.removeProperty('--c');
       } else {
         rainbowMode = false;
         currentColor = c;
+        colorToggle.classList.remove('rainbow');
+        colorToggle.style.setProperty('--c', c);
       }
+      setTimeout(() => uiColors.classList.remove('open'), 140);
     });
   });
 
@@ -405,7 +448,10 @@
   function bumpIdle() {
     uiStack.classList.remove('hidden');
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => uiStack.classList.add('hidden'), 4500);
+    idleTimer = setTimeout(() => {
+      uiStack.classList.add('hidden');
+      uiColors.classList.remove('open');
+    }, 4500);
   }
   ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
     window.addEventListener(ev, bumpIdle, { passive: true })
