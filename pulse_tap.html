@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0820">
+<title>Pulse Tap — Asher Arcade</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #0a0820;
+    --ui: rgba(255,255,255,0.55);
+    --ink: rgba(255,255,255,0.9);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    cursor: pointer;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .label {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ui);
+    z-index: 10;
+    pointer-events: none;
+    transition: opacity 1.2s ease;
+  }
+  .label.fade { opacity: 0; }
+
+  .streak {
+    position: fixed;
+    top: calc(max(20px, env(safe-area-inset-top)) + 32px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: rgba(220, 210, 240, 0.65);
+    z-index: 10;
+    pointer-events: none;
+    transition: opacity 1.2s ease, transform 0.3s ease, color 0.3s ease;
+  }
+  .streak.bump {
+    transform: translateX(-50%) scale(1.06);
+    color: rgba(245, 235, 255, 0.95);
+  }
+  .streak.fade { opacity: 0.4; }
+
+  .hint {
+    position: fixed;
+    bottom: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--ui);
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1s ease;
+  }
+  .hint.gone { opacity: 0; }
+
+  .ui {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(20, 16, 46, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 10;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .ui > * { pointer-events: auto; }
+  .ui.hidden { opacity: 0.18; }
+
+  .btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--ui);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    min-height: 36px;
+  }
+  .btn:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
+  .btn.active { background: rgba(255,255,255,0.14); color: rgba(255,255,255,0.95); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c"></canvas>
+</div>
+
+<div class="label" id="label">Pulse Tap</div>
+<div class="streak" id="streak">0</div>
+<div class="hint" id="hint">tap on the inhale</div>
+
+<div class="ui" id="ui">
+  <button class="btn" data-pace="slow">Slow</button>
+  <button class="btn active" data-pace="calm">Calm</button>
+  <button class="btn" data-pace="brisk">Brisk</button>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const bgCanvas = document.createElement('canvas');
+  const bgCtx = bgCanvas.getContext('2d');
+
+  const ui = document.getElementById('ui');
+  const label = document.getElementById('label');
+  const hint = document.getElementById('hint');
+  const streakEl = document.getElementById('streak');
+
+  let W = 0, H = 0;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  const PACE = {
+    slow:  12000,
+    calm:  8000,
+    brisk: 6000,
+  };
+  let cycleMs = PACE.calm;
+  let cycleStart = 0;
+  let phase = 0;
+  let inhaling = false;
+  let tappedThisCycle = false;
+  let streak = 0;
+
+  let ripples = [];
+  let hintShown = true;
+
+  // ─── Background ────────────────────────────────────────
+  function paintBg() {
+    bgCtx.fillStyle = '#06041a';
+    bgCtx.fillRect(0, 0, W, H);
+
+    const g = bgCtx.createRadialGradient(W / 2, H * 0.55, 60, W / 2, H / 2, Math.max(W, H) * 0.85);
+    g.addColorStop(0, 'rgba(80, 60, 150, 0.18)');
+    g.addColorStop(1, 'rgba(8, 4, 28, 0.0)');
+    bgCtx.fillStyle = g;
+    bgCtx.fillRect(0, 0, W, H);
+
+    const starCount = Math.floor(W * H / 4500);
+    for (let i = 0; i < starCount; i++) {
+      const x = Math.random() * W;
+      const y = Math.random() * H;
+      const a = 0.15 + Math.random() * 0.5;
+      const r = Math.random() < 0.92 ? 0.6 : 1.1;
+      bgCtx.fillStyle = `rgba(220, 230, 255, ${a * 0.3})`;
+      bgCtx.beginPath();
+      bgCtx.arc(x, y, r, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    bgCanvas.width = canvas.width;
+    bgCanvas.height = canvas.height;
+    bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paintBg();
+  }
+
+  // ─── Drawing ───────────────────────────────────────────
+  function drawCircle(now) {
+    const cx = W / 2, cy = H / 2;
+    const baseR = Math.min(W, H) * 0.18;
+    // smooth breath: 0.65 -> 1.0 -> 0.65
+    const scale = 0.825 - 0.175 * Math.cos(phase * Math.PI * 2);
+    const r = baseR * scale;
+
+    // brightness ramps up during inhale, down during exhale
+    const bright = (1 - Math.cos(phase * Math.PI * 2)) / 2; // 0..1..0
+    const tapWindow = inhaling && !tappedThisCycle;
+
+    // Outer glow
+    const glowR = r * 2.0;
+    const glowAlpha = 0.18 + 0.18 * bright;
+    const gg = ctx.createRadialGradient(cx, cy, r * 0.5, cx, cy, glowR);
+    gg.addColorStop(0,   `rgba(190, 170, 240, ${glowAlpha})`);
+    gg.addColorStop(0.5, `rgba(180, 160, 230, ${glowAlpha * 0.4})`);
+    gg.addColorStop(1,   `rgba(180, 160, 230, 0)`);
+    ctx.fillStyle = gg;
+    ctx.beginPath();
+    ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner orb body (radial gradient)
+    const bg = ctx.createRadialGradient(
+      cx - r * 0.3, cy - r * 0.35, r * 0.05,
+      cx, cy, r
+    );
+    bg.addColorStop(0,    `rgba(255, 245, 255, ${0.6 + 0.15 * bright})`);
+    bg.addColorStop(0.55, `rgba(190, 170, 240, ${0.45 + 0.15 * bright})`);
+    bg.addColorStop(1,    `rgba(120, 100, 180, 0.6)`);
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rim
+    ctx.strokeStyle = tapWindow
+      ? `rgba(230, 215, 255, ${0.4 + 0.4 * bright})`
+      : `rgba(180, 160, 230, ${0.3 + 0.2 * bright})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Highlight
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.45 + 0.15 * bright})`;
+    ctx.beginPath();
+    ctx.arc(cx - r * 0.4, cy - r * 0.42, r * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Phase text below
+    ctx.fillStyle = `rgba(220, 210, 240, ${0.35 + 0.35 * bright})`;
+    ctx.font = '300 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const phaseLabel = inhaling ? 'breathe in' : 'breathe out';
+    ctx.save();
+    ctx.translate(cx, cy + baseR + 60);
+    ctx.letterSpacing = '0.3em';
+    ctx.fillText(phaseLabel.toUpperCase(), 0, 0);
+    ctx.restore();
+  }
+
+  function drawRipple(r, now) {
+    const t = (now - r.born) / r.duration;
+    if (t >= 1) return;
+    const radius = r.startR + (r.endR - r.startR) * t;
+    const alpha = (1 - t);
+
+    ctx.save();
+    const gr = ctx.createRadialGradient(r.x, r.y, radius * 0.4, r.x, r.y, radius);
+    gr.addColorStop(0, `rgba(${r.color.join(',')}, ${alpha * 0.18})`);
+    gr.addColorStop(1, `rgba(${r.color.join(',')}, 0)`);
+    ctx.fillStyle = gr;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = `rgba(${r.color.join(',')}, ${alpha * 0.6})`;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ─── Frame loop ────────────────────────────────────────
+  function frame(now) {
+    if (!cycleStart) cycleStart = now;
+    const elapsed = (now - cycleStart) % cycleMs;
+    phase = elapsed / cycleMs;
+
+    const wasInhaling = inhaling;
+    inhaling = phase < 0.5;
+    if (inhaling && !wasInhaling) tappedThisCycle = false;
+
+    // Render
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(bgCanvas, 0, 0);
+    ctx.restore();
+
+    drawCircle(now);
+    ripples.forEach(r => drawRipple(r, now));
+    ripples = ripples.filter(r => now - r.born < r.duration);
+
+    requestAnimationFrame(frame);
+  }
+
+  // ─── Pointer ──────────────────────────────────────────
+  function pointerPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function onDown(e) {
+    if (e.target.closest('.ui')) return;
+    e.preventDefault();
+    const p = pointerPos(e);
+
+    // Always show a ripple where you tapped
+    const onBeat = inhaling && !tappedThisCycle;
+    const color = onBeat ? [220, 210, 250] : [160, 150, 200];
+    ripples.push({
+      x: p.x, y: p.y, color,
+      startR: 12,
+      endR: onBeat ? 90 : 50,
+      born: performance.now(),
+      duration: onBeat ? 700 : 450,
+    });
+
+    if (onBeat) {
+      streak++;
+      tappedThisCycle = true;
+      streakEl.textContent = streak;
+      streakEl.classList.add('bump');
+      setTimeout(() => streakEl.classList.remove('bump'), 220);
+    }
+
+    if (hintShown) {
+      hint.classList.add('gone');
+      hintShown = false;
+      setTimeout(() => label.classList.add('fade'), 1500);
+      setTimeout(() => streakEl.classList.add('fade'), 4000);
+    }
+  }
+
+  canvas.addEventListener('pointerdown', onDown);
+
+  // ─── UI ───────────────────────────────────────────────
+  ui.querySelectorAll('button[data-pace]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      ui.querySelectorAll('button[data-pace]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const newCycle = PACE[btn.dataset.pace];
+      // Preserve current phase across pace change
+      const currentPhase = phase;
+      cycleStart = performance.now() - currentPhase * newCycle;
+      cycleMs = newCycle;
+    });
+  });
+
+  let idleTimer = null;
+  function bumpIdle() {
+    ui.classList.remove('hidden');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => ui.classList.add('hidden'), 4500);
+  }
+  ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
+    window.addEventListener(ev, bumpIdle, { passive: true })
+  );
+  bumpIdle();
+
+  // ─── Init ──────────────────────────────────────────────
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
