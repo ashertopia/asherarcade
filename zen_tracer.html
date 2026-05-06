@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0820">
+<title>Zen Tracer — Asher Arcade</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #0a0820;
+    --ui: rgba(255,255,255,0.55);
+    --ink: rgba(255,255,255,0.9);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    cursor: crosshair;
+  }
+
+  canvas#main {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .ui {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(20, 16, 46, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 10;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .ui > * { pointer-events: auto; }
+
+  .ui.hidden { opacity: 0.18; }
+
+  .btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--ui);
+    font-family: inherit;
+    font-size: 18px;
+    line-height: 1;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    min-width: 40px;
+    min-height: 38px;
+  }
+
+  .btn:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
+  .btn.active {
+    background: rgba(127, 230, 255, 0.18);
+    color: rgba(255,255,255,0.95);
+  }
+
+  .label {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ui);
+    z-index: 10;
+    pointer-events: none;
+    transition: opacity 1.2s ease;
+  }
+  .label.fade { opacity: 0; }
+
+  .hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--ui);
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1s ease;
+  }
+  .hint.gone { opacity: 0; }
+
+  @media (max-width: 380px) {
+    .btn { font-size: 16px; padding: 7px 10px; }
+    .label { font-size: 10px; letter-spacing: 0.3em; }
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="main"></canvas>
+</div>
+
+<div class="label" id="label">Zen Tracer</div>
+<div class="hint" id="hint">trace the path · glow follows your finger</div>
+
+<div class="ui" id="ui">
+  <button class="btn active" data-shape="infinity" aria-label="Infinity">∞</button>
+  <button class="btn" data-shape="flower" aria-label="Flower">✿</button>
+  <button class="btn" data-shape="spiral" aria-label="Spiral">◎</button>
+  <button class="btn" data-shape="heart" aria-label="Heart">♡</button>
+  <button class="btn" data-shape="star" aria-label="Star">★</button>
+  <button class="btn" data-shape="wave" aria-label="Wave">∿</button>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('main');
+  const ctx = canvas.getContext('2d');
+  const bgCanvas = document.createElement('canvas');
+  const bgCtx = bgCanvas.getContext('2d');
+  const trailCanvas = document.createElement('canvas');
+  const trailCtx = trailCanvas.getContext('2d');
+
+  const ui = document.getElementById('ui');
+  const label = document.getElementById('label');
+  const hint = document.getElementById('hint');
+
+  let W = 0, H = 0;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  let shape = 'infinity';
+  let pathPts = [];
+  const TRACE_THRESHOLD = 90;
+  const GLOW_COLOR = [127, 230, 255];
+
+  let touching = false;
+  let fingerX = 0, fingerY = 0;
+  let headX = 0, headY = 0;
+  let headIntensity = 0;
+  let hintShown = true;
+
+  // ─── Path generators ──────────────────────────────────
+  function genInfinity(W, H) {
+    const cx = W / 2, cy = H / 2;
+    const a = Math.min(W, H) * 0.36;
+    const N = 480;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * Math.PI * 2;
+      const denom = 1 + Math.sin(t) ** 2;
+      pts.push({
+        x: cx + (a * Math.cos(t)) / denom,
+        y: cy + (a * Math.sin(t) * Math.cos(t)) / denom,
+      });
+    }
+    return pts;
+  }
+
+  function genFlower(W, H) {
+    const cx = W / 2, cy = H / 2;
+    const a = Math.min(W, H) * 0.4;
+    const k = 4; // 8 petals
+    const N = 720;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * Math.PI * 2;
+      const r = a * Math.cos(k * t);
+      pts.push({ x: cx + r * Math.cos(t), y: cy + r * Math.sin(t) });
+    }
+    return pts;
+  }
+
+  function genSpiral(W, H) {
+    const cx = W / 2, cy = H / 2;
+    const turns = 5;
+    const maxR = Math.min(W, H) * 0.42;
+    const N = 900;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const f = i / N;
+      const t = f * Math.PI * 2 * turns;
+      const r = f * maxR;
+      pts.push({ x: cx + r * Math.cos(t), y: cy + r * Math.sin(t) });
+    }
+    return pts;
+  }
+
+  function genHeart(W, H) {
+    const cx = W / 2, cy = H / 2;
+    const s = Math.min(W, H) * 0.026;
+    const N = 480;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * Math.PI * 2;
+      const x = cx + s * 16 * Math.sin(t) ** 3;
+      const y = cy - s * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+      pts.push({ x, y });
+    }
+    return pts;
+  }
+
+  function genStar(W, H) {
+    const cx = W / 2, cy = H / 2;
+    const rOuter = Math.min(W, H) * 0.4;
+    const rInner = rOuter * 0.42;
+    const points = 5;
+    const verts = [];
+    for (let i = 0; i < points * 2; i++) {
+      const r = i % 2 === 0 ? rOuter : rInner;
+      const angle = -Math.PI / 2 + (i / (points * 2)) * Math.PI * 2;
+      verts.push({ x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) });
+    }
+    verts.push(verts[0]);
+    const N = 480;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = (i / N) * (verts.length - 1);
+      const i0 = Math.min(verts.length - 2, Math.floor(t));
+      const f = t - i0;
+      const v0 = verts[i0], v1 = verts[i0 + 1];
+      pts.push({ x: v0.x + (v1.x - v0.x) * f, y: v0.y + (v1.y - v0.y) * f });
+    }
+    return pts;
+  }
+
+  function genWave(W, H) {
+    const cy = H / 2;
+    const margin = W * 0.08;
+    const amp = Math.min(H * 0.18, W * 0.18);
+    const cycles = 2.5;
+    const N = 480;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const f = i / N;
+      pts.push({
+        x: margin + f * (W - 2 * margin),
+        y: cy + amp * Math.sin(f * Math.PI * 2 * cycles),
+      });
+    }
+    return pts;
+  }
+
+  function generatePath(name, W, H) {
+    switch (name) {
+      case 'flower': return genFlower(W, H);
+      case 'spiral': return genSpiral(W, H);
+      case 'heart':  return genHeart(W, H);
+      case 'star':   return genStar(W, H);
+      case 'wave':   return genWave(W, H);
+      case 'infinity':
+      default:       return genInfinity(W, H);
+    }
+  }
+
+  // ─── Static layer (bg + dim path) ─────────────────────
+  function drawStatic() {
+    bgCtx.fillStyle = '#06041a';
+    bgCtx.fillRect(0, 0, W, H);
+
+    const g = bgCtx.createRadialGradient(W / 2, H * 0.55, 40, W / 2, H / 2, Math.max(W, H) * 0.85);
+    g.addColorStop(0, 'rgba(70, 50, 140, 0.18)');
+    g.addColorStop(1, 'rgba(8, 4, 28, 0.0)');
+    bgCtx.fillStyle = g;
+    bgCtx.fillRect(0, 0, W, H);
+
+    const starCount = Math.floor(W * H / 4500);
+    for (let i = 0; i < starCount; i++) {
+      const x = Math.random() * W;
+      const y = Math.random() * H;
+      const a = 0.15 + Math.random() * 0.5;
+      const r = Math.random() < 0.92 ? 0.6 : 1.1;
+      bgCtx.fillStyle = `rgba(220, 230, 255, ${a * 0.3})`;
+      bgCtx.beginPath();
+      bgCtx.arc(x, y, r, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+
+    if (pathPts.length) {
+      bgCtx.strokeStyle = `rgba(${GLOW_COLOR.join(',')}, 0.18)`;
+      bgCtx.lineWidth = 1.4;
+      bgCtx.lineCap = 'round';
+      bgCtx.lineJoin = 'round';
+      bgCtx.beginPath();
+      pathPts.forEach((p, i) => {
+        if (i === 0) bgCtx.moveTo(p.x, p.y);
+        else bgCtx.lineTo(p.x, p.y);
+      });
+      bgCtx.stroke();
+    }
+  }
+
+  // ─── Resize ───────────────────────────────────────────
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    [canvas, bgCanvas, trailCanvas].forEach(c => {
+      c.width = Math.round(W * dpr);
+      c.height = Math.round(H * dpr);
+    });
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+
+    [ctx, bgCtx, trailCtx].forEach(c => c.setTransform(dpr, 0, 0, dpr, 0, 0));
+
+    pathPts = generatePath(shape, W, H);
+    drawStatic();
+  }
+
+  // ─── Pointer ──────────────────────────────────────────
+  function pointerPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function onDown(e) {
+    if (e.target.closest('.ui')) return;
+    e.preventDefault();
+    touching = true;
+    const p = pointerPos(e);
+    fingerX = p.x; fingerY = p.y;
+    headX = p.x; headY = p.y;
+    if (hintShown) {
+      hint.classList.add('gone');
+      hintShown = false;
+      setTimeout(() => label.classList.add('fade'), 1200);
+    }
+    if (e.pointerId !== undefined) canvas.setPointerCapture?.(e.pointerId);
+  }
+
+  function onMove(e) {
+    if (!touching) return;
+    e.preventDefault();
+    const p = pointerPos(e);
+    fingerX = p.x; fingerY = p.y;
+  }
+
+  function onUp() {
+    touching = false;
+  }
+
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+
+  // ─── Tracing logic ────────────────────────────────────
+  function findClosestPathPoint(x, y) {
+    let bestIdx = 0, bestD = Infinity;
+    for (let i = 0; i < pathPts.length; i++) {
+      const dx = pathPts[i].x - x;
+      const dy = pathPts[i].y - y;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; bestIdx = i; }
+    }
+    return { idx: bestIdx, dist: Math.sqrt(bestD), pt: pathPts[bestIdx] };
+  }
+
+  function drawGlow(tx, ty, intensity) {
+    trailCtx.save();
+    trailCtx.globalCompositeOperation = 'lighter';
+
+    const r1 = 60;
+    const grad = trailCtx.createRadialGradient(tx, ty, 0, tx, ty, r1);
+    grad.addColorStop(0,   `rgba(${GLOW_COLOR.join(',')}, ${0.5 * intensity})`);
+    grad.addColorStop(0.35,`rgba(${GLOW_COLOR.join(',')}, ${0.15 * intensity})`);
+    grad.addColorStop(1,   `rgba(${GLOW_COLOR.join(',')}, 0)`);
+    trailCtx.fillStyle = grad;
+    trailCtx.fillRect(tx - r1, ty - r1, r1 * 2, r1 * 2);
+
+    const r2 = 16;
+    const grad2 = trailCtx.createRadialGradient(tx, ty, 0, tx, ty, r2);
+    grad2.addColorStop(0,   `rgba(255,255,255,${0.55 * intensity})`);
+    grad2.addColorStop(0.45,`rgba(${GLOW_COLOR.join(',')}, ${0.4 * intensity})`);
+    grad2.addColorStop(1,   `rgba(${GLOW_COLOR.join(',')}, 0)`);
+    trailCtx.fillStyle = grad2;
+    trailCtx.fillRect(tx - r2, ty - r2, r2 * 2, r2 * 2);
+
+    trailCtx.restore();
+  }
+
+  function frame() {
+    let targetX = headX, targetY = headY, targetIntensity = 0;
+
+    if (touching && pathPts.length) {
+      const r = findClosestPathPoint(fingerX, fingerY);
+      if (r.dist < TRACE_THRESHOLD) {
+        targetX = r.pt.x;
+        targetY = r.pt.y;
+        targetIntensity = Math.max(0, 1 - r.dist / TRACE_THRESHOLD);
+      }
+    }
+
+    // Smooth head
+    const ease = 0.3;
+    headX += (targetX - headX) * ease;
+    headY += (targetY - headY) * ease;
+    headIntensity += (targetIntensity - headIntensity) * 0.25;
+
+    // Fade trail (alpha-out)
+    trailCtx.save();
+    trailCtx.globalCompositeOperation = 'destination-out';
+    trailCtx.fillStyle = 'rgba(0,0,0,0.04)';
+    trailCtx.fillRect(0, 0, W, H);
+    trailCtx.restore();
+
+    // Draw fresh glow
+    if (headIntensity > 0.02) {
+      drawGlow(headX, headY, headIntensity);
+    }
+
+    // Composite
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(bgCanvas, 0, 0);
+    ctx.drawImage(trailCanvas, 0, 0);
+    ctx.restore();
+
+    requestAnimationFrame(frame);
+  }
+
+  // ─── UI ───────────────────────────────────────────────
+  ui.querySelectorAll('button[data-shape]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      ui.querySelectorAll('button[data-shape]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      shape = btn.dataset.shape;
+      pathPts = generatePath(shape, W, H);
+      drawStatic();
+    });
+  });
+
+  let idleTimer = null;
+  function bumpIdle() {
+    ui.classList.remove('hidden');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => ui.classList.add('hidden'), 4500);
+  }
+  ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
+    window.addEventListener(ev, bumpIdle, { passive: true })
+  );
+  bumpIdle();
+
+  // ─── Init ─────────────────────────────────────────────
+  window.addEventListener('resize', resize);
+  resize();
+  frame();
+})();
+</script>
+</body>
+</html>
