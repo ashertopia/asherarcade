@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a0820">
+<title>Bubble Drift — Asher Arcade</title>
+<link rel="icon" href="data:,">
+<style>
+  :root {
+    --bg: #0a0820;
+    --ui: rgba(255,255,255,0.55);
+    --ink: rgba(255,255,255,0.9);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    cursor: pointer;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .label {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--ui);
+    z-index: 10;
+    pointer-events: none;
+    transition: opacity 1.2s ease;
+  }
+  .label.fade { opacity: 0; }
+
+  .hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    color: var(--ui);
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 1s ease;
+  }
+  .hint.gone { opacity: 0; }
+
+  .ui {
+    position: fixed;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 4px;
+    padding: 6px 10px;
+    background: rgba(20, 16, 46, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    z-index: 10;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .ui > * { pointer-events: auto; }
+  .ui.hidden { opacity: 0.18; }
+
+  .btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--ui);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    min-height: 36px;
+  }
+  .btn:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
+  .btn.active {
+    background: rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.95);
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c"></canvas>
+</div>
+
+<div class="label" id="label">Bubble Drift</div>
+<div class="hint" id="hint">tap bubbles to pop them</div>
+
+<div class="ui" id="ui">
+  <button class="btn" data-pace="slow">Slow</button>
+  <button class="btn active" data-pace="calm">Calm</button>
+  <button class="btn" data-pace="lively">Lively</button>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const bgCanvas = document.createElement('canvas');
+  const bgCtx = bgCanvas.getContext('2d');
+
+  const ui = document.getElementById('ui');
+  const label = document.getElementById('label');
+  const hint = document.getElementById('hint');
+
+  let W = 0, H = 0;
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  const PALETTE = [
+    [255, 180, 210],
+    [180, 220, 255],
+    [185, 255, 220],
+    [255, 220, 180],
+    [220, 200, 255],
+    [255, 240, 180],
+    [180, 245, 255],
+  ];
+
+  const PACE = {
+    slow:   { interval: 2200, speed: [0.18, 0.32] },
+    calm:   { interval: 1300, speed: [0.25, 0.55] },
+    lively: { interval: 700,  speed: [0.4,  0.85] },
+  };
+
+  let pace = PACE.calm;
+  let bubbles = [];
+  let ripples = [];
+  let lastSpawn = 0;
+  let hintShown = true;
+
+  // ─── Background ────────────────────────────────────────
+  function paintBg() {
+    bgCtx.fillStyle = '#06041a';
+    bgCtx.fillRect(0, 0, W, H);
+
+    const g = bgCtx.createRadialGradient(W / 2, H * 0.7, 40, W / 2, H / 2, Math.max(W, H) * 0.85);
+    g.addColorStop(0, 'rgba(70, 50, 140, 0.18)');
+    g.addColorStop(1, 'rgba(8, 4, 28, 0.0)');
+    bgCtx.fillStyle = g;
+    bgCtx.fillRect(0, 0, W, H);
+
+    const starCount = Math.floor(W * H / 4500);
+    for (let i = 0; i < starCount; i++) {
+      const x = Math.random() * W;
+      const y = Math.random() * H;
+      const a = 0.15 + Math.random() * 0.5;
+      const r = Math.random() < 0.92 ? 0.6 : 1.1;
+      bgCtx.fillStyle = `rgba(220, 230, 255, ${a * 0.3})`;
+      bgCtx.beginPath();
+      bgCtx.arc(x, y, r, 0, Math.PI * 2);
+      bgCtx.fill();
+    }
+  }
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    bgCanvas.width = canvas.width;
+    bgCanvas.height = canvas.height;
+    bgCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paintBg();
+  }
+
+  // ─── Bubbles ───────────────────────────────────────────
+  function spawnBubble() {
+    const r = 22 + Math.random() * 38;
+    const x = r + Math.random() * (W - 2 * r);
+    const y = H + r * 1.2;
+    const [vmin, vmax] = pace.speed;
+    const vy = -(vmin + Math.random() * (vmax - vmin));
+    const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+    bubbles.push({
+      x, y, vx: (Math.random() - 0.5) * 0.15,
+      vy, r, color,
+      phase: Math.random() * Math.PI * 2,
+      swayAmp: 0.4 + Math.random() * 0.6,
+      born: performance.now(),
+    });
+  }
+
+  function drawBubble(b, now) {
+    const ageT = Math.min(1, (now - b.born) / 600); // gentle fade-in
+    const baseAlpha = ageT;
+
+    // outer soft glow
+    ctx.save();
+    const glowR = b.r * 1.6;
+    const gg = ctx.createRadialGradient(b.x, b.y, b.r * 0.6, b.x, b.y, glowR);
+    gg.addColorStop(0, `rgba(${b.color.join(',')}, ${0.18 * baseAlpha})`);
+    gg.addColorStop(1, `rgba(${b.color.join(',')}, 0)`);
+    ctx.fillStyle = gg;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, glowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // bubble body (radial gradient with darker rim, like soap film)
+    const bg = ctx.createRadialGradient(
+      b.x - b.r * 0.35, b.y - b.r * 0.4, b.r * 0.1,
+      b.x, b.y, b.r
+    );
+    bg.addColorStop(0,    `rgba(${b.color.join(',')}, ${0.55 * baseAlpha})`);
+    bg.addColorStop(0.65, `rgba(${b.color.join(',')}, ${0.18 * baseAlpha})`);
+    bg.addColorStop(1,    `rgba(${b.color.join(',')}, ${0.4 * baseAlpha})`);
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // rim line
+    ctx.strokeStyle = `rgba(${b.color.join(',')}, ${0.55 * baseAlpha})`;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // top-left highlight
+    ctx.fillStyle = `rgba(255,255,255,${0.55 * baseAlpha})`;
+    ctx.beginPath();
+    ctx.arc(b.x - b.r * 0.4, b.y - b.r * 0.42, b.r * 0.16, 0, Math.PI * 2);
+    ctx.fill();
+
+    // small secondary sparkle
+    ctx.fillStyle = `rgba(255,255,255,${0.3 * baseAlpha})`;
+    ctx.beginPath();
+    ctx.arc(b.x - b.r * 0.18, b.y - b.r * 0.55, b.r * 0.06, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawRipple(r, now) {
+    const t = (now - r.born) / r.duration;
+    if (t >= 1) return;
+    const radius = r.startR + (r.endR - r.startR) * t;
+    const alpha = (1 - t);
+
+    ctx.save();
+    // soft glow disc
+    const gr = ctx.createRadialGradient(r.x, r.y, radius * 0.4, r.x, r.y, radius);
+    gr.addColorStop(0, `rgba(${r.color.join(',')}, ${alpha * 0.22})`);
+    gr.addColorStop(1, `rgba(${r.color.join(',')}, 0)`);
+    ctx.fillStyle = gr;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // outline ring
+    ctx.strokeStyle = `rgba(${r.color.join(',')}, ${alpha * 0.7})`;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(r.x, r.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // tiny droplets
+    for (let i = 0; i < r.drops.length; i++) {
+      const d = r.drops[i];
+      const dx = r.x + Math.cos(d.angle) * radius * d.dist;
+      const dy = r.y + Math.sin(d.angle) * radius * d.dist;
+      ctx.fillStyle = `rgba(${r.color.join(',')}, ${alpha * 0.65})`;
+      ctx.beginPath();
+      ctx.arc(dx, dy, d.size * (1 - t * 0.3), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function popBubble(b) {
+    const drops = [];
+    const n = 5 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < n; i++) {
+      drops.push({
+        angle: Math.random() * Math.PI * 2,
+        dist: 0.85 + Math.random() * 0.25,
+        size: 1.5 + Math.random() * 2.5,
+      });
+    }
+    ripples.push({
+      x: b.x, y: b.y, color: b.color,
+      startR: b.r * 0.85,
+      endR: b.r * 1.55,
+      born: performance.now(),
+      duration: 540,
+      drops,
+    });
+  }
+
+  // ─── Frame loop ────────────────────────────────────────
+  function frame(now) {
+    if (!lastSpawn) lastSpawn = now;
+    if (now - lastSpawn > pace.interval + (Math.random() - 0.5) * pace.interval * 0.4) {
+      if (bubbles.length < 30) spawnBubble();
+      lastSpawn = now;
+    }
+
+    // Update bubbles
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      b.y += b.vy;
+      b.x += b.vx + Math.sin(now / 1800 + b.phase) * b.swayAmp * 0.15;
+      if (b.x < b.r * 0.5) b.x = b.r * 0.5, b.vx = Math.abs(b.vx);
+      if (b.x > W - b.r * 0.5) b.x = W - b.r * 0.5, b.vx = -Math.abs(b.vx);
+      if (b.y + b.r < -10) bubbles.splice(i, 1);
+    }
+
+    // Update ripples
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      if (now - ripples[i].born > ripples[i].duration) ripples.splice(i, 1);
+    }
+
+    // Render
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(bgCanvas, 0, 0);
+    ctx.restore();
+
+    bubbles.forEach(b => drawBubble(b, now));
+    ripples.forEach(r => drawRipple(r, now));
+
+    requestAnimationFrame(frame);
+  }
+
+  // ─── Pointer ──────────────────────────────────────────
+  function pointerPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function onDown(e) {
+    if (e.target.closest('.ui')) return;
+    e.preventDefault();
+    const p = pointerPos(e);
+
+    // Find topmost bubble within radius (iterate latest first)
+    let popped = false;
+    for (let i = bubbles.length - 1; i >= 0; i--) {
+      const b = bubbles[i];
+      if (Math.hypot(b.x - p.x, b.y - p.y) <= b.r + 6) {
+        popBubble(b);
+        bubbles.splice(i, 1);
+        popped = true;
+        break;
+      }
+    }
+
+    if (popped && hintShown) {
+      hint.classList.add('gone');
+      hintShown = false;
+      setTimeout(() => label.classList.add('fade'), 1500);
+    }
+  }
+
+  canvas.addEventListener('pointerdown', onDown);
+
+  // ─── UI ────────────────────────────────────────────────
+  ui.querySelectorAll('button[data-pace]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      ui.querySelectorAll('button[data-pace]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      pace = PACE[btn.dataset.pace];
+    });
+  });
+
+  let idleTimer = null;
+  function bumpIdle() {
+    ui.classList.remove('hidden');
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => ui.classList.add('hidden'), 4500);
+  }
+  ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
+    window.addEventListener(ev, bumpIdle, { passive: true })
+  );
+  bumpIdle();
+
+  // ─── Init ──────────────────────────────────────────────
+  window.addEventListener('resize', resize);
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
