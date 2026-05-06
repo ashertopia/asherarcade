@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#e8d9b6">
-<title>Sand Garden — Asher Arcade</title>
+<meta name="theme-color" content="#0a0820">
+<title>Light Garden — Asher Arcade</title>
 <link rel="icon" href="data:,">
 <style>
   :root {
-    --sand-light: #f3e6c5;
-    --sand: #e8d9b6;
-    --sand-deep: #c9b58a;
-    --groove: #8a7349;
-    --ink: #3a2e1c;
-    --ui: rgba(58,46,28,0.55);
+    --bg-deep: #050316;
+    --bg: #0a0820;
+    --ui: rgba(255,255,255,0.55);
+    --ink: rgba(255,255,255,0.9);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -23,7 +21,7 @@
     width: 100%;
     overflow: hidden;
     overscroll-behavior: none;
-    background: var(--sand);
+    background: var(--bg);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     color: var(--ink);
     user-select: none;
@@ -45,26 +43,65 @@
     display: block;
   }
 
-  .ui {
+  .ui-stack {
     position: fixed;
     bottom: max(20px, env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 10px;
-    padding: 8px;
-    background: rgba(253,247,232,0.55);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 999px;
-    border: 1px solid rgba(138,115,73,0.18);
-    box-shadow: 0 4px 20px rgba(58,46,28,0.08);
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
     z-index: 10;
     transition: opacity 0.6s ease;
+    max-width: 96vw;
   }
 
-  .ui.hidden { opacity: 0.15; pointer-events: none; }
-  .ui.hidden:hover, .ui.hidden:focus-within { opacity: 1; pointer-events: auto; }
+  .ui-stack.hidden { opacity: 0.18; pointer-events: none; }
+  .ui-stack.hidden:hover, .ui-stack.hidden:focus-within { opacity: 1; pointer-events: auto; }
+
+  .ui {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(20, 16, 46, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    align-items: center;
+    max-width: 96vw;
+  }
+
+  .swatch {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: var(--c, white);
+    cursor: pointer;
+    padding: 0;
+    margin: 2px;
+    flex: 0 0 auto;
+    transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 0 6px var(--c, rgba(255,255,255,0.4));
+  }
+  .swatch:hover { transform: scale(1.12); }
+  .swatch.active {
+    border-color: rgba(255,255,255,0.95);
+    box-shadow: 0 0 14px var(--c, rgba(255,255,255,0.6));
+    transform: scale(1.1);
+  }
+  .swatch.rainbow {
+    background: conic-gradient(from 0deg, #ff3a8c, #ffa83a, #ffe23a, #7cff3a, #3affe0, #00b4ff, #a86cff, #ff3ad9, #ff3a8c);
+  }
+  .swatch.rainbow.active {
+    box-shadow: 0 0 14px rgba(255,255,255,0.7);
+  }
 
   .btn {
     appearance: none;
@@ -76,16 +113,16 @@
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    padding: 10px 14px;
+    padding: 8px 12px;
     border-radius: 999px;
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
-    min-width: 44px;
-    min-height: 36px;
+    min-width: 40px;
+    min-height: 32px;
   }
 
-  .btn:hover { background: rgba(138,115,73,0.08); color: var(--ink); }
-  .btn.active { background: rgba(138,115,73,0.18); color: var(--ink); }
+  .btn:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
+  .btn.active { background: rgba(255,255,255,0.14); color: var(--ink); }
 
   .label {
     position: fixed;
@@ -108,7 +145,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 14px;
+    font-size: 13px;
     letter-spacing: 0.15em;
     color: var(--ui);
     text-align: center;
@@ -121,7 +158,8 @@
   .hint.gone { opacity: 0; }
 
   @media (max-width: 380px) {
-    .btn { font-size: 11px; padding: 9px 11px; }
+    .btn { font-size: 11px; padding: 7px 9px; }
+    .swatch { width: 22px; height: 22px; }
     .label { font-size: 10px; letter-spacing: 0.3em; }
   }
 </style>
@@ -131,23 +169,45 @@
   <canvas id="sand"></canvas>
 </div>
 
-<div class="label" id="label">Sand Garden</div>
-<div class="hint" id="hint">drag to draw · lines slowly settle</div>
+<div class="label" id="label">Light Garden</div>
+<div class="hint" id="hint">drag to draw · light fades slowly</div>
 
-<div class="ui" id="ui">
-  <button class="btn active" data-sym="1" aria-label="Single">●</button>
-  <button class="btn" data-sym="2" aria-label="Mirror x2">●●</button>
-  <button class="btn" data-sym="4" aria-label="Mirror x4">✦</button>
-  <button class="btn" data-sym="6" aria-label="Mirror x6">❋</button>
-  <button class="btn" data-sym="8" aria-label="Mirror x8">❉</button>
-  <button class="btn" id="clear" aria-label="Smooth">⟳</button>
+<div class="ui-stack" id="uiStack">
+  <div class="ui" id="uiColors">
+    <button class="swatch active" data-color="#ff3a3a" style="--c:#ff3a3a" aria-label="Red"></button>
+    <button class="swatch" data-color="#ff6a3a" style="--c:#ff6a3a" aria-label="Coral"></button>
+    <button class="swatch" data-color="#ffa83a" style="--c:#ffa83a" aria-label="Orange"></button>
+    <button class="swatch" data-color="#ffe23a" style="--c:#ffe23a" aria-label="Yellow"></button>
+    <button class="swatch" data-color="#c8ff3a" style="--c:#c8ff3a" aria-label="Chartreuse"></button>
+    <button class="swatch" data-color="#7cff3a" style="--c:#7cff3a" aria-label="Lime"></button>
+    <button class="swatch" data-color="#3affb4" style="--c:#3affb4" aria-label="Mint"></button>
+    <button class="swatch" data-color="#3affe0" style="--c:#3affe0" aria-label="Aqua"></button>
+    <button class="swatch" data-color="#00e6ff" style="--c:#00e6ff" aria-label="Cyan"></button>
+    <button class="swatch" data-color="#3aa5ff" style="--c:#3aa5ff" aria-label="Sky"></button>
+    <button class="swatch" data-color="#5a6cff" style="--c:#5a6cff" aria-label="Indigo"></button>
+    <button class="swatch" data-color="#a86cff" style="--c:#a86cff" aria-label="Violet"></button>
+    <button class="swatch" data-color="#ff3ad9" style="--c:#ff3ad9" aria-label="Magenta"></button>
+    <button class="swatch" data-color="#ff3a8c" style="--c:#ff3a8c" aria-label="Pink"></button>
+    <button class="swatch" data-color="#f0f0ff" style="--c:#f0f0ff" aria-label="White"></button>
+    <button class="swatch rainbow" data-color="rainbow" aria-label="Rainbow"></button>
+  </div>
+  <div class="ui" id="uiSym">
+    <button class="btn active" data-sym="1" aria-label="Single">●</button>
+    <button class="btn" data-sym="2" aria-label="Mirror x2">●●</button>
+    <button class="btn" data-sym="4" aria-label="Mirror x4">✦</button>
+    <button class="btn" data-sym="6" aria-label="Mirror x6">❋</button>
+    <button class="btn" data-sym="8" aria-label="Mirror x8">❉</button>
+    <button class="btn" id="clear" aria-label="Clear">⟳</button>
+  </div>
 </div>
 
 <script>
 (() => {
   const canvas = document.getElementById('sand');
   const ctx = canvas.getContext('2d', { alpha: false });
-  const ui = document.getElementById('ui');
+  const uiStack = document.getElementById('uiStack');
+  const uiColors = document.getElementById('uiColors');
+  const uiSym = document.getElementById('uiSym');
   const label = document.getElementById('label');
   const hint = document.getElementById('hint');
 
@@ -155,13 +215,35 @@
   let dpr = Math.min(window.devicePixelRatio || 1, 2);
   let symmetry = 1;
   let drawing = false;
-  let lastPts = []; // last point per symmetric stroke index
+  let lastPts = [];
   let hintShown = true;
 
-  // Sand color stops for procedural texture
-  const SAND_BASE = [232, 217, 182];
-  const SAND_HIGHLIGHT = [243, 230, 197];
-  const SAND_SHADOW = [201, 181, 138];
+  let currentColor = '#ff3a3a';
+  let rainbowMode = false;
+
+  // ─── Background ────────────────────────────────────────
+  function paintBg() {
+    ctx.fillStyle = '#06041a';
+    ctx.fillRect(0, 0, W, H);
+
+    const grad = ctx.createRadialGradient(cx, cy * 1.2, 40, cx, cy, Math.max(W, H) * 0.85);
+    grad.addColorStop(0, 'rgba(70, 50, 140, 0.18)');
+    grad.addColorStop(1, 'rgba(8, 4, 28, 0.0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    const starCount = Math.floor(W * H / 3500);
+    for (let i = 0; i < starCount; i++) {
+      const x = Math.random() * W;
+      const y = Math.random() * H;
+      const a = 0.15 + Math.random() * 0.5;
+      const r = Math.random() < 0.92 ? 0.6 : 1.1;
+      ctx.fillStyle = `rgba(220, 230, 255, ${a * 0.35})`;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
 
   function resize() {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -174,76 +256,52 @@
     canvas.style.width = W + 'px';
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    paintSand();
+    paintBg();
   }
 
-  // Paint a textured sand background
-  function paintSand() {
-    // base
-    ctx.fillStyle = `rgb(${SAND_BASE.join(',')})`;
-    ctx.fillRect(0, 0, W, H);
-
-    // soft radial wash (warm center, cooler edges)
-    const grad = ctx.createRadialGradient(cx, cy * 0.85, 40, cx, cy, Math.max(W, H) * 0.75);
-    grad.addColorStop(0, 'rgba(255, 240, 200, 0.18)');
-    grad.addColorStop(1, 'rgba(160, 130, 80, 0.10)');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-
-    // grainy noise speckles
-    const grainCount = Math.floor(W * H / 600);
-    for (let i = 0; i < grainCount; i++) {
-      const x = Math.random() * W;
-      const y = Math.random() * H;
-      const t = Math.random();
-      const a = 0.04 + Math.random() * 0.06;
-      if (t < 0.5) {
-        ctx.fillStyle = `rgba(${SAND_SHADOW.join(',')},${a})`;
-      } else {
-        ctx.fillStyle = `rgba(${SAND_HIGHLIGHT.join(',')},${a})`;
-      }
-      ctx.fillRect(x, y, 1, 1);
+  // ─── Drawing ───────────────────────────────────────────
+  function activeColor() {
+    if (rainbowMode) {
+      const hue = (Date.now() / 14) % 360;
+      return `hsl(${hue}, 100%, 62%)`;
     }
+    return currentColor;
   }
 
-  // Draw a single groove segment (darker line + light highlight above)
-  function drawSegment(x1, y1, x2, y2) {
-    const dx = x2 - x1;
-    const dy = y2 - y1;
-    const len = Math.hypot(dx, dy);
-    if (len < 0.5) return;
+  function drawSegment(x1, y1, x2, y2, color) {
+    if (Math.hypot(x2 - x1, y2 - y1) < 0.4) return;
 
-    // Subtle highlight (top-left of the groove)
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    ctx.strokeStyle = 'rgba(255,245,215,0.28)';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(x1 - 0.6, y1 - 0.6);
-    ctx.lineTo(x2 - 0.6, y2 - 0.6);
-    ctx.stroke();
-
-    // Main groove
-    ctx.strokeStyle = 'rgba(138,115,73,0.55)';
-    ctx.lineWidth = 3;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 16;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
 
-    // Inner darker core for crispness
-    ctx.strokeStyle = 'rgba(80,60,30,0.18)';
-    ctx.lineWidth = 1.2;
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+    ctx.lineWidth = 1.1;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
     ctx.stroke();
   }
 
-  // For each new point, compute symmetric copies and draw segments from lastPts
   function drawSymmetric(x, y, isStart) {
     const n = symmetry;
+    const color = activeColor();
     for (let i = 0; i < n; i++) {
       const ang = (Math.PI * 2 * i) / n;
       const dx = x - cx;
@@ -254,42 +312,39 @@
       const ry = cy + dx * sin + dy * cos;
 
       if (!isStart && lastPts[i]) {
-        drawSegment(lastPts[i].x, lastPts[i].y, rx, ry);
+        drawSegment(lastPts[i].x, lastPts[i].y, rx, ry, color);
       }
       lastPts[i] = { x: rx, y: ry };
     }
   }
 
-  // Slow fade: every animation frame, draw a translucent sand wash
+  // ─── Slow fade ─────────────────────────────────────────
   function fadeStep() {
-    // Re-grain a subset to keep it from looking flat as it fades
-    ctx.fillStyle = 'rgba(232,217,182,0.012)'; // very faint sand wash
+    ctx.fillStyle = 'rgba(8, 4, 26, 0.018)';
     ctx.fillRect(0, 0, W, H);
 
-    // Sprinkle tiny grains so fading lines look like settling sand
-    const grainCount = 40;
-    for (let i = 0; i < grainCount; i++) {
+    const twinkles = 4;
+    for (let i = 0; i < twinkles; i++) {
       const x = Math.random() * W;
       const y = Math.random() * H;
-      const t = Math.random();
-      const a = 0.025;
-      ctx.fillStyle = t < 0.5
-        ? `rgba(${SAND_SHADOW.join(',')},${a})`
-        : `rgba(${SAND_HIGHLIGHT.join(',')},${a})`;
-      ctx.fillRect(x, y, 1, 1);
+      const a = 0.05 + Math.random() * 0.12;
+      ctx.fillStyle = `rgba(220, 230, 255, ${a})`;
+      ctx.beginPath();
+      ctx.arc(x, y, Math.random() < 0.9 ? 0.5 : 1, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     requestAnimationFrame(fadeStep);
   }
 
-  // ─── Pointer handling ─────────────────────────────────────
+  // ─── Pointer ───────────────────────────────────────────
   function pointerPos(e) {
     const r = canvas.getBoundingClientRect();
     return { x: e.clientX - r.left, y: e.clientY - r.top };
   }
 
   function onDown(e) {
-    if (e.target.closest('.ui')) return;
+    if (e.target.closest('.ui-stack')) return;
     e.preventDefault();
     drawing = true;
     lastPts = [];
@@ -298,7 +353,6 @@
     if (hintShown) {
       hint.classList.add('gone');
       hintShown = false;
-      // also gently fade the title after first interaction
       setTimeout(() => label.classList.add('fade'), 1200);
     }
     if (e.pointerId !== undefined) canvas.setPointerCapture?.(e.pointerId);
@@ -311,7 +365,7 @@
     drawSymmetric(p.x, p.y, false);
   }
 
-  function onUp(e) {
+  function onUp() {
     if (!drawing) return;
     drawing = false;
     lastPts = [];
@@ -322,43 +376,56 @@
   window.addEventListener('pointerup', onUp);
   window.addEventListener('pointercancel', onUp);
 
-  // ─── UI ─────────────────────────────────────────────────
-  ui.querySelectorAll('button[data-sym]').forEach(btn => {
+  // ─── UI ────────────────────────────────────────────────
+  uiSym.querySelectorAll('button[data-sym]').forEach(btn => {
     btn.addEventListener('click', () => {
-      ui.querySelectorAll('button[data-sym]').forEach(b => b.classList.remove('active'));
+      uiSym.querySelectorAll('button[data-sym]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       symmetry = parseInt(btn.dataset.sym, 10);
     });
   });
 
+  uiColors.querySelectorAll('.swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      uiColors.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      const c = sw.dataset.color;
+      if (c === 'rainbow') {
+        rainbowMode = true;
+      } else {
+        rainbowMode = false;
+        currentColor = c;
+      }
+    });
+  });
+
   document.getElementById('clear').addEventListener('click', () => {
-    // Smooth: a quick wash over the canvas
     let t = 0;
     const smooth = () => {
-      ctx.fillStyle = 'rgba(232,217,182,0.18)';
+      ctx.fillStyle = 'rgba(8, 4, 26, 0.22)';
       ctx.fillRect(0, 0, W, H);
       t++;
-      if (t < 18) requestAnimationFrame(smooth);
-      else paintSand();
+      if (t < 16) requestAnimationFrame(smooth);
+      else paintBg();
     };
     smooth();
     label.classList.remove('fade');
     setTimeout(() => label.classList.add('fade'), 2400);
   });
 
-  // Auto-hide UI when idle
+  // ─── Auto-hide UI ──────────────────────────────────────
   let idleTimer = null;
   function bumpIdle() {
-    ui.classList.remove('hidden');
+    uiStack.classList.remove('hidden');
     clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => ui.classList.add('hidden'), 4000);
+    idleTimer = setTimeout(() => uiStack.classList.add('hidden'), 4500);
   }
   ['pointerdown', 'pointermove', 'keydown'].forEach(ev =>
     window.addEventListener(ev, bumpIdle, { passive: true })
   );
   bumpIdle();
 
-  // ─── Init ───────────────────────────────────────────────
+  // ─── Init ──────────────────────────────────────────────
   window.addEventListener('resize', resize);
   resize();
   fadeStep();
