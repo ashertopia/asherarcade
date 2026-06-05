@@ -12,9 +12,14 @@ produces is what you then feed into Timeline Doctor / Immich.
 ## The flow
 
 ```
-F:\  (Takeout, random folders, ...)
+Two Google Takeout exports (yours + Alice's), each with .json sidecars
         │
-   1. inventory.py     -> inventory.csv      (catalog everything; read-only)
+   0. takeout_merge.py -> writes each sidecar's date/GPS/people INTO the photo
+        │                 (run once per Takeout folder)
+        ▼
+F:\  (both Takeouts + random folders, ...)
+        │
+   1. inventory.py     -> inventory.csv      (catalog BOTH folders; read-only)
         │
    2. dedupe.py        -> duplicates.csv      (YOU audit/edit this)
         │              -> master_list.csv     (the unique keepers)
@@ -28,13 +33,42 @@ F:\  (Takeout, random folders, ...)
 
 ---
 
-## Step 1 — Catalog everything (read-only)
+## Step 0 — Merge Google Takeout's JSON back into the photos (do this FIRST)
+
+Google Takeout strips each photo's real date, GPS, description, and tagged
+people into a sidecar `.json` file. If you combine/dedupe before putting that
+data back, the metadata gets orphaned. So fix it first, **once per Takeout
+folder** (you have two):
 
 ```powershell
 cd home-media-tools\dedupe-and-master
+
+# Safe preview first (writes nothing):
+python takeout_merge.py "F:\Google Photos Takeout\2026-05-31\Takeout"
+
+# Then embed for real:
+python takeout_merge.py "F:\Google Photos Takeout\2026-05-31\Takeout" --apply
+python takeout_merge.py "F:\Google Photos Takeout - Alice\Takeout" --apply
+```
+
+This writes the real **date taken**, **GPS location**, **description**, and
+**tagged people** into each file (via ExifTool), so the photo is self-describing
+afterward. It handles Google's mangled sidecar names (truncated names, `(1)`
+duplicate counters, `-edited` copies) and lists anything it couldn't match in
+`unmatched.csv`.
+
+> **Keep your original Takeout `.zip` files** until you've confirmed everything
+> looks right — that's your safety net. (Or pass `--keep-backups` to have
+> ExifTool leave `_original` copies, which uses more disk.)
+
+## Step 1 — Catalog everything (read-only)
+
+```powershell
+# Catalog BOTH Takeout exports into one combined inventory:
+python inventory.py "F:\Google Photos Takeout\2026-05-31\Takeout" "F:\Google Photos Takeout - Alice\Takeout" --media-only
+
+# Or the whole drive:
 python inventory.py "F:\" --out inventory.csv
-# or just the Takeout exports, photos/videos only:
-python inventory.py "F:\Takeout" --media-only
 ```
 
 `inventory.csv` lists every file with its size, content fingerprint, and — for

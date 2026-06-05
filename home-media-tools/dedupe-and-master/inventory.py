@@ -12,6 +12,8 @@ It is read-only: it never moves, changes, or deletes anything.
 Usage:
     python inventory.py "F:\\"
     python inventory.py "F:\\Takeout" --out inventory.csv
+    # scan BOTH Takeout exports into ONE catalog (combine the two accounts):
+    python inventory.py "F:\\Google Photos Takeout\\2026-05-31\\Takeout" "F:\\Google Photos Takeout - Alice\\Takeout"
 
 Speed note: to avoid fingerprinting every file, it first groups by size and
 only fingerprints files whose size matches another file (the only ones that
@@ -68,20 +70,23 @@ def file_hash(path: Path, chunk: int = 1 << 20) -> str:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Catalog files into a spreadsheet.")
-    ap.add_argument("root", help="Folder to scan, e.g. F:\\ or F:\\Takeout")
+    ap.add_argument("roots", nargs="+",
+                    help="One or more folders to scan (e.g. both Takeout exports).")
     ap.add_argument("--out", default="inventory.csv", help="Output CSV path.")
     ap.add_argument("--media-only", action="store_true",
                     help="Only catalog photos/videos (skip docs, sidecars, etc.).")
     args = ap.parse_args()
 
-    root = Path(args.root)
-    if not root.is_dir():
-        raise SystemExit(f"Not a folder: {root}")
+    roots = [Path(r) for r in args.roots]
+    for r in roots:
+        if not r.is_dir():
+            raise SystemExit(f"Not a folder: {r}")
 
-    print(f"Pass 1/2: listing files under {root} ...")
+    print(f"Pass 1/2: listing files under {len(roots)} folder(s) ...")
     records = []           # each: dict of file info
     by_size = defaultdict(list)
-    for dirpath, _dirs, files in os.walk(root):
+    walker = ((dp, f) for root in roots for dp, _d, f in os.walk(root))
+    for dirpath, files in walker:
         for name in files:
             p = Path(dirpath) / name
             ext = p.suffix.lower()
