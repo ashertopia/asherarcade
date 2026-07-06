@@ -418,14 +418,20 @@ const KNOWN_CHURCH = {
   "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","Rc Tidwell"]
 };
 
-/* ---- Service areas (filter dimension) ---- */
+/* ---- Service areas (filter dimension) + their service leaders ---- */
 const AREAS = [
-  {key:"Hospitality",tag:"Hospitality"},
-  {key:"Admin / Welcome Table",tag:"Admin"},
-  {key:"Free Time",tag:"Free Time"},
-  {key:"Snack Shack",tag:"Snack Shack"},
-  {key:"Cabin Sweeps",tag:"Cabin Sweep"},
-  {key:"Pool",tag:"Pool"}
+  {key:"Hospitality",tag:"Hospitality",lead:"Dana Lathrop"},
+  {key:"Admin / Welcome Table",tag:"Admin",lead:"Macey Duncan"},
+  {key:"Free Time",tag:"Free Time",lead:"Austin Duncan & Christian Wylder"},
+  {key:"Snack Shack",tag:"Snack Shack",lead:"Dana Lathrop"},
+  {key:"Cabin Sweeps",tag:"Cabin Sweep",lead:""},
+  {key:"Pool",tag:"Pool",lead:"Austin Duncan"}
+];
+/* ---- Free Time zones (drawn as labeled boxes on the map) ---- */
+const ZONES = [
+  {name:"ZONE ONE",  bounds:[[36.00655,-87.51695],[36.00835,-87.51555]], color:"#ffd479"},
+  {name:"ZONE TWO",  bounds:[[36.00835,-87.51780],[36.01050,-87.51550]], color:"#7ee0c0"},
+  {name:"ZONE THREE",bounds:[[36.01050,-87.51800],[36.01260,-87.51600]], color:"#9fb4ff"}
 ];
 
 /* ============================================================
@@ -632,6 +638,10 @@ function renderFind(){
     const tag=(AREAS.find(a=>a.key===state.pickArea)||{}).tag;
     list=allPeople().filter(n=>hasArea(n,tag)); headline=state.pickArea;
   }
+  if(state.findMode==="area"){
+    const lead=(AREAS.find(a=>a.key===state.pickArea)||{}).lead;
+    if(lead) h+='<div class="banner">Service lead: <b>'+esc(lead)+'</b></div>';
+  }
   h+='<div class="sectionlabel">'+esc(headline)+' · '+list.length+' '+(list.length===1?'person':'people')+' · '+state.day+' '+fmt(state.time)+'</div>';
   if(!list.length) h+='<div class="empty">No one here yet. Use <b>Leader / Admin tools</b> to assign people, or send Asher the roster.</div>';
   list.forEach(n=>{
@@ -674,7 +684,7 @@ function renderMap(){
   let h='<div class="sectionlabel">Camp map</div><div id="mapdiv"></div>';
   h+='<div class="maptools"><button class="btn pink" id="meBtn">📍 Find me (live)</button>'+
      '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Get to camp</a></div>';
-  h+='<div class="banner" id="mapNote">🟡 Activities (fields, pool, games, Tabernacle) · 🔵 boys cabins (<b>B</b>) · 🩷 girls cabins (<b>G</b>). Tap a cabin to see which churches are in it. “Find me” shows your live location as you move.</div>';
+  h+='<div class="banner" id="mapNote">Boxes = Free Time <b>Zones 1–3</b>. 🟡 Activities · 🔵 boys cabins (<b>B</b>) · 🩷 girls cabins (<b>G</b>). Tap a cabin to see its churches. “Find me” shows your live location as you move.</div>';
   main.innerHTML=h;
   if(!window.L){
     document.getElementById("mapdiv").innerHTML='<div class="empty">The live map needs an internet connection.<br>Use the 📍 links in each schedule for directions, or “Get to camp” above.</div>';
@@ -684,6 +694,13 @@ function renderMap(){
   const center=pts.length?[pts.reduce((a,[,c])=>a+c[0],0)/pts.length, pts.reduce((a,[,c])=>a+c[1],0)/pts.length]:[36.0079,-87.5163];
   leafletMap=L.map("mapdiv",{zoomControl:true,attributionControl:false}).setView(center,17);
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}).addTo(leafletMap);
+  // Free Time zone boxes (drawn under the pins)
+  ZONES.forEach(z=>{
+    L.rectangle(z.bounds,{color:z.color,weight:2,dashArray:"7 6",fillColor:z.color,fillOpacity:0.10,interactive:false}).addTo(leafletMap);
+    const north=Math.max(z.bounds[0][0],z.bounds[1][0]), clng=(z.bounds[0][1]+z.bounds[1][1])/2;
+    L.marker([north,clng],{interactive:false,icon:L.divIcon({className:"",iconSize:[110,20],iconAnchor:[55,10],
+      html:'<div style="text-align:center;font:800 12px -apple-system,sans-serif;letter-spacing:1px;color:'+z.color+';text-shadow:0 1px 3px #000,0 0 6px #000;white-space:nowrap;">'+z.name+'</div>'})}).addTo(leafletMap);
+  });
   pts.forEach(([name,c])=>{
     const cab=CABINS[name];
     let color="#e3b341", letter="", label=name;   // venues = yellow
