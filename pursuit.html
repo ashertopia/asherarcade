@@ -184,7 +184,20 @@ const COORDS = {
   "Sycamore":[36.0101543,-87.5159633],
   "Cedarwood":[36.0101752,-87.5157477],
   "Poplar":[36.0110080,-87.5168585],
-  "Talmadge":[36.0108361,-87.5162765]
+  "Johnson Lodge":[36.0108361,-87.5162765]
+};
+// Cabins: gender from the camp map; church colors the dot & shows in the label.
+// (Only Seeds cabins known so far — send more cabin→church and I'll fill them in.)
+const CABINS = {
+  "Cottonwood":{gender:"boys"},
+  "Maplewood":{gender:"boys",church:"Seeds"},
+  "Buckeye":{gender:"boys"},
+  "Poplar":{gender:"boys"},
+  "Springfield":{gender:"girls"},
+  "Sycamore":{gender:"girls"},
+  "Dogwood":{gender:"girls",church:"Seeds"},
+  "Cedarwood":{gender:"girls"},
+  "Johnson Lodge":{}
 };
 // Key contacts (name, role, tel) from the leader handbook
 const CONTACTS = [
@@ -616,6 +629,10 @@ function wireFind(){
 
 /* ---- Interactive camp map (Leaflet + satellite tiles + live GPS) ---- */
 let leafletMap=null,userMarker=null,userCircle=null,geoWatch=null;
+function dotIcon(color,letter){
+  return L.divIcon({className:"",iconSize:[22,22],iconAnchor:[11,11],
+    html:'<div style="width:22px;height:22px;border-radius:50%;background:'+color+';border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font:700 12px -apple-system,sans-serif;color:#101418;">'+(letter||"")+'</div>'});
+}
 function destroyMap(){
   if(geoWatch!=null&&navigator.geolocation){navigator.geolocation.clearWatch(geoWatch);geoWatch=null;}
   if(leafletMap){leafletMap.remove();leafletMap=null;}
@@ -626,7 +643,7 @@ function renderMap(){
   let h='<div class="sectionlabel">Camp map</div><div id="mapdiv"></div>';
   h+='<div class="maptools"><button class="btn pink" id="meBtn">📍 Find me (live)</button>'+
      '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Get to camp</a></div>';
-  h+='<div class="banner" id="mapNote">Tap any pin for turn-by-turn directions. “Find me” shows your live location as you move (allow location access).</div>';
+  h+='<div class="banner" id="mapNote">🟡 Activities (fields, pool, games, Tabernacle) · 🔵/colored = cabins by church, <b>B</b>=boys <b>G</b>=girls. Tap any pin for directions. “Find me” shows your live location as you move.</div>';
   main.innerHTML=h;
   if(!window.L){
     document.getElementById("mapdiv").innerHTML='<div class="empty">The live map needs an internet connection.<br>Use the 📍 links in each schedule for directions, or “Get to camp” above.</div>';
@@ -637,9 +654,18 @@ function renderMap(){
   leafletMap=L.map("mapdiv",{zoomControl:true,attributionControl:false}).setView(center,17);
   L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}).addTo(leafletMap);
   pts.forEach(([name,c])=>{
-    L.circleMarker(c,{radius:8,color:"#fff",weight:2,fillColor:"#ff8fab",fillOpacity:1}).addTo(leafletMap)
-     .bindTooltip(name,{permanent:true,direction:"top",className:"pinlbl",offset:[0,-6]})
-     .bindPopup('<b>'+esc(name)+'</b><br><a href="'+dirGoogle(c[0],c[1])+'" target="_blank" rel="noopener">Google directions</a> · <a href="'+dirApple(c[0],c[1])+'" target="_blank" rel="noopener">Apple</a>');
+    const cab=CABINS[name];
+    let color="#e3b341", letter="", label=name;   // venues = yellow
+    if(cab){
+      color = cab.church ? (CHURCH_COLOR[cab.church]||"#8b949e") : "#8b949e";
+      letter = cab.gender==="girls"?"G":cab.gender==="boys"?"B":"";
+      label = name + (cab.church?" ("+cab.church+")":"");
+    }
+    const popup='<b>'+esc(label)+'</b>'+(cab&&cab.gender?' — '+cab.gender:'')+
+      '<br><a href="'+dirGoogle(c[0],c[1])+'" target="_blank" rel="noopener">Google directions</a> · <a href="'+dirApple(c[0],c[1])+'" target="_blank" rel="noopener">Apple</a>';
+    L.marker(c,{icon:dotIcon(color,letter)}).addTo(leafletMap)
+     .bindTooltip(label,{permanent:true,direction:"top",className:"pinlbl",offset:[0,-13]})
+     .bindPopup(popup);
   });
   setTimeout(()=>{if(leafletMap)leafletMap.invalidateSize();},120);
   document.getElementById("meBtn").onclick=locateMe;
