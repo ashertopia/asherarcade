@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pursuit Camp 2026 — Leader Schedule</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --line:#2a323d;
+  --txt:#e6edf3; --dim:#8b949e; --pink:#ff8fab; --green:#7cc63a;
+  --blue:#58a6ff; --amber:#e3b341; --now:#f778ba;
+}
+html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;}
+body{padding-bottom:60px;}
+a{color:var(--green);}
+.wrap{max-width:820px;margin:0 auto;padding:14px;}
+header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0d1117 70%,rgba(13,17,23,.85));border-bottom:1px solid var(--line);}
+.top .wrap{padding:12px 14px 10px;}
+.brand{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.brand h1{font-size:19px;color:var(--pink);letter-spacing:.3px;}
+.brand .badge{font-size:11px;background:#21262d;color:var(--dim);border:1px solid var(--line);padding:2px 8px;border-radius:20px;}
+.clock{margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--dim);}
+.clock .live{display:inline-flex;align-items:center;gap:5px;color:var(--now);font-weight:600;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--now);box-shadow:0 0 0 0 rgba(247,120,186,.6);animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(247,120,186,.5);}70%{box-shadow:0 0 0 8px rgba(247,120,186,0);}100%{box-shadow:0 0 0 0 rgba(247,120,186,0);}}
+.days{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
+.day{flex:0 0 auto;font-size:13px;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer;white-space:nowrap;}
+.day.active{background:var(--pink);color:#101418;border-color:var(--pink);font-weight:700;}
+.day.today{border-color:var(--now);}
+.timerow{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--dim);}
+.timerow input[type=range]{flex:1;accent-color:var(--pink);}
+.btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:6px 11px;border-radius:8px;font-size:12px;cursor:pointer;}
+.btn:active{transform:scale(.97);}
+.btn.pink{background:var(--pink);color:#101418;border-color:var(--pink);font-weight:600;}
+.tabs{display:flex;gap:6px;margin-top:12px;}
+.tab{flex:1;text-align:center;padding:9px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;}
+.tab.active{background:var(--panel2);color:var(--txt);border-color:var(--pink);}
+.seg{display:flex;gap:6px;margin:4px 0 10px;}
+.seg .s{flex:1;text-align:center;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;}
+.seg .s.active{background:var(--blue);color:#101418;border-color:var(--blue);}
+.sectionlabel{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin:18px 2px 8px;}
+.nowcard{background:linear-gradient(135deg,#231320,#161b22);border:1px solid var(--now);border-radius:14px;padding:16px;}
+.nowcard .lbl{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--now);font-weight:700;}
+.nowcard .title{font-size:22px;font-weight:700;margin-top:4px;}
+.nowcard .meta{color:var(--dim);font-size:14px;margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;}
+.nowcard .next{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--dim);}
+.nowcard .next b{color:var(--txt);}
+.timeline{margin-top:6px;}
+.tl{display:flex;gap:12px;padding:11px 12px;border-radius:11px;border:1px solid transparent;background:var(--panel);margin-bottom:7px;}
+.tl.cur{border-color:var(--now);background:linear-gradient(135deg,#221723,#161b22);}
+.tl.past{opacity:.5;}
+.tl .t{flex:0 0 74px;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;line-height:1.35;}
+.tl .b{flex:1;}
+.tl .b .nm{font-size:15px;font-weight:600;}
+.tl .b .lc{font-size:13px;color:var(--dim);margin-top:2px;}
+.tl.duty{background:linear-gradient(135deg,#1a2113,#161b22);border-color:var(--green);}
+.tl.duty .nm{color:var(--green);}
+.tl.duty .tag{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:.6px;background:var(--green);color:#101418;padding:1px 7px;border-radius:20px;margin-left:7px;vertical-align:middle;font-weight:700;}
+.lc a{color:var(--blue);text-decoration:none;}
+.select{width:100%;padding:12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
+.member{display:flex;align-items:center;gap:12px;padding:12px;border-radius:11px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px;cursor:pointer;}
+.member:active{background:var(--panel2);}
+.avatar{flex:0 0 40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#101418;}
+.member .info{flex:1;min-width:0;}
+.member .info .n{font-size:15px;font-weight:600;}
+.member .info .r{font-size:12px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.member .wherenow{flex:0 0 auto;text-align:right;max-width:46%;}
+.member .wherenow .w{font-size:13px;font-weight:600;}
+.member .wherenow .w.duty{color:var(--green);}
+.member .wherenow .sub{font-size:11px;color:var(--dim);margin-top:1px;}
+.chip{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:#21262d;border:1px solid var(--line);color:var(--dim);margin:2px 4px 2px 0;}
+.empty{color:var(--dim);font-size:14px;text-align:center;padding:28px 10px;line-height:1.5;}
+.banner{background:#2b2410;border:1px solid #5c4a12;color:#e3b341;font-size:12px;padding:9px 12px;border-radius:10px;margin-top:12px;line-height:1.5;}
+.search{width:100%;padding:11px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;margin-bottom:10px;}
+.maptools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.maptools .btn{flex:1;min-width:130px;text-align:center;}
+.linkgrid{display:flex;flex-direction:column;gap:8px;}
+.linkrow{display:flex;align-items:center;gap:12px;padding:12px;border-radius:11px;background:var(--panel);border:1px solid var(--line);text-decoration:none;color:var(--txt);}
+.linkrow .ic{font-size:20px;flex:0 0 24px;text-align:center;}
+.linkrow .lx{flex:1;min-width:0;}
+.linkrow .lx .a{font-size:15px;font-weight:600;}
+.linkrow .lx .b{font-size:12px;color:var(--dim);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.linkrow .go{color:var(--dim);font-size:18px;}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;display:none;align-items:flex-end;justify-content:center;}
+.modal.open{display:flex;}
+.sheet{background:var(--bg);width:100%;max-width:820px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;border-top:1px solid var(--line);animation:up .22s ease;}
+@keyframes up{from{transform:translateY(30px);opacity:.4;}to{transform:translateY(0);opacity:1;}}
+.sheet .shead{position:sticky;top:0;background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;}
+.sheet .shead .x{margin-left:auto;font-size:22px;color:var(--dim);background:none;border:none;cursor:pointer;padding:0 4px;}
+.sheet .sbody{padding:14px 16px 30px;}
+.foot{text-align:center;color:var(--dim);font-size:11px;padding:22px 0 6px;line-height:1.6;}
+.foot a{cursor:pointer;}
+.adminrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.adminrow .nm{flex:1;font-size:14px;}
+label.fld{display:block;font-size:12px;color:var(--dim);margin:12px 0 4px;}
+input.txt,select.txt,textarea.txt{width:100%;padding:10px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:14px;}
+textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Pursuit Camp 2026</h1>
+      <span class="badge" id="loc">Camp Garner Creek</span>
+    </div>
+    <div class="clock">
+      <span class="live" id="liveBadge" style="display:none;"><span class="dot"></span>LIVE</span>
+      <span id="clockTxt">—</span>
+    </div>
+    <div class="days" id="dayBar"></div>
+    <div class="timerow">
+      <span id="tLabel" style="flex:0 0 auto;">Time</span>
+      <input type="range" id="timeSlider" min="360" max="1439" step="5">
+      <button class="btn" id="nowBtn">Now</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="camp">Camp Schedule</div>
+      <div class="tab" data-tab="find">Find People</div>
+      <div class="tab" data-tab="info">Info</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<div class="foot">
+  Pursuit Camp • July 13–18, 2026 • Camp Garner Creek, Dickson TN<br>
+  <a id="adminLink">Leader / Admin tools</a>
+</div>
+
+<script>
+/* ============================================================
+   PURSUIT CAMP 2026 — data + app
+   Schedule data transcribed from the printed handbook photos.
+   ============================================================ */
+
+const CAMP = {
+  name:"Pursuit Camp 2026",
+  address:"Camp Garner Creek, 700 Sam Hollow Rd, Dickson, TN 37055",
+  mainSpace:"Tabernacle",
+  days:["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+  dates:{Monday:"2026-07-13",Tuesday:"2026-07-14",Wednesday:"2026-07-15",
+         Thursday:"2026-07-16",Friday:"2026-07-17",Saturday:"2026-07-18"}
+};
+
+const LINKS = {
+  infoHub:"https://linktr.ee/thepursuitcamp",
+  email:"thepursuitcamp@gmail.com"
+};
+// Key contacts (name, role, tel) from the leader handbook
+const CONTACTS = [
+  {n:"Chelsey Smith",r:"Worship Team",tel:"615-967-1816"},
+  {n:"Macey Duncan",r:"Welcome Table / Camp Administrator",tel:"615-686-1993"},
+  {n:"Dana Lathrop",r:"Hospitality Team",tel:"818-384-8080"},
+  {n:"Austin Duncan",r:"Team Leader / Judicial / Set Up",tel:"615-478-1838"},
+  {n:"Alex Hart",r:"Medical / Safety",tel:"615-498-4627"}
+];
+
+const CHURCHES = [
+  "New Song Nashville","Christ Church","Bethel","Gateway","Sweetwater",
+  "Southview","Seeds","Belmont Church","Nashville Life","Restoration House"
+];
+const CHURCH_COLOR = {
+  "New Song Nashville":"#e3b341","Christ Church":"#f0883e","Bethel":"#79c0ff",
+  "Gateway":"#a5a5ff","Sweetwater":"#7cc63a","Southview":"#56d4bc","Seeds":"#58a6ff",
+  "Belmont Church":"#ff7b72","Nashville Life":"#d2a8ff","Restoration House":"#6ea8ff",
+  "":"#8b949e"
+};
+
+/* ---- Base / master schedule (times 24h "HH:MM") ---- */
+const WEEKDAY = [
+  {s:"06:30",e:"06:45",t:"Wake Up",l:"Cabins"},
+  {s:"06:45",e:"07:15",t:"Tidy dorm & get ready",l:"Cabins"},
+  {s:"07:15",e:"08:25",t:"Breakfast / Secret Place",l:"Dining Hall"},
+  {s:"08:30",e:"11:00",t:"Team Competition",l:"Sports / Game Field"},
+  {s:"11:00",e:"11:30",t:"Cabin Down Time",l:"Cabins"},
+  {s:"11:30",e:"13:00",t:"Lunch / Cabin Down Time",l:"Dining Hall"},
+  {s:"13:00",e:"14:15",t:"Afternoon Session (Service)",l:"Tabernacle"},
+  {s:"14:15",e:"15:00",t:"Small Group",l:"Small Group areas"},
+  {s:"15:00",e:"17:00",t:"Free Time",l:"See Free Time map"},
+  {s:"17:00",e:"18:25",t:"Dinner",l:"Dining Hall"},
+  {s:"18:00",e:"18:30",t:"Pre-Service Huddle",l:"Tabernacle"},
+  {s:"18:30",e:"21:00",t:"Evening Service",l:"Tabernacle"},
+  {s:"21:00",e:"22:00",t:"Snack Shack",l:"Snack Shack"},
+  {s:"22:00",e:"22:30",t:"Cabin Time",l:"Cabins"},
+  {s:"23:00",e:"23:30",t:"Lights Out",l:"Cabins"}
+];
+const BASE = {
+  Monday:[
+    {s:"12:00",e:"13:30",t:"Leader Call Time / Cabin Prep",l:"Cabins"},
+    {s:"13:30",e:"14:00",t:"Leaders Ready & In Cabins",l:"Cabins"},
+    {s:"14:00",e:"15:00",t:"Cabin Registration",l:"Cabins / Welcome"},
+    {s:"15:00",e:"15:15",t:"Session #1 — Kick-off",l:"Tabernacle"},
+    {s:"15:15",e:"16:45",t:"Kick-off Game (theme intro)",l:"Tabernacle"},
+    {s:"16:45",e:"17:00",t:"Worship Rehearsal (Worship Team)",l:"Tabernacle"},
+    {s:"17:00",e:"18:25",t:"Dinner",l:"Dining Hall"},
+    {s:"18:00",e:"18:30",t:"Pre-Service Huddle",l:"Tabernacle"},
+    {s:"18:30",e:"21:00",t:"Evening Service",l:"Tabernacle"},
+    {s:"21:00",e:"22:00",t:"Snack Shack",l:"Snack Shack"},
+    {s:"22:00",e:"22:30",t:"Cabin Time",l:"Cabins"},
+    {s:"23:00",e:"23:30",t:"Lights Out",l:"Cabins"}
+  ],
+  Tuesday:WEEKDAY, Wednesday:WEEKDAY, Thursday:WEEKDAY,
+  Friday:[
+    ...WEEKDAY.slice(0,12),
+    {s:"21:00",e:"22:15",t:"Surprise Night Game (NO Snack Shack)",l:"TBD"},
+    {s:"22:15",e:"22:45",t:"Cabin Time",l:"Cabins"},
+    {s:"23:00",e:"23:30",t:"Lights Out",l:"Cabins"}
+  ],
+  Saturday:[
+    {s:"06:30",e:"06:45",t:"Wake Up",l:"Cabins"},
+    {s:"06:45",e:"07:15",t:"Pack + Clean Dorm",l:"Cabins"},
+    {s:"07:15",e:"08:25",t:"Breakfast / Secret Place",l:"Dining Hall"},
+    {s:"08:00",e:"09:00",t:"Daily Briefing / Worship Rehearsal",l:"Tabernacle"},
+    {s:"09:15",e:"09:30",t:"Group Photo",l:"TBD"},
+    {s:"09:30",e:"12:00",t:"Morning Session / Baptisms",l:"Tabernacle"},
+    {s:"11:00",e:"11:30",t:"Admin Table — Phone / Tech pick up",l:"Admin Table"},
+    {s:"12:00",e:"12:30",t:"CAMP ENDS — See you next year!",l:""}
+  ]
+};
+const MEAL_SHIFTS = [
+  "Breakfast: Shift 1 = 7:15–7:45a • Shift 2 = 7:45–8:15a",
+  "Lunch: Shift 1 = 11:45–12:15p • Shift 2 = 12:15–12:45p",
+  "Dinner: Shift 1 = 5:00–5:45p • Shift 2 = 5:45–6:25p"
+];
+
+/* ---- Admin / Welcome Table ---- */
+const ADMIN_TABLE = {
+  Monday:[["15:00","16:00","Admin/Welcome Table",["Amy Myers","Ella Ward"]],
+          ["16:45","17:15","Admin/Welcome Table",["Mabel O'Neal"]],
+          ["18:30","19:00","Admin/Welcome Table",["Tina So'osemea","Deanna Crow"]]],
+  Tuesday:[["08:00","11:00","Admin/Welcome Table",["Khrysten Fielder"]],
+          ["12:45","13:15","Admin/Welcome Table",["Victoria Phillips"]],
+          ["15:00","17:00","Admin/Welcome Table",["Ella Ward","Deanna Crow"]],
+          ["18:30","19:00","Admin/Welcome Table",["Greyson Chumley"]]],
+  Wednesday:[["08:00","11:00","Admin/Welcome Table",["Dana Andrews"]],
+          ["12:45","13:15","Admin/Welcome Table",["Abby Myers"]],
+          ["15:00","17:00","Admin/Welcome Table",["Khrysten Fielder"]],
+          ["18:30","19:00","Admin/Welcome Table",["Mabel O'Neal"]]],
+  Thursday:[["08:00","11:00","Admin/Welcome Table",["Khrysten Fielder"]],
+          ["12:45","13:15","Admin/Welcome Table",["Mabel O'Neal"]],
+          ["15:00","17:00","Admin/Welcome Table",["Tina So'osemea"]],
+          ["18:30","19:00","Admin/Welcome Table",["Greyson Chumley"]]],
+  Friday:[["08:00","11:00","Admin/Welcome Table",["Dana Andrews"]],
+          ["12:45","13:15","Admin/Welcome Table",["Greyson Chumley"]],
+          ["15:00","17:00","Admin/Welcome Table",["Khrysten Fielder"]],
+          ["18:30","19:00","Admin/Welcome Table",["Abby Myers"]]],
+  Saturday:[["08:30","09:30","Admin/Welcome Table",["Allie Wilson"]],
+          ["12:00","13:00","Admin — Tech Retrieval",["Victoria Phillips","Khrysten Fielder"]]]
+};
+
+/* ---- Hospitality (PREP / REFILL / RESET rotation). Room open mornings
+   until 8:45a & before evening service; fill water jugs @ Tabernacle. ---- */
+const HOSPITALITY = {
+  Monday:{PREP:["Alice Asher","Peter Ochiel","Amy Myers"],REFILL:["David Peery","Dana Andrews","Nancy Ochiel"],RESET:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"]},
+  Tuesday:{PREP:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],REFILL:["Alice Asher","Peter Ochiel","Amy Myers"],RESET:["David Peery","Dana Andrews","Nancy Ochiel"]},
+  Wednesday:{PREP:["David Peery","Dana Andrews","Nancy Ochiel"],REFILL:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],RESET:["Alice Asher","Peter Ochiel","Amy Myers"]},
+  Thursday:{PREP:["Alice Asher","Peter Ochiel","Amy Myers"],REFILL:["David Peery","Dana Andrews","Nancy Ochiel"],RESET:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"]},
+  Friday:{PREP:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],REFILL:["Alice Asher","Peter Ochiel","Amy Myers"],RESET:["David Peery","Dana Andrews","Nancy Ochiel"]},
+  Saturday:{PREP:["David Peery","Dana Andrews","Nancy Ochiel"],REFILL:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],RESET:["Alice Asher","Peter Ochiel","Amy Myers"]}
+};
+const HOSP_EXTRA = "Austlyn Roberts";
+
+/* ---- Free Time zone assignments (3:15–4:45p) — 11 zones, 2 leaders each ---- */
+const FREE_TIME = {
+  Tuesday:{
+    "Gaga Ball":["Tamya Spikes","Israel Fayne"],"Playground":["Naomi Bageant","Papa Hayford"],
+    "Basketball":["Aryn Harvey","Daniel Johnson"],"Volleyball Court":["Serinah Ruiz","Chase Garrison"],
+    "Sports Field":["Anabell Irizarry","Xavier Keegan"],"Tabernacle":["Cardaja Harkins","Enoc Moma"],
+    "Game Field (by Tabernacle)":["Nevaeh Rampulla","Luke Reid"],"Creek / Bridge":["Michelle Thomas","Caeden Rosen"],
+    "Floaters Zone 1":["Paige Hardy","Chance Fielder"],"Floaters Zone 2":["Madison Reid","Al Pearson"],
+    "Floaters Zone 3":["Jackie Bragg","Fanchon Tindal"]},
+  Wednesday:{
+    "Gaga Ball":["Cardaja Harkins","Papa Hayford"],"Playground":["Nevaeh Rampulla","Israel Fayne"],
+    "Basketball":["Michelle Thomas","Chase Garrison"],"Volleyball Court":["Paige Hardy","Fanchon Tindal"],
+    "Sports Field":["Madison Reid","Enoc Moma"],"Tabernacle":["Jackie Bragg","Chance Fielder"],
+    "Game Field (by Tabernacle)":["Naomi Bageant","Caeden Rosen"],"Creek / Bridge":["Aryn Harvey","Al Pearson"],
+    "Floaters Zone 1":["Serinah Ruiz","Luke Reid"],"Floaters Zone 2":["Anabell Irizarry","Daniel Johnson"],
+    "Floaters Zone 3":["Tamya Spikes","Xavier Keegan"]},
+  Thursday:{
+    "Gaga Ball":["Jackie Bragg","Luke Reid"],"Playground":["Tamya Spikes","Chance Fielder"],
+    "Basketball":["Madison Reid","Israel Fayne"],"Volleyball Court":["Aryn Harvey","Caeden Rosen"],
+    "Sports Field":["Serinah Ruiz","Papa Hayford"],"Tabernacle":["Cardaja Harkins","Enoc Moma"],
+    "Game Field (by Tabernacle)":["Nevaeh Rampulla","Daniel Johnson"],"Creek / Bridge":["Michelle Thomas","Xavier Keegan"],
+    "Floaters Zone 1":["Paige Hardy","Al Pearson"],"Floaters Zone 2":["Naomi Bageant","Chase Garrison"],
+    "Floaters Zone 3":["Anabell Irizarry","Fanchon Tindal"]},
+  Friday:{
+    "Gaga Ball":["Michelle Thomas","Caeden Rosen"],"Playground":["Cardaja Harkins","Chase Garrison"],
+    "Basketball":["Paige Hardy","Enoc Moma"],"Volleyball Court":["Nevaeh Rampulla","Israel Fayne"],
+    "Sports Field":["Jackie Bragg","Chance Fielder"],"Tabernacle":["Madison Reid","Papa Hayford"],
+    "Game Field (by Tabernacle)":["Tamya Spikes","Al Pearson"],"Creek / Bridge":["Naomi Bageant","Luke Reid"],
+    "Floaters Zone 1":["Aryn Harvey","Daniel Johnson"],"Floaters Zone 2":["Serinah Ruiz","Fanchon Tindal"],
+    "Floaters Zone 3":["Anabell Irizarry","Xavier Keegan"]}
+};
+
+/* ---- Cabin sweeps (during free time) ---- */
+const CABIN_SWEEPS = {
+  Tuesday:["Elijah Hoaglan","Pierson Nelson","Chloe Perrin","Ella Hufalar"],
+  Wednesday:["Titus Shelton","Daniel Burchfield","Kahanah Chuor","Molly Roberts"],
+  Thursday:["Tevin Parker","Trent Tatum","Lisa Powell","Hailey Parker"],
+  Friday:["Cris Contreras","Daniel Burchfield","Chloe Perrin","Jamie Waters"]
+};
+/* ---- Afternoon Snack Shack (3:00–4:30p) ---- */
+const SNACK_AFTERNOON = {
+  Tuesday:["Noble Swilley","Hailey Parker","Rosita Williams","Pierson Nelson"],
+  Wednesday:["Hailey Parker","Daniel Burchfield","Tevin Parker","Molly Roberts"],
+  Thursday:["Elijah Hoaglan","Chloe Perrin","Pierson Nelson","Ella Hufalar"],
+  Friday:["Daniel Burchfield","Chloe Perrin","Tevin Parker","Molly Roberts"]
+};
+/* ---- Evening Snack Shack (9–10p). Friday = night game, none ---- */
+const SNACK_EVENING = {
+  Monday:{inside:["Allie Wilson","Nevaeh Rampulla","Madison Reid","Trent Tatum","Anabell Irizarry","Rosita Williams","Mallori Hann"],
+          outside:["Brent Lathrop","Papa Hayford","Serinah Ruiz","Chase Garrison"]},
+  Tuesday:{inside:["Darryl E. Reynolds","Hailey Parker","Greyson Chumley","Aryn Harvey","David Peery","Dr. Dorothy Gunn","Dana Andrews"],
+          outside:["Joshua Hann","Cardaja Harkins","Enoc Moma","Israel Fayne"]},
+  Wednesday:{inside:["Allie Wilson","Nevaeh Rampulla","Madison Reid","Trent Tatum","Anabell Irizarry","Rosita Williams","Mallori Hann"],
+          outside:["Brent Lathrop","Papa Hayford","Serinah Ruiz","Chase Garrison"]},
+  Thursday:{inside:["Darryl E. Reynolds","Tyra Harris","Greyson Chumley","Aryn Harvey","David Peery","Joel Isaacson","Dana Andrews"],
+          outside:["Joshua Hann","Cardaja Harkins","Enoc Moma","Israel Fayne"]}
+};
+/* ---- Pool rotation monitors ---- */
+const POOL = {
+  Tuesday:{grade:"Completed 6th grade",girls:["15:15","16:00","Allie Wilson"],boys:["16:00","16:45","Cris Contreras"]},
+  Wednesday:{grade:"Completed 7th & 8th grade",girls:["15:15","16:00","Jamie Waters"],boys:["16:00","16:45","Trent Tatum"]},
+  Thursday:{grade:"Completed 9th & 10th grade",girls:["15:15","16:00","Kahanah Chuor"],boys:["16:00","16:45","Noble Swilley"]},
+  Friday:{grade:"Completed 11th & 12th grade",girls:["15:15","16:00","Lisa Powell"],boys:["16:00","16:45","Elijah Hoaglan"]}
+};
+
+/* ---- Church rosters (provided) + key contacts from the Church Key ---- */
+const KNOWN_CHURCH = {
+  "New Song Nashville":["Macey Duncan"],
+  "Christ Church":["Jacob Sharp","David Peery"],
+  "Bethel":["James Lowe II","Jodie Almaguer"],
+  "Gateway":["Christian Wylder"],
+  "Sweetwater":["Chance Fielder"],
+  "Southview":["Jaic So'osemea","Amy Myers"],
+  "Seeds":["Tevin Parker","Hailey Parker","Alice Asher","Zach Dimmock","Jackie Bragg","Weston Burris"],
+  "Belmont Church":["Michelle Thomas"],
+  "Nashville Life":["Grant Argent"],
+  "Restoration House":["Fred Wheeler"]
+};
+
+/* ---- Service areas (filter dimension) ---- */
+const AREAS = [
+  {key:"Hospitality",tag:"Hospitality"},
+  {key:"Admin / Welcome Table",tag:"Admin"},
+  {key:"Free Time",tag:"Free Time"},
+  {key:"Snack Shack",tag:"Snack Shack"},
+  {key:"Cabin Sweeps",tag:"Cabin Sweep"},
+  {key:"Pool",tag:"Pool"}
+];
+
+/* ============================================================
+   Persistence
+   ============================================================ */
+const LS_KEY="pursuit2026";
+let store = loadStore();
+function loadStore(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{}}catch(e){return {}}}
+function saveStore(){localStorage.setItem(LS_KEY,JSON.stringify(store));}
+store.churchOf = store.churchOf || {};
+store.customDuties = store.customDuties || {};
+store.coords = store.coords || {};      // location name -> "lat,lng"
+Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{if(!store.churchOf[n])store.churchOf[n]=ch;}));
+saveStore();
+
+function T(hhmm){const[a,b]=hhmm.split(":").map(Number);return a*60+b;}
+function fmt(min){let h=Math.floor(min/60),m=min%60;const ap=h<12?"a":"p";let hh=h%12;if(hh===0)hh=12;return hh+(m?":"+String(m).padStart(2,"0"):"")+ap;}
+function fmtRange(s,e){return fmt(T(s))+"–"+fmt(T(e));}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ---- collect everyone ---- */
+function allPeople(){
+  const set=new Set(); const add=x=>{if(x&&x.trim())set.add(x.trim());};
+  Object.values(HOSPITALITY).forEach(d=>Object.values(d).forEach(a=>a.forEach(add))); add(HOSP_EXTRA);
+  Object.values(ADMIN_TABLE).forEach(rows=>rows.forEach(r=>r[3].forEach(add)));
+  Object.values(FREE_TIME).forEach(z=>Object.values(z).forEach(p=>p.forEach(add)));
+  Object.values(CABIN_SWEEPS).forEach(a=>a.forEach(add));
+  Object.values(SNACK_AFTERNOON).forEach(a=>a.forEach(add));
+  Object.values(SNACK_EVENING).forEach(o=>{o.inside.forEach(add);o.outside.forEach(add);});
+  Object.values(POOL).forEach(p=>{add(p.girls[2]);add(p.boys[2]);});
+  Object.values(KNOWN_CHURCH).forEach(a=>a.forEach(add));
+  Object.keys(store.churchOf).forEach(add); Object.keys(store.customDuties).forEach(add);
+  return [...set].sort((a,b)=>a.localeCompare(b));
+}
+/* ---- duties for a person on a day ---- */
+function dutiesFor(name,day){
+  const out=[];
+  const hd=HOSPITALITY[day];
+  if(hd) for(const shift of ["PREP","REFILL","RESET"]) if((hd[shift]||[]).includes(name)){
+    out.push({s:"08:00",e:"08:45",what:"Hospitality ("+shift+") — room open / fill water jugs",where:"Hospitality Room · Tabernacle",tag:"Hospitality"});
+    if(day!=="Saturday") out.push({s:"17:45",e:"18:30",what:"Hospitality ("+shift+") — room open until worship",where:"Hospitality Room · Tabernacle",tag:"Hospitality"});
+  }
+  (ADMIN_TABLE[day]||[]).forEach(r=>{if(r[3].includes(name))out.push({s:r[0],e:r[1],what:r[2],where:"Admin / Welcome Table",tag:"Admin"});});
+  const z=FREE_TIME[day]; if(z)Object.entries(z).forEach(([zone,p])=>{if(p.includes(name))out.push({s:"15:15",e:"16:45",what:"Free Time — "+zone,where:zone,tag:"Free Time"});});
+  if((CABIN_SWEEPS[day]||[]).includes(name)) out.push({s:"15:15",e:"16:45",what:"Cabin Sweeps",where:"Cabins",tag:"Cabin Sweep"});
+  if((SNACK_AFTERNOON[day]||[]).includes(name)) out.push({s:"15:00",e:"16:30",what:"Afternoon Snack Shack",where:"Snack Shack",tag:"Snack Shack"});
+  const ev=SNACK_EVENING[day];
+  if(ev){if(ev.inside.includes(name))out.push({s:"21:00",e:"22:00",what:"Evening Snack Shack",where:"Snack Shack",tag:"Snack Shack"});
+         if(ev.outside.includes(name))out.push({s:"21:00",e:"22:00",what:"Evening Snack Shack (Outside)",where:"Snack Shack · outside",tag:"Snack Shack"});}
+  const p=POOL[day];
+  if(p){if(p.girls[2]===name)out.push({s:p.girls[0],e:p.girls[1],what:"Pool — Girls ("+p.grade+")",where:"Pool",tag:"Pool"});
+        if(p.boys[2]===name)out.push({s:p.boys[0],e:p.boys[1],what:"Pool — Boys ("+p.grade+")",where:"Pool",tag:"Pool"});}
+  (store.customDuties[name]||[]).forEach(d=>{if(d.day===day)out.push({s:d.s,e:d.e,what:d.what,where:d.where||"",tag:d.tag||"Custom"});});
+  return out.sort((a,b)=>T(a.s)-T(b.s));
+}
+function rolesOf(name){const t=new Set();CAMP.days.forEach(d=>dutiesFor(name,d).forEach(x=>t.add(x.tag)));return [...t];}
+function hasArea(name,tag){return CAMP.days.some(d=>dutiesFor(name,d).some(x=>x.tag===tag));}
+function churchOf(name){return store.churchOf[name]||"";}
+function membersOf(church){return allPeople().filter(n=>churchOf(n)===church);}
+
+/* ============================================================
+   State
+   ============================================================ */
+let state={tab:"camp",day:defaultDay(),time:nowMinutes(),follow:true,
+           findMode:"church",pickChurch:"",pickArea:""};
+function nowMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes();}
+function todayName(){const iso=new Date().toISOString().slice(0,10);return CAMP.days.find(d=>CAMP.dates[d]===iso)||null;}
+function defaultDay(){return todayName()||"Monday";}
+function isLive(){return todayName()===state.day && state.follow;}
+
+/* ============================================================
+   Map links + Calendar (.ics) export
+   ============================================================ */
+function mapsGoogle(q){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q);}
+function mapsApple(q){return "https://maps.apple.com/?q="+encodeURIComponent(q);}
+function icsStamp(dayISO,hhmm){return dayISO.replace(/-/g,"")+"T"+hhmm.replace(":","")+"00";}
+function icsEsc(s){return String(s).replace(/([,;\\])/g,"\\$1").replace(/\n/g,"\\n");}
+function buildICS(calName,events){
+  let out="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pursuit Camp 2026//EN\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:"+icsEsc(calName)+"\r\n";
+  events.forEach((ev,i)=>{
+    const dayISO=CAMP.dates[ev.day]; if(!dayISO)return;
+    out+="BEGIN:VEVENT\r\nUID:pursuit-"+ev.day+"-"+i+"-"+ev.s.replace(":","")+"@pursuitcamp\r\n";
+    out+="DTSTART:"+icsStamp(dayISO,ev.s)+"\r\nDTEND:"+icsStamp(dayISO,ev.e)+"\r\n";
+    out+="SUMMARY:"+icsEsc(ev.title)+"\r\n";
+    if(ev.loc)out+="LOCATION:"+icsEsc(ev.loc)+"\r\n";
+    out+="END:VEVENT\r\n";
+  });
+  return out+"END:VCALENDAR\r\n";
+}
+function download(name,text,mime){
+  const blob=new Blob([text],{type:mime});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+}
+function addCampCalendar(){
+  const events=[];
+  CAMP.days.forEach(d=>BASE[d].forEach(b=>{if(T(b.e)>T(b.s))events.push({day:d,s:b.s,e:b.e,title:b.t,loc:b.l});}));
+  download("Pursuit_Camp_2026_schedule.ics",buildICS("Pursuit Camp 2026",events),"text/calendar");
+}
+function addPersonCalendar(name){
+  const events=[];
+  CAMP.days.forEach(d=>dutiesFor(name,d).forEach(x=>{if(T(x.e)>T(x.s))events.push({day:d,s:x.s,e:x.e,title:x.what,loc:x.where});}));
+  if(!events.length){alert(name+" has no special shifts to add — the camp schedule calendar covers them.");return;}
+  download("Pursuit_"+name.replace(/[^\w]+/g,"_")+"_shifts.ics",buildICS(name+" — Pursuit shifts",events),"text/calendar");
+}
+function mapToolsHTML(withCal){
+  let h='<div class="sectionlabel">Map &amp; calendar</div><div class="maptools">'+
+    '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Open in Google Maps</a>'+
+    '<a class="btn" href="'+mapsApple(CAMP.address)+'" target="_blank" rel="noopener">Open in Apple Maps</a>';
+  if(withCal) h+='<button class="btn pink" onclick="addCampCalendar()">Add camp schedule to Calendar</button>';
+  return h+'</div>';
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+const main=document.getElementById("main");
+function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
+function locLink(l){ if(!l) return ""; return '<a href="'+mapsGoogle(l+", "+CAMP.address)+'" target="_blank" rel="noopener">📍 '+esc(l)+'</a>'; }
+
+function renderClock(){
+  const t=document.getElementById("clockTxt"), live=todayName();
+  document.getElementById("liveBadge").style.display=isLive()?"inline-flex":"none";
+  let txt=state.day+" · "+fmt(state.time); if(!live) txt+=" · (preview — camp is Jul 13–18)";
+  t.textContent=txt;
+}
+function renderDayBar(){
+  const bar=document.getElementById("dayBar");bar.innerHTML="";const tn=todayName();
+  CAMP.days.forEach(d=>{const el=document.createElement("div");
+    el.className="day"+(d===state.day?" active":"")+(d===tn?" today":"");el.textContent=d.slice(0,3);
+    el.onclick=()=>{state.day=d;render();};bar.appendChild(el);});
+}
+function currentBlock(b){return b.find(x=>state.time>=T(x.s)&&state.time<T(x.e));}
+function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
+
+function renderCamp(){
+  const blocks=BASE[state.day], cur=currentBlock(blocks), nxt=nextBlock(blocks); let h="";
+  h+='<div class="sectionlabel">Happening now · '+state.day+'</div>';
+  if(cur){
+    h+='<div class="nowcard"><div class="lbl">Now</div><div class="title">'+esc(cur.t)+'</div>'+
+       '<div class="meta">'+(cur.l?'📍 '+esc(cur.l):'')+'<span>🕑 '+fmtRange(cur.s,cur.e)+'</span></div>';
+    if(nxt)h+='<div class="next">Up next: <b>'+esc(nxt.t)+'</b> · '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>';
+    h+='</div>';
+  }else{
+    h+='<div class="nowcard"><div class="lbl">'+(nxt?'Nothing scheduled right now':'Day complete')+'</div>'+
+       (nxt?'<div class="title">'+esc(nxt.t)+'</div><div class="meta">Starts '+fmt(T(nxt.s))+(nxt.l?' · 📍 '+esc(nxt.l):'')+'</div>':'<div class="meta">See you tomorrow!</div>')+'</div>';
+  }
+  h+='<div class="sectionlabel">Full day</div><div class="timeline">';
+  blocks.forEach(b=>{const isc=cur&&b.s===cur.s&&b.t===cur.t, past=state.time>=T(b.e);
+    h+='<div class="tl'+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
+       '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(b.l?'<div class="lc">'+locLink(b.l)+'</div>':'')+'</div></div>';});
+  h+='</div>';
+  h+='<div class="banner">Meal shifts &nbsp;·&nbsp; '+MEAL_SHIFTS.map(esc).join(' &nbsp;·&nbsp; ')+'</div>';
+  h+=mapToolsHTML(true);
+  main.innerHTML=h;
+}
+function whereNow(name){
+  const ds=dutiesFor(name,state.day).filter(d=>state.time>=T(d.s)&&state.time<T(d.e));
+  if(ds.length)return {text:ds[0].where||ds[0].what,sub:ds[0].tag+" · "+fmtRange(ds[0].s,ds[0].e),duty:true};
+  const b=currentBlock(BASE[state.day]); if(b)return {text:b.l||b.t,sub:b.t,duty:false};
+  return {text:"—",sub:"Free / off",duty:false};
+}
+
+function renderFind(){
+  let h='<div class="seg"><div class="s'+(state.findMode==="church"?" active":"")+'" data-m="church">By Church</div>'+
+        '<div class="s'+(state.findMode==="area"?" active":"")+'" data-m="area">By Service Area</div></div>';
+  if(state.findMode==="church"){
+    h+='<select class="select" id="pick"><option value="">— Select your church —</option>';
+    CHURCHES.forEach(c=>h+='<option value="'+esc(c)+'"'+(c===state.pickChurch?' selected':'')+'>'+esc(c)+'</option>');
+    h+='<option value="__un"'+(state.pickChurch==="__un"?' selected':'')+'>— Unassigned people —</option></select>';
+  }else{
+    h+='<select class="select" id="pick"><option value="">— Select a service area —</option>';
+    AREAS.forEach(a=>h+='<option value="'+esc(a.key)+'"'+(a.key===state.pickArea?' selected':'')+'>'+esc(a.key)+'</option>');
+    h+='</select>';
+  }
+  const picked = state.findMode==="church"?state.pickChurch:state.pickArea;
+  if(!picked){
+    h+='<div class="empty">'+(state.findMode==="church"
+        ?'Choose your church to see every leader and where they should be right now.'
+        :'Choose a service area to see everyone working it and where they should be.')+'<br><br>Then tap anyone for their full day.</div>';
+    main.innerHTML=h; wireFind(); return;
+  }
+  let list, headline;
+  if(state.findMode==="church"){
+    list = state.pickChurch==="__un"?allPeople().filter(n=>!churchOf(n)):membersOf(state.pickChurch);
+    headline=(state.pickChurch==="__un"?"Unassigned":state.pickChurch);
+  }else{
+    const tag=(AREAS.find(a=>a.key===state.pickArea)||{}).tag;
+    list=allPeople().filter(n=>hasArea(n,tag)); headline=state.pickArea;
+  }
+  h+='<div class="sectionlabel">'+esc(headline)+' · '+list.length+' '+(list.length===1?'person':'people')+' · '+state.day+' '+fmt(state.time)+'</div>';
+  if(!list.length) h+='<div class="empty">No one here yet. Use <b>Leader / Admin tools</b> to assign people, or send Asher the roster.</div>';
+  list.forEach(n=>{
+    const col=CHURCH_COLOR[churchOf(n)]||"#8b949e";
+    let wText,wSub,wDuty;
+    if(state.findMode==="area"){
+      const tag=(AREAS.find(a=>a.key===state.pickArea)||{}).tag;
+      const d=dutiesFor(n,state.day).find(x=>x.tag===tag);
+      const on=d&&state.time>=T(d.s)&&state.time<T(d.e);
+      wText=d?d.where:"—"; wSub=d?fmtRange(d.s,d.e):("not "+state.day.slice(0,3)); wDuty=!!on;
+    }else{const w=whereNow(n);wText=w.text;wSub=w.sub;wDuty=w.duty;}
+    const sub2 = state.findMode==="church" ? (rolesOf(n).join(" · ")||"Follows camp schedule") : (churchOf(n)||"No church set");
+    h+='<div class="member" data-p="'+esc(n)+'"><div class="avatar" style="background:'+col+'">'+initials(n)+'</div>'+
+       '<div class="info"><div class="n">'+esc(n)+'</div><div class="r">'+esc(sub2)+'</div></div>'+
+       '<div class="wherenow"><div class="w'+(wDuty?' duty':'')+'">'+esc(wText)+'</div><div class="sub">'+esc(wSub)+'</div></div></div>';
+  });
+  h+=mapToolsHTML(false);
+  main.innerHTML=h; wireFind();
+  main.querySelectorAll(".member").forEach(el=>el.onclick=()=>openPerson(el.dataset.p));
+}
+function wireFind(){
+  main.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{state.findMode=s.dataset.m;render();});
+  const p=document.getElementById("pick");
+  if(p)p.onchange=()=>{if(state.findMode==="church")state.pickChurch=p.value;else state.pickArea=p.value;render();};
+}
+
+function renderInfo(){
+  let h='<div class="sectionlabel">Camp links</div><div class="linkgrid">';
+  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">🔗</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">'+LINKS.infoHub+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">💬</span><span class="lx"><span class="a">Join the GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">✉️</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
+  h+='</div>';
+  h+='<div class="sectionlabel">Getting there</div><div class="linkgrid">';
+  h+='<a class="linkrow" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🗺️</span><span class="lx"><span class="a">Open camp in Google Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+mapsApple(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🍎</span><span class="lx"><span class="a">Open camp in Apple Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
+  h+='</div>';
+  h+='<div class="sectionlabel">Key contacts</div><div class="linkgrid">';
+  CONTACTS.forEach(c=>{h+='<a class="linkrow" href="tel:'+c.tel.replace(/[^0-9]/g,"")+'"><span class="ic">📞</span><span class="lx"><span class="a">'+esc(c.n)+'</span><span class="b">'+esc(c.r)+' · '+esc(c.tel)+'</span></span><span class="go">›</span></a>';});
+  h+='</div>';
+  h+='<div class="banner">Main meeting space: <b>'+esc(CAMP.mainSpace)+'</b> · Leader parking: across from the Dining Hall.</div>';
+  main.innerHTML=h;
+}
+
+/* ---- person sheet ---- */
+function openPerson(name){
+  const sheet=document.getElementById("sheet"), col=CHURCH_COLOR[churchOf(name)]||"#8b949e";
+  let h='<div class="shead"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
+        '<div><div style="font-size:17px;font-weight:700;">'+esc(name)+'</div>'+
+        '<div style="font-size:12px;color:var(--dim);">'+(churchOf(name)?esc(churchOf(name)):'No church set')+'</div></div>'+
+        '<button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
+  h+='<div class="days" style="margin-bottom:12px;">';
+  CAMP.days.forEach(d=>h+='<div class="day'+(d===state.day?' active':'')+'" data-d="'+d+'">'+d.slice(0,3)+'</div>');
+  h+='</div>'+personDay(name,state.day)+
+     '<div class="maptools"><button class="btn pink" onclick="addPersonCalendar(\''+esc(name).replace(/'/g,"\\'")+'\')">Add '+esc(name.split(" ")[0])+'’s shifts to Calendar</button>'+
+     '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Open camp map</a></div></div>';
+  sheet.innerHTML=h;
+  sheet.querySelectorAll(".day").forEach(el=>el.onclick=()=>{
+    state.day=el.dataset.d;
+    sheet.querySelectorAll(".day").forEach(x=>x.classList.toggle("active",x.dataset.d===state.day));
+    document.getElementById("personDayWrap").outerHTML=personDay(name,state.day);
+    renderClock();renderDayBar();
+  });
+  document.getElementById("modal").classList.add("open");
+}
+function personDay(name,day){
+  const duties=dutiesFor(name,day);
+  const base=BASE[day].map(b=>({s:b.s,e:b.e,t:b.t,l:b.l,duty:false}));
+  const di=duties.map(d=>({s:d.s,e:d.e,t:d.what,l:d.where,duty:true,tag:d.tag}));
+  const items=[...base,...di].sort((a,b)=>T(a.s)-T(b.s)||(a.duty?-1:1));
+  let h='<div id="personDayWrap"><div class="sectionlabel">'+day+' — '+(duties.length?duties.length+' assignment'+(duties.length>1?'s':''):'no special duties')+'</div><div class="timeline">';
+  items.forEach(b=>{const isc=(day===state.day)&&state.time>=T(b.s)&&state.time<T(b.e);
+    h+='<div class="tl'+(b.duty?' duty':'')+(isc?' cur':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
+       '<div class="b"><div class="nm">'+esc(b.t)+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+
+       (b.l?'<div class="lc">'+locLink(b.l)+'</div>':'')+'</div></div>';});
+  h+='</div>';
+  if(!duties.length) h+='<div class="banner">'+esc(name)+' has no role duties on '+day+' — follows the normal camp schedule above.</div>';
+  h+='</div>'; return h;
+}
+function closeModal(){document.getElementById("modal").classList.remove("open");render();}
+
+/* ---- admin sheet ---- */
+function openAdmin(){
+  const sheet=document.getElementById("sheet");
+  let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
+  h+='<div class="banner">Assign leaders to churches so they show up under them. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
+  h+='<div class="seg"><div class="s active" data-a="people">People → Church</div><div class="s" data-a="data">Export</div></div>';
+  h+='<div id="aPane"></div></div>';
+  sheet.innerHTML=h;
+  sheet.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{sheet.querySelectorAll(".seg .s").forEach(x=>x.classList.remove("active"));s.classList.add("active");adminPane(s.dataset.a);});
+  adminPane("people");
+  document.getElementById("modal").classList.add("open");
+}
+function adminPane(which){
+  const pane=document.getElementById("aPane");
+  if(which==="people"){
+    pane.innerHTML='<input class="search" id="aSearch" placeholder="Search a name…"><div id="aList"></div>';
+    document.getElementById("aSearch").oninput=renderAdminList; renderAdminList();
+  }else{
+    pane.innerHTML='<label class="fld">Export (copy &amp; send to Asher)</label><textarea class="txt" id="aExport" readonly></textarea>'+
+      '<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn pink" onclick="copyExport()">Copy</button><button class="btn" onclick="importPrompt()">Import…</button></div>';
+    document.getElementById("aExport").value=JSON.stringify({churchOf:store.churchOf,customDuties:store.customDuties},null,2);
+  }
+}
+function renderAdminList(){
+  const q=(document.getElementById("aSearch").value||"").toLowerCase(), list=document.getElementById("aList");
+  const people=allPeople().filter(n=>n.toLowerCase().includes(q)).slice(0,300); let h="";
+  people.forEach(n=>{h+='<div class="adminrow"><div class="nm">'+esc(n)+'</div><select class="txt" style="flex:0 0 52%;" data-p="'+esc(n)+'"><option value="">— unassigned —</option>'+
+    CHURCHES.map(c=>'<option value="'+esc(c)+'"'+(churchOf(n)===c?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>';});
+  list.innerHTML=h||'<div class="empty">No match.</div>';
+  list.querySelectorAll("select").forEach(s=>s.onchange=()=>{if(s.value)store.churchOf[s.dataset.p]=s.value;else delete store.churchOf[s.dataset.p];saveStore();});
+}
+function copyExport(){const t=document.getElementById("aExport");t.select();document.execCommand("copy");const b=event.target;b.textContent="Copied ✓";setTimeout(()=>b.textContent="Copy",1200);}
+function importPrompt(){const s=prompt("Paste exported JSON:");if(!s)return;
+  try{const o=JSON.parse(s);if(o.churchOf)store.churchOf=o.churchOf;if(o.customDuties)store.customDuties=o.customDuties;if(o.coords)store.coords=o.coords;saveStore();openAdmin();}
+  catch(e){alert("That didn't look like valid data.");}}
+
+/* ============================================================
+   wire up
+   ============================================================ */
+function render(){
+  renderClock();renderDayBar();
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===state.tab));
+  if(state.tab==="camp")renderCamp(); else if(state.tab==="find")renderFind(); else renderInfo();
+  document.getElementById("timeSlider").value=state.time;
+}
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{state.tab=t.dataset.tab;render();});
+document.getElementById("timeSlider").oninput=e=>{state.time=+e.target.value;state.follow=false;render();};
+document.getElementById("nowBtn").onclick=()=>{state.time=nowMinutes();state.follow=true;const tn=todayName();if(tn)state.day=tn;render();};
+document.getElementById("adminLink").onclick=openAdmin;
+document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
+setInterval(()=>{if(isLive()){state.time=nowMinutes();render();}},30000);
+render();
+</script>
+</body>
+</html>
