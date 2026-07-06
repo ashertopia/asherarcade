@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pursuit Camp 2026 — Leader Schedule</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -92,6 +94,12 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .sheet .sbody{padding:14px 16px 30px;}
 .foot{text-align:center;color:var(--dim);font-size:11px;padding:22px 0 6px;line-height:1.6;}
 .foot a{cursor:pointer;}
+#mapdiv{height:66vh;min-height:340px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0b0e13;}
+.leaflet-container{background:#0b0e13;font-family:inherit;}
+.pinlbl{background:rgba(13,17,23,.82);color:#fff;border:1px solid #2a323d;font-size:11px;font-weight:600;padding:1px 6px;border-radius:6px;box-shadow:none;}
+.pinlbl.leaflet-tooltip-top:before{border-top-color:rgba(13,17,23,.82);}
+.leaflet-popup-content{font-size:13px;}
+.leaflet-popup-content a{color:#1a66ff;font-weight:600;}
 .adminrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
 .adminrow .nm{flex:1;font-size:14px;}
 label.fld{display:block;font-size:12px;color:var(--dim);margin:12px 0 4px;}
@@ -117,8 +125,9 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
       <button class="btn" id="nowBtn">Now</button>
     </div>
     <div class="tabs">
-      <div class="tab active" data-tab="camp">Camp Schedule</div>
-      <div class="tab" data-tab="find">Find People</div>
+      <div class="tab active" data-tab="camp">Schedule</div>
+      <div class="tab" data-tab="find">People</div>
+      <div class="tab" data-tab="map">Map</div>
       <div class="tab" data-tab="info">Info</div>
     </div>
   </div>
@@ -151,6 +160,14 @@ const CAMP = {
 const LINKS = {
   infoHub:"https://linktr.ee/thepursuitcamp",
   email:"thepursuitcamp@gmail.com"
+};
+// GPS coordinates for camp locations [lat,lng] (add more in Admin › Map pins)
+const COORDS = {
+  "Tabernacle":[36.0080030,-87.5159516],
+  "Snack Shack":[36.0082344,-87.5165293],
+  "Gaga Ball":[36.0081167,-87.5166449],
+  "Game Field (by Tabernacle)":[36.0070470,-87.5165977],
+  "Cottonwood (cabin)":[36.0084220,-87.5156881]
 };
 // Key contacts (name, role, tel) from the leader handbook
 const CONTACTS = [
@@ -428,6 +445,15 @@ function isLive(){return todayName()===state.day && state.follow;}
    ============================================================ */
 function mapsGoogle(q){return "https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(q);}
 function mapsApple(q){return "https://maps.apple.com/?q="+encodeURIComponent(q);}
+function dirGoogle(lat,lng){return "https://www.google.com/maps/dir/?api=1&destination="+lat+","+lng;}
+function dirApple(lat,lng){return "https://maps.apple.com/?daddr="+lat+","+lng;}
+function coordFor(loc){
+  if(COORDS[loc])return COORDS[loc];
+  const c=store.coords[loc]; if(c){const p=String(c).split(",").map(x=>parseFloat(x.trim())); if(p.length===2&&!p.some(isNaN))return p;}
+  return null;
+}
+function allCoords(){const o={}; Object.assign(o,COORDS);
+  Object.entries(store.coords).forEach(([k,v])=>{const p=coordFor(k); if(p)o[k]=p;}); return o;}
 function icsStamp(dayISO,hhmm){return dayISO.replace(/-/g,"")+"T"+hhmm.replace(":","")+"00";}
 function icsEsc(s){return String(s).replace(/([,;\\])/g,"\\$1").replace(/\n/g,"\\n");}
 function buildICS(calName,events){
@@ -471,7 +497,9 @@ function mapToolsHTML(withCal){
    ============================================================ */
 const main=document.getElementById("main");
 function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
-function locLink(l){ if(!l) return ""; return '<a href="'+mapsGoogle(l+", "+CAMP.address)+'" target="_blank" rel="noopener">📍 '+esc(l)+'</a>'; }
+function locLink(l){ if(!l) return ""; const c=coordFor(l);
+  const url=c?dirGoogle(c[0],c[1]):mapsGoogle(l+", "+CAMP.address);
+  return '<a href="'+url+'" target="_blank" rel="noopener">📍 '+esc(l)+(c?' ›':'')+'</a>'; }
 
 function renderClock(){
   const t=document.getElementById("clockTxt"), live=todayName();
@@ -569,6 +597,49 @@ function wireFind(){
   if(p)p.onchange=()=>{if(state.findMode==="church")state.pickChurch=p.value;else state.pickArea=p.value;render();};
 }
 
+/* ---- Interactive camp map (Leaflet + satellite tiles + live GPS) ---- */
+let leafletMap=null,userMarker=null,userCircle=null,geoWatch=null;
+function destroyMap(){
+  if(geoWatch!=null&&navigator.geolocation){navigator.geolocation.clearWatch(geoWatch);geoWatch=null;}
+  if(leafletMap){leafletMap.remove();leafletMap=null;}
+  userMarker=userCircle=null;
+}
+function renderMap(){
+  destroyMap();
+  let h='<div class="sectionlabel">Camp map</div><div id="mapdiv"></div>';
+  h+='<div class="maptools"><button class="btn pink" id="meBtn">📍 Find me (live)</button>'+
+     '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Get to camp</a></div>';
+  h+='<div class="banner" id="mapNote">Tap any pin for turn-by-turn directions. “Find me” shows your live location as you move (allow location access).</div>';
+  main.innerHTML=h;
+  if(!window.L){
+    document.getElementById("mapdiv").innerHTML='<div class="empty">The live map needs an internet connection.<br>Use the 📍 links in each schedule for directions, or “Get to camp” above.</div>';
+    document.getElementById("meBtn").style.display="none"; return;
+  }
+  const pts=Object.entries(allCoords());
+  const center=pts.length?[pts.reduce((a,[,c])=>a+c[0],0)/pts.length, pts.reduce((a,[,c])=>a+c[1],0)/pts.length]:[36.0079,-87.5163];
+  leafletMap=L.map("mapdiv",{zoomControl:true,attributionControl:false}).setView(center,17);
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19}).addTo(leafletMap);
+  pts.forEach(([name,c])=>{
+    L.circleMarker(c,{radius:8,color:"#fff",weight:2,fillColor:"#ff8fab",fillOpacity:1}).addTo(leafletMap)
+     .bindTooltip(name,{permanent:true,direction:"top",className:"pinlbl",offset:[0,-6]})
+     .bindPopup('<b>'+esc(name)+'</b><br><a href="'+dirGoogle(c[0],c[1])+'" target="_blank" rel="noopener">Google directions</a> · <a href="'+dirApple(c[0],c[1])+'" target="_blank" rel="noopener">Apple</a>');
+  });
+  setTimeout(()=>{if(leafletMap)leafletMap.invalidateSize();},120);
+  document.getElementById("meBtn").onclick=locateMe;
+}
+function locateMe(){
+  if(!leafletMap)return;
+  if(!navigator.geolocation){document.getElementById("mapNote").textContent="Location isn’t available on this device/browser.";return;}
+  const note=document.getElementById("mapNote"); note.textContent="Getting your location…";
+  let first=true;
+  geoWatch=navigator.geolocation.watchPosition(p=>{
+    const ll=[p.coords.latitude,p.coords.longitude], acc=p.coords.accuracy||20;
+    if(userMarker)userMarker.setLatLng(ll); else userMarker=L.circleMarker(ll,{radius:9,color:"#fff",weight:3,fillColor:"#58a6ff",fillOpacity:1}).addTo(leafletMap).bindTooltip("You",{permanent:true,direction:"bottom",className:"pinlbl",offset:[0,6]});
+    if(userCircle)userCircle.setLatLng(ll).setRadius(acc); else userCircle=L.circle(ll,{radius:acc,color:"#58a6ff",weight:1,fillColor:"#58a6ff",fillOpacity:.12}).addTo(leafletMap);
+    if(first){leafletMap.setView(ll,18);first=false;note.textContent="You’re the blue dot — it updates as you move.";}
+  },err=>{note.textContent="Couldn’t get location: "+err.message+" (check location permissions).";},{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
+}
+
 function renderInfo(){
   let h='<div class="sectionlabel">Camp links</div><div class="linkgrid">';
   h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">🔗</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">'+LINKS.infoHub+'</span></span><span class="go">›</span></a>';
@@ -627,8 +698,8 @@ function closeModal(){document.getElementById("modal").classList.remove("open");
 function openAdmin(){
   const sheet=document.getElementById("sheet");
   let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
-  h+='<div class="banner">Assign leaders to churches so they show up under them. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
-  h+='<div class="seg"><div class="s active" data-a="people">People → Church</div><div class="s" data-a="data">Export</div></div>';
+  h+='<div class="banner">Assign leaders to churches, and add GPS pins so more spots show on the Map. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
+  h+='<div class="seg"><div class="s active" data-a="people">People → Church</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
   h+='<div id="aPane"></div></div>';
   sheet.innerHTML=h;
   sheet.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{sheet.querySelectorAll(".seg .s").forEach(x=>x.classList.remove("active"));s.classList.add("active");adminPane(s.dataset.a);});
@@ -640,10 +711,17 @@ function adminPane(which){
   if(which==="people"){
     pane.innerHTML='<input class="search" id="aSearch" placeholder="Search a name…"><div id="aList"></div>';
     document.getElementById("aSearch").oninput=renderAdminList; renderAdminList();
+  }else if(which==="pins"){
+    let h='<div class="banner">In Google Maps, long-press (phone) or right-click (computer) a spot → tap the "lat, lng" numbers to copy → paste below. Already-loaded spots are shown greyed as examples.</div>';
+    h+='<div style="font-size:12px;color:var(--dim);margin:0 2px 8px;">Loaded: '+Object.keys(COORDS).map(esc).join(", ")+'</div>';
+    h+='<div id="pinList"></div><label class="fld">Add a pin</label>'+
+       '<input class="txt" id="pinName" placeholder="Location name (e.g. Pool)"><input class="txt" id="pinCoord" placeholder="36.0079, -87.5163" style="margin-top:6px;">'+
+       '<button class="btn pink" style="margin-top:8px;" onclick="addPin()">Add pin</button>';
+    pane.innerHTML=h; renderPinList();
   }else{
     pane.innerHTML='<label class="fld">Export (copy &amp; send to Asher)</label><textarea class="txt" id="aExport" readonly></textarea>'+
       '<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn pink" onclick="copyExport()">Copy</button><button class="btn" onclick="importPrompt()">Import…</button></div>';
-    document.getElementById("aExport").value=JSON.stringify({churchOf:store.churchOf,customDuties:store.customDuties},null,2);
+    document.getElementById("aExport").value=JSON.stringify({churchOf:store.churchOf,customDuties:store.customDuties,coords:store.coords},null,2);
   }
 }
 function renderAdminList(){
@@ -653,6 +731,18 @@ function renderAdminList(){
     CHURCHES.map(c=>'<option value="'+esc(c)+'"'+(churchOf(n)===c?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select></div>';});
   list.innerHTML=h||'<div class="empty">No match.</div>';
   list.querySelectorAll("select").forEach(s=>s.onchange=()=>{if(s.value)store.churchOf[s.dataset.p]=s.value;else delete store.churchOf[s.dataset.p];saveStore();});
+}
+function renderPinList(){
+  const el=document.getElementById("pinList"); if(!el)return;
+  const custom=Object.keys(store.coords).filter(k=>coordFor(k)); let h="";
+  custom.forEach(k=>{h+='<div class="adminrow"><div class="nm">'+esc(k)+' <span style="color:var(--dim);font-size:12px;">'+esc(store.coords[k])+'</span></div><button class="btn" data-rm="'+esc(k)+'">Remove</button></div>';});
+  el.innerHTML=h; el.querySelectorAll("button[data-rm]").forEach(b=>b.onclick=()=>{delete store.coords[b.dataset.rm];saveStore();renderPinList();});
+}
+function addPin(){
+  const n=(document.getElementById("pinName").value||"").trim(), c=(document.getElementById("pinCoord").value||"").trim();
+  if(!n||!/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(c)){alert("Enter a name and coordinates like 36.0079, -87.5163");return;}
+  store.coords[n]=c; saveStore();
+  document.getElementById("pinName").value="";document.getElementById("pinCoord").value=""; renderPinList();
 }
 function copyExport(){const t=document.getElementById("aExport");t.select();document.execCommand("copy");const b=event.target;b.textContent="Copied ✓";setTimeout(()=>b.textContent="Copy",1200);}
 function importPrompt(){const s=prompt("Paste exported JSON:");if(!s)return;
@@ -664,8 +754,12 @@ function importPrompt(){const s=prompt("Paste exported JSON:");if(!s)return;
    ============================================================ */
 function render(){
   renderClock();renderDayBar();
+  if(state.tab!=="map")destroyMap();
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===state.tab));
-  if(state.tab==="camp")renderCamp(); else if(state.tab==="find")renderFind(); else renderInfo();
+  if(state.tab==="camp")renderCamp();
+  else if(state.tab==="find")renderFind();
+  else if(state.tab==="map")renderMap();
+  else renderInfo();
   document.getElementById("timeSlider").value=state.time;
 }
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{state.tab=t.dataset.tab;render();});
