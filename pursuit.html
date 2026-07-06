@@ -184,20 +184,24 @@ const COORDS = {
   "Sycamore":[36.0101543,-87.5159633],
   "Cedarwood":[36.0101752,-87.5157477],
   "Poplar":[36.0110080,-87.5168585],
-  "Johnson Lodge":[36.0108361,-87.5162765]
+  "Johnson Lodge":[36.0108361,-87.5162765],
+  // activity / landmark spots
+  "Playground":[36.0079113,-87.5165061],
+  "Creek / Bridge":[36.0096474,-87.5175384],
+  "Pavilion":[36.0097526,-87.5170711]
 };
-// Cabins: gender from the camp map; church colors the dot & shows in the label.
-// (Only Seeds cabins known so far — send more cabin→church and I'll fill them in.)
+// Cabins: gender + which churches are housed there (from the Cabin Crunch pages).
+// Many cabins are shared room-by-room; dot color = the first (largest) church listed.
 const CABINS = {
-  "Cottonwood":{gender:"boys"},
-  "Maplewood":{gender:"boys",church:"Seeds"},
-  "Buckeye":{gender:"boys"},
-  "Poplar":{gender:"boys"},
-  "Springfield":{gender:"girls"},
-  "Sycamore":{gender:"girls"},
-  "Dogwood":{gender:"girls",church:"Seeds"},
-  "Cedarwood":{gender:"girls"},
-  "Johnson Lodge":{}
+  "Buckeye":{gender:"boys",churches:["New Song Nashville"]},
+  "Maplewood":{gender:"boys",churches:["New Song Nashville","Seeds","Christ Church","Nashville Life","Belmont Church"]},
+  "Cottonwood":{gender:"boys",churches:["Bethel","Southview"]},
+  "Poplar":{gender:"boys",churches:["Bethel","Gateway","Sweetwater"]},
+  "Springfield":{gender:"girls",churches:["Gateway","Sweetwater","Bethel"]},
+  "Sycamore":{gender:"girls",churches:["Nashville Life","Restoration House"]},
+  "Dogwood":{gender:"girls",churches:["Christ Church","Seeds"]},
+  "Cedarwood":{gender:"girls",churches:["Bethel"]},
+  "Johnson Lodge":{churches:["New Song Nashville","Southview","Restoration House","Belmont Church"]}
 };
 // Key contacts (name, role, tel) from the leader handbook
 const CONTACTS = [
@@ -212,10 +216,11 @@ const CHURCHES = [
   "New Song Nashville","Christ Church","Bethel","Gateway","Sweetwater",
   "Southview","Seeds","Belmont Church","Nashville Life","Restoration House"
 ];
+// Official church colors (from the Cabin Crunch church key)
 const CHURCH_COLOR = {
-  "New Song Nashville":"#e3b341","Christ Church":"#f0883e","Bethel":"#79c0ff",
-  "Gateway":"#a5a5ff","Sweetwater":"#7cc63a","Southview":"#56d4bc","Seeds":"#58a6ff",
-  "Belmont Church":"#ff7b72","Nashville Life":"#d2a8ff","Restoration House":"#6ea8ff",
+  "New Song Nashville":"#f7c948","Christ Church":"#f49a54","Bethel":"#b58be0",
+  "Gateway":"#7e9cd8","Sweetwater":"#8cc751","Southview":"#86ddcb","Seeds":"#a2cfec",
+  "Belmont Church":"#f17e78","Nashville Life":"#e052be","Restoration House":"#5a73e0",
   "":"#8b949e"
 };
 
@@ -378,18 +383,18 @@ const POOL = {
   Friday:{grade:"Completed 11th & 12th grade",girls:["15:15","16:00","Lisa Powell"],boys:["16:00","16:45","Elijah Hoaglan"]}
 };
 
-/* ---- Church rosters (provided) + key contacts from the Church Key ---- */
+/* ---- Full leader rosters by church (from the PC26 Leader roster) ---- */
 const KNOWN_CHURCH = {
-  "New Song Nashville":["Macey Duncan"],
-  "Christ Church":["Jacob Sharp","David Peery"],
-  "Bethel":["James Lowe II","Jodie Almaguer"],
-  "Gateway":["Christian Wylder"],
-  "Sweetwater":["Chance Fielder"],
-  "Southview":["Jaic So'osemea","Amy Myers"],
-  "Seeds":["Tevin Parker","Hailey Parker","Alice Asher","Zach Dimmock","Jackie Bragg","Weston Burris"],
-  "Belmont Church":["Michelle Thomas"],
-  "Nashville Life":["Grant Argent"],
-  "Restoration House":["Fred Wheeler"]
+  "New Song Nashville":["Grant Ebright","Macey Duncan","Austin Duncan","Kaitlyn Rupert","Chelsey Smith","John Hagan","Melody Hagan","Dana Lathrop","Julia B Morris","Joy Clapp","Alex R Hart","Mark Schamel","Stuart Fritz","Mabel O'Neal","Luca Zapata","Chas Tippett","Jamie Waters","Zachariah McGahey","Pomaikai Chiara Romano","Caeden Rosen","Al Pearson","Judah Siegand","Stewart Fleming","Victoria Phillips","Nathan Cress","Kameryn King","Cameron King","Isabella Gautsche","Brent Lathrop","Allie Wilson","Martha Pearson","Kirk Roncskevitz","Grace Geeslin","Wesley Garrett","Victoria Joy Lanford","Micah Elliott","Ezra Siegand","Ruben Rivera III","Israel Schamel","Manny Schamel","Bryan Hagan","Crystal Schamel","Joel Evrist","Kayla Fritz","Chris Martin","Matthew Peels","Tyler Beiden","Nancy Ochiel","Peter Ochiel"],
+  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock"],
+  "Southview":["Nevaeh Rampulla","Kahanah Chuor","Amy Myers","Jon Myers","Lily Owens","Sean Baxter","Jim Tannahill","Sheryl Tannahill","Ethan Rain Myers","Marlee Rampulla","Elijah Hoaglan","Seth Mehta","Jaic So'osemea","Tina So'osemea","Madison Reid","Luke Reid","Aadyn Rampulla","Ryan Chew"],
+  "Gateway":["Daniel Burchfield","Paige Hardy","Ella Hufalar","Molly Roberts","Hailey Fields","Brennan Harper","Lisa Powell","Trent Tatum","Pierson Nelson","Christian Wylder"],
+  "Nashville Life":["Grant Argent","Dr. Dorothy Gunn","Talesha Kenyetta Simpson","Khadijah Faison","David Veney","Kendale Lark Burch","Noah Lutche","Kayden Alford","Jeremiah Davis","Lydia Akin","Bobby Rhodes","Lily Huseby","Joel Isaacson","Chloe Perrin","Fanchon Tindal","Rosita Williams","Kirby Shepherd","Tyra Harris"],
+  "Belmont Church":["Michelle Thomas","Alfred De Leon"],
+  "Christ Church":["David Peery","Jacob Sharp","Abby Myers","Dave Saunders","Erin Ide","David Eli Carney","Greyson Chumley","Kara Lemonis","Martin Ikenna Ogbunugafor"],
+  "Restoration House":["Austyn Neal Roberts","Jared Wheeler","Deanna Crow"],
+  "Sweetwater":["Chance Fielder","Khrysten Fielder","Mallori Hann","Joshua Hann"],
+  "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","Rc Tidwell"]
 };
 
 /* ---- Service areas (filter dimension) ---- */
@@ -412,7 +417,11 @@ function saveStore(){localStorage.setItem(LS_KEY,JSON.stringify(store));}
 store.churchOf = store.churchOf || {};
 store.customDuties = store.customDuties || {};
 store.coords = store.coords || {};      // location name -> "lat,lng"
-Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{if(!store.churchOf[n])store.churchOf[n]=ch;}));
+// Apply the authoritative roster once (version bump re-applies for returning users)
+if(store.rosterV!==2){
+  Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
+  store.rosterV=2;
+}
 saveStore();
 
 function T(hhmm){const[a,b]=hhmm.split(":").map(Number);return a*60+b;}
@@ -643,7 +652,8 @@ function renderMap(){
   let h='<div class="sectionlabel">Camp map</div><div id="mapdiv"></div>';
   h+='<div class="maptools"><button class="btn pink" id="meBtn">📍 Find me (live)</button>'+
      '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Get to camp</a></div>';
-  h+='<div class="banner" id="mapNote">🟡 Activities (fields, pool, games, Tabernacle) · 🔵/colored = cabins by church, <b>B</b>=boys <b>G</b>=girls. Tap any pin for directions. “Find me” shows your live location as you move.</div>';
+  h+='<div class="banner" id="mapNote">🟡 Activities (fields, pool, games, Tabernacle) · colored dots = cabins by church, <b>B</b>=boys <b>G</b>=girls (shared cabins use their main church). Tap a pin for directions. “Find me” shows your live location as you move.</div>';
+  h+=churchLegendHTML();
   main.innerHTML=h;
   if(!window.L){
     document.getElementById("mapdiv").innerHTML='<div class="empty">The live map needs an internet connection.<br>Use the 📍 links in each schedule for directions, or “Get to camp” above.</div>';
@@ -656,12 +666,15 @@ function renderMap(){
   pts.forEach(([name,c])=>{
     const cab=CABINS[name];
     let color="#e3b341", letter="", label=name;   // venues = yellow
+    let churches=[];
     if(cab){
-      color = cab.church ? (CHURCH_COLOR[cab.church]||"#8b949e") : "#8b949e";
+      churches = cab.churches||[];
+      color = churches.length ? (CHURCH_COLOR[churches[0]]||"#8b949e") : "#8b949e";
       letter = cab.gender==="girls"?"G":cab.gender==="boys"?"B":"";
-      label = name + (cab.church?" ("+cab.church+")":"");
+      label = name + (churches.length===1?" ("+churches[0]+")":"");
     }
     const popup='<b>'+esc(label)+'</b>'+(cab&&cab.gender?' — '+cab.gender:'')+
+      (churches.length>1?'<br>Churches: '+esc(churches.join(", ")):'')+
       '<br><a href="'+dirGoogle(c[0],c[1])+'" target="_blank" rel="noopener">Google directions</a> · <a href="'+dirApple(c[0],c[1])+'" target="_blank" rel="noopener">Apple</a>';
     L.marker(c,{icon:dotIcon(color,letter)}).addTo(leafletMap)
      .bindTooltip(label,{permanent:true,direction:"top",className:"pinlbl",offset:[0,-13]})
@@ -683,6 +696,12 @@ function locateMe(){
   },err=>{note.textContent="Couldn’t get location: "+err.message+" (check location permissions).";},{enableHighAccuracy:true,maximumAge:5000,timeout:15000});
 }
 
+function churchLegendHTML(){
+  let h='<div class="sectionlabel">Church colors</div><div style="display:flex;flex-wrap:wrap;gap:7px 14px;padding:0 2px;">';
+  CHURCHES.forEach(c=>{h+='<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);"><span style="width:12px;height:12px;border-radius:50%;background:'+CHURCH_COLOR[c]+';border:1px solid #0006;"></span>'+esc(c)+'</span>';});
+  h+='<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);"><span style="width:12px;height:12px;border-radius:50%;background:#e3b341;border:1px solid #0006;"></span>Activity spot</span></div>';
+  return h;
+}
 function renderInfo(){
   let h='<div class="sectionlabel">Camp links</div><div class="linkgrid">';
   h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">🔗</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">'+LINKS.infoHub+'</span></span><span class="go">›</span></a>';
@@ -697,6 +716,7 @@ function renderInfo(){
   CONTACTS.forEach(c=>{h+='<a class="linkrow" href="tel:'+c.tel.replace(/[^0-9]/g,"")+'"><span class="ic">📞</span><span class="lx"><span class="a">'+esc(c.n)+'</span><span class="b">'+esc(c.r)+' · '+esc(c.tel)+'</span></span><span class="go">›</span></a>';});
   h+='</div>';
   h+='<div class="banner">Main meeting space: <b>'+esc(CAMP.mainSpace)+'</b> · Leader parking: across from the Dining Hall.</div>';
+  h+=churchLegendHTML();
   main.innerHTML=h;
 }
 
