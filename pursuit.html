@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Pursuit Camp 2026 — Leader Schedule</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pursuit">
+<link rel="apple-touch-icon" href="./pursuit-icon-180.png">
+<link rel="icon" type="image/png" href="./pursuit-icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -94,6 +102,13 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .sheet .shead{position:sticky;top:0;background:var(--bg);padding:16px 16px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;}
 .sheet .shead .x{margin-left:auto;font-size:22px;color:var(--dim);background:none;border:none;cursor:pointer;padding:0 4px;}
 .sheet .sbody{padding:14px 16px 30px;}
+.installbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:#161b22;border-top:1px solid var(--line);padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
+.installbar.show{display:flex;}
+.installbar img{height:30px;}
+.installbar .t{flex:1;font-size:12.5px;line-height:1.35;color:var(--txt);}
+.installbar .t b{color:var(--pink);}
+.installbar button{flex:0 0 auto;}
+.installbar .close{background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:0 2px;}
 .foot{text-align:center;color:var(--dim);font-size:11px;padding:22px 0 6px;line-height:1.6;}
 .foot a{cursor:pointer;}
 #mapdiv{height:66vh;min-height:340px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:#0b0e13;}
@@ -141,6 +156,13 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
 <main class="wrap" id="main"></main>
 
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<div class="installbar" id="installBar">
+  <img src="./pursuit-icon-192.png" alt="">
+  <div class="t"><b>Install this app</b> so it works with no signal at camp. Tap for how →</div>
+  <button class="btn pink" id="installHow">How</button>
+  <button class="close" id="installClose" aria-label="dismiss">×</button>
+</div>
 
 <div class="foot">
   Pursuit Camp • July 13–18, 2026 • Camp Garner Creek, Dickson TN<br>
@@ -877,6 +899,32 @@ document.getElementById("timeSlider").oninput=e=>{state.time=+e.target.value;sta
 document.getElementById("nowBtn").onclick=()=>{state.time=nowMinutes();state.follow=true;const tn=todayName();if(tn)state.day=tn;render();};
 document.getElementById("adminLink").onclick=openAdmin;
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
+/* ---- PWA: offline service worker + install hint ---- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+}
+function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;}
+function installSteps(){
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const sheet=document.getElementById("sheet");
+  const iosHtml='<b>iPhone / iPad (use Safari):</b><br>1. Tap the <b>Share</b> button (□ with ↑)<br>2. Scroll down → <b>Add to Home Screen</b><br>3. Tap <b>Add</b>, then open it from the FULL icon';
+  const andHtml='<b>Android (use Chrome):</b><br>1. Tap the <b>⋮</b> menu (top-right)<br>2. Tap <b>Add to Home screen</b> / <b>Install app</b><br>3. Tap <b>Install</b>, then open it from the FULL icon';
+  sheet.innerHTML='<div class="shead"><div style="font-size:17px;font-weight:700;">📲 Install on your phone</div><button class="x" onclick="closeModal()">×</button></div>'+
+    '<div class="sbody"><div class="banner">Installing saves the app to your phone so it <b>opens with no signal</b> at camp. Do this once on wifi/data first.</div>'+
+    '<div style="background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px;font-size:14px;line-height:1.7;margin-bottom:10px;">'+(ios?iosHtml:andHtml)+'</div>'+
+    '<div style="background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px;font-size:14px;line-height:1.7;color:var(--dim);">'+(ios?andHtml:iosHtml)+'</div>'+
+    '<div class="banner">The schedule, people, cabins and map pins all work offline. Only new satellite map areas need signal.</div></div>';
+  document.getElementById("modal").classList.add("open");
+}
+function maybeShowInstall(){
+  const bar=document.getElementById("installBar");
+  if(isStandalone()||localStorage.getItem("pursuitInstallDismissed")){bar.classList.remove("show");return;}
+  bar.classList.add("show");
+}
+document.getElementById("installHow").onclick=installSteps;
+document.getElementById("installClose").onclick=()=>{localStorage.setItem("pursuitInstallDismissed","1");document.getElementById("installBar").classList.remove("show");};
+maybeShowInstall();
+
 // Live tick: only advance during camp, only full-rerender the schedule tab
 // (avoids rebuilding the map/people views — and the flicker — when you return).
 setInterval(()=>{
