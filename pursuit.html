@@ -14,6 +14,8 @@
 <link rel="icon" type="image/png" href="./pursuit-icon-192.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script defer src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -108,6 +110,17 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .bottombar .bb:active{transform:scale(.98);}
 .bottombar .bb.active{background:var(--panel2);border-color:var(--pink);color:var(--txt);}
 .bottombar .bb.help{color:var(--amber);border-color:#5c4a12;}
+.chatlist{height:58vh;min-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px;-webkit-overflow-scrolling:touch;}
+.msg{max-width:82%;align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 11px;}
+.msg.mine{align-self:flex-end;background:#20303f;border-color:#2f4658;}
+.msg .mname{font-size:11px;color:var(--dim);margin-bottom:2px;font-weight:600;}
+.msg .mtext{font-size:14.5px;line-height:1.35;word-wrap:break-word;}
+.composer{display:flex;gap:8px;margin-top:10px;}
+.composer input{flex:1;padding:12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
+.composer button{flex:0 0 auto;padding:0 16px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;font-size:14px;cursor:pointer;}
+.chatname{display:flex;gap:8px;margin-bottom:10px;}
+.chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
+.chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
 .teamcard{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
 .teamcard .th{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
 .teamcard .tdot{width:14px;height:14px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
@@ -951,11 +964,74 @@ function renderTeams(){
   });
   main.innerHTML=h;
 }
+/* ---- Camp chat (Firebase Realtime Database) ---- */
+const FIREBASE_CONFIG = {
+  apiKey:"AIzaSyDLcVluB0qfrK0p63I1IzEY8aIOu7SAz2c",
+  authDomain:"pursuitcamp-26.firebaseapp.com",
+  databaseURL:"https://pursuitcamp-26-default-rtdb.firebaseio.com",
+  projectId:"pursuitcamp-26",
+  storageBucket:"pursuitcamp-26.firebasestorage.app",
+  messagingSenderId:"902781678522",
+  appId:"1:902781678522:web:c4e24146b54ac452382383"
+};
+let chatDb=null, chatMsgs=[], chatInit=false;
+function initChat(){
+  if(chatInit||!window.firebase) return;
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    chatDb=firebase.database();
+    chatDb.ref("messages").limitToLast(300).on("child_added",s=>{
+      const m=s.val()||{}; chatMsgs.push(m);
+      if(state.tab==="chat") appendChatMsg(m);
+    });
+    chatInit=true;
+    if(state.tab==="chat") render();
+  }catch(e){ chatDb=null; }
+}
+function fmtClock(ts){ if(!ts)return""; const d=new Date(ts); let h=d.getHours(),m=d.getMinutes(); const ap=h<12?"a":"p"; h=h%12||12; return h+":"+String(m).padStart(2,"0")+ap; }
+function chatMsgHTML(m){
+  const mine=m.name&&m.name===store.me, t=fmtClock(m.ts);
+  return '<div class="msg'+(mine?" mine":"")+'"><div class="mname">'+esc(m.name||"?")+(t?" · "+t:"")+'</div><div class="mtext">'+esc(m.text||"")+'</div></div>';
+}
+function appendChatMsg(m){
+  const list=document.getElementById("chatlist"); if(!list)return;
+  list.insertAdjacentHTML("beforeend",chatMsgHTML(m));
+  list.scrollTop=list.scrollHeight;
+}
+function sendChat(){
+  const inp=document.getElementById("chatInput"); if(!inp)return;
+  const txt=inp.value.trim(); if(!txt||!chatDb)return;
+  if(!store.me){alert("Pick your name first so people know who’s talking.");return;}
+  chatDb.ref("messages").push({name:store.me,text:txt.slice(0,1000),ts:firebase.database.ServerValue.TIMESTAMP});
+  inp.value="";
+}
+function joinChatName(){
+  const v=(document.getElementById("chatNameInput").value||"").trim();
+  if(allPeople().includes(v)){store.me=v;saveStore();render();}
+  else alert("Please pick your name from the list.");
+}
 function renderChat(){
-  let h='<div class="sectionlabel">Chat</div>';
-  h+='<div class="empty">💬 In-app chat is coming soon.<br><br>For now, use the leaders’ GroupMe:</div>';
-  h+='<div class="linkgrid"><a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">💬</span><span class="lx"><span class="a">Open the leaders’ GroupMe</span><span class="b">via the Pursuit Info Hub</span></span><span class="go">›</span></a></div>';
+  if(!window.firebase || !chatDb){
+    let h='<div class="sectionlabel">Camp Chat</div>';
+    h+='<div class="empty">💬 Chat needs an internet connection.<br>'+(window.firebase?'Connecting…':'Reconnect to load chat.')+'<br><br>Or use the GroupMe:</div>';
+    h+='<div class="linkgrid"><a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="lx"><span class="a">Open the leaders’ GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a></div>';
+    main.innerHTML=h; return;
+  }
+  let h='<div class="sectionlabel">Camp Chat · everyone</div>';
+  if(!store.me){
+    h+='<div class="banner">Pick your name to join the chat:</div>';
+    h+='<div class="chatname"><input id="chatNameInput" list="chatPeople" placeholder="Type your name…" autocomplete="off"><button onclick="joinChatName()">Join</button></div>';
+    h+='<datalist id="chatPeople">'+allPeople().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>';
+  }
+  h+='<div id="chatlist" class="chatlist"></div>';
+  if(store.me) h+='<div class="composer"><input id="chatInput" placeholder="Message as '+esc(store.me.split(" ")[0])+'…" maxlength="1000"><button id="chatSend">Send</button></div>';
   main.innerHTML=h;
+  const list=document.getElementById("chatlist");
+  list.innerHTML=chatMsgs.map(chatMsgHTML).join("")||'<div class="empty">No messages yet — say hi!</div>';
+  list.scrollTop=list.scrollHeight;
+  const send=document.getElementById("chatSend");
+  if(send){send.onclick=sendChat;
+    document.getElementById("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat();});}
 }
 
 /* ---- person sheet ---- */
@@ -1085,6 +1161,7 @@ document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="
 if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
+window.addEventListener('load',()=>initChat());
 function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;}
 function installSteps(){
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
