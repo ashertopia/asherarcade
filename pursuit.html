@@ -140,6 +140,7 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .chanbar .chan{flex:0 0 auto;position:relative;border:2px solid var(--line);background:transparent;font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:16px;cursor:pointer;white-space:nowrap;opacity:.55;transition:opacity .12s;}
 .chanbar .chan.on{opacity:1;box-shadow:0 0 0 2px rgba(255,255,255,.20);}
 .chanbar .chan .cbadge{display:inline-block;min-width:15px;height:15px;line-height:15px;text-align:center;font-size:9px;font-weight:800;color:#101418;background:var(--now);border-radius:8px;padding:0 4px;margin-left:5px;vertical-align:middle;}
+.lockbtn{font-size:11px;font-weight:600;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:3px 9px;margin-left:8px;cursor:pointer;vertical-align:middle;}
 .chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
 .teamcard{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
@@ -591,6 +592,7 @@ store.churchOf = store.churchOf || {};
 store.customDuties = store.customDuties || {};
 store.coords = store.coords || {};      // location name -> "lat,lng"
 store.me = store.me || "";              // "this is me" — remembered on this phone
+store.adminOK = store.adminOK || false; // Admin chat unlocked on this device (passcode verified by Firebase)
 // Apply the authoritative roster once (version bump re-applies for returning users)
 if(store.rosterV!==4){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
@@ -1061,6 +1063,7 @@ function initChat(){
 function subscribeChannels(){
   if(!chatDb) return;
   myChannels().forEach(c=>{
+    if(c.id==="admin" && !store.adminOK) return;   // don't load Admin messages until the passcode is verified
     if(chatSubbed[c.id]) return;
     chatSubbed[c.id]=true; chatData[c.id]=chatData[c.id]||[]; chatUnread[c.id]=chatUnread[c.id]||0;
     const ref=chatDb.ref("chat/"+c.id).limitToLast(300);
@@ -1108,6 +1111,19 @@ function joinChatName(){
   if(allPeople().includes(v)){store.me=v;saveStore();subscribeChannels();render();}
   else alert("Please pick your name from the list.");
 }
+/* Verify the Admin passcode against Firebase (the code lives only in the database, never in this app).
+   A successful write to /gatecheck means Firebase accepted the code; a permission error means it was wrong. */
+function unlockAdmin(code,onOK,onFail){
+  if(!chatDb){ onFail("You need internet to unlock Admin the first time."); return; }
+  chatDb.ref("gatecheck").push({c:code,ts:firebase.database.ServerValue.TIMESTAMP})
+    .then(()=>{
+      store.adminOK=true; saveStore();
+      chatDb.ref("adminlog").push({name:store.me||"?",ts:firebase.database.ServerValue.TIMESTAMP,gate:code}).catch(()=>{});
+      subscribeChannels(); onOK();
+    })
+    .catch(()=>onFail("That passcode didn’t work."));
+}
+function lockAdmin(){ store.adminOK=false; saveStore(); renderChat(); }
 function renderChat(){
   if(!window.firebase || !chatDb){
     let h='<div class="sectionlabel">Camp Chat</div>';
@@ -1130,7 +1146,22 @@ function renderChat(){
         ((!sel&&chatUnread[c.id])?'<span class="cbadge">'+chatUnread[c.id]+'</span>':'')+'</button>';
     }).join('')+'</div>';
   }
-  h+='<div class="sectionlabel">'+esc(cur.label)+'</div>';
+  // Admin room is locked behind the shared passcode until verified on this device.
+  if(cur.id==="admin" && !store.adminOK){
+    h+='<div class="sectionlabel">'+esc(cur.label)+'</div>';
+    h+='<div class="banner">🔒 This room is for pastors + camp admin. Enter the Admin passcode to unlock it on this device.</div>';
+    h+='<div class="chatname"><input id="adminCode" type="password" placeholder="Admin passcode…" autocomplete="off"><button id="adminUnlock">Unlock</button></div>';
+    h+='<div id="adminErr" style="color:#ff6b6b;font-size:12.5px;margin:8px 2px 0;"></div>';
+    main.innerHTML=h;
+    main.querySelectorAll(".chan").forEach(b=>b.onclick=()=>{state.chatChan=b.dataset.chan;renderChat();});
+    const ub=document.getElementById("adminUnlock");
+    const go=()=>{ const code=(document.getElementById("adminCode").value||"").trim(); if(!code)return;
+      ub.disabled=true; ub.textContent="Checking…";
+      unlockAdmin(code, ()=>renderChat(), (msg)=>{ ub.disabled=false; ub.textContent="Unlock"; const e=document.getElementById("adminErr"); if(e)e.textContent=msg; }); };
+    if(ub){ ub.onclick=go; document.getElementById("adminCode").addEventListener("keydown",e=>{if(e.key==="Enter")go();}); }
+    return;
+  }
+  h+='<div class="sectionlabel">'+esc(cur.label)+(cur.id==="admin"?' <button class="lockbtn" id="adminLock">🔒 Lock</button>':'')+'</div>';
   h+='<div style="font-size:11px;color:var(--dim);margin:-4px 2px 8px;">'+
      (cur.id==="all"?'Everyone at camp is here. ':cur.id==="admin"?'Pastors + camp admin only. ':'Just your '+esc(cur.label)+' team. ')+
      'Tip: type <b>@FirstName</b> to tag someone.</div>';
@@ -1149,6 +1180,7 @@ function renderChat(){
   const send=document.getElementById("chatSend");
   if(send){send.onclick=sendChat;
     document.getElementById("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat();});}
+  const lk=document.getElementById("adminLock"); if(lk) lk.onclick=lockAdmin;
   sizeChat();
 }
 
