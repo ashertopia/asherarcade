@@ -189,6 +189,7 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
       </div>
       <div class="dtcluster">
         <div class="dtbox" id="dtBox"></div>
+        <button class="rfsh" id="refreshBtn" title="Refresh to latest">↻</button>
       </div>
     </div>
     <div class="meRow" id="meRow"></div>
@@ -762,12 +763,10 @@ function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
 function meBarHTML(){
   if(store.me && allPeople().includes(store.me)){
     return '<div class="mebar"><span class="who">👤 '+esc(store.me)+(churchOf(store.me)?' · '+esc(churchOf(store.me)):'')+'</span>'+
-           '<button class="btn tiny" id="meChange">Change</button>'+
-           '<button class="rfsh" id="refreshBtn" title="Refresh to latest">↻</button></div>';
+           '<button class="btn tiny" id="meChange">Change</button></div>';
   }
   return '<div class="mebar col"><div class="melabel">👤 First time? Pick your name so the app remembers you and can make this <b>your</b> schedule:</div>'+
-         '<div class="merow2"><input class="search" id="meSearch" list="mePeople" placeholder="Type your name…" autocomplete="off">'+
-         '<button class="rfsh" id="refreshBtn" title="Refresh to latest">↻</button></div>'+
+         '<input class="search" id="meSearch" list="mePeople" placeholder="Type your name…" autocomplete="off">'+
          '<datalist id="mePeople">'+allPeople().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>'+
          '<button class="btn pink" id="meSet">📌 This is me</button></div>';
 }
@@ -782,8 +781,6 @@ function wireMe(){
     else alert("Please pick your name from the list.");};
   const ch=document.getElementById("meChange");
   if(ch) ch.onclick=()=>{store.me="";saveStore();render();};
-  const rf=document.getElementById("refreshBtn");
-  if(rf) rf.onclick=()=>location.reload();
 }
 function nowCard(items,curTitle,curLoc,curS,curE,isDuty){
   const nxt=items.find(x=>T(x.s)>state.time);
@@ -1313,7 +1310,8 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 window.addEventListener('load',()=>initChat());
-/* ---- Auto "update available" check (refresh button lives in meRow, wired in wireMe) ---- */
+/* ---- Manual refresh (top-right, its own button) + auto "update available" check ---- */
+document.getElementById("refreshBtn").onclick=()=>location.reload();
 let selfSnap=null, lastUpdCheck=0;
 async function fetchSelf(){ const r=await fetch('./pursuit.html?ts='+Date.now(),{cache:'no-store'}); return await r.text(); }
 async function checkForUpdate(){
