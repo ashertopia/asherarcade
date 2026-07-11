@@ -104,8 +104,18 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .sheet .sbody{padding:14px 16px 30px;}
 .bottombar{position:fixed;left:0;right:0;bottom:0;z-index:35;background:#0f141b;border-top:1px solid var(--line);}
 .bottombar .inner{max-width:820px;margin:0 auto;display:flex;gap:8px;padding:8px 12px;}
-.bottombar .bb{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:13px;font-weight:600;cursor:pointer;}
+.bottombar .bb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:6px 4px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:11px;font-weight:600;cursor:pointer;}
+.bottombar .bb .bi{font-size:18px;line-height:1;}
 .bottombar .bb:active{transform:scale(.98);}
+.bottombar .bb.active{border-color:var(--pink);color:var(--pink);}
+.bottombar .bb.help{color:var(--amber);border-color:#5c4a12;}
+.teamcard{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
+.teamcard .th{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+.teamcard .tdot{width:14px;height:14px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
+.teamcard .tn{font-size:16px;font-weight:700;}
+.teamcard .ta{font-size:13px;color:var(--dim);}
+.teamcard .tlds{font-size:13px;margin-top:5px;color:var(--txt);}
+.teamcard .tlds b{color:var(--dim);font-weight:600;}
 .installbar{position:fixed;left:0;right:0;bottom:55px;z-index:40;background:#161b22;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
 .installbar.show{display:flex;}
 .installbar img{height:30px;}
@@ -157,7 +167,7 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
     <div class="tabs">
       <div class="tab active" data-tab="camp">Schedule</div>
       <div class="tab" data-tab="find">People</div>
-      <div class="tab" data-tab="map">Map</div>
+      <div class="tab" data-tab="teams">Teams</div>
       <div class="tab" data-tab="chat">Chat</div>
     </div>
   </div>
@@ -175,12 +185,15 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
 </div>
 
 <div class="foot">
-  Pursuit Camp • July 13–18, 2026 • Camp Garner Creek, Dickson TN
+  Pursuit Camp • July 13–18, 2026 • Camp Garner Creek, Dickson TN<br>
+  <a id="adminLink" style="opacity:.45;font-size:10px;">admin</a>
 </div>
 
 <div class="bottombar"><div class="inner">
-  <button class="bb" id="bbInfo">ℹ️ Leader Info</button>
-  <button class="bb" id="bbAdmin">🔧 Admin tools</button>
+  <button class="bb" data-bb="map"><span class="bi">🗺️</span><span>Map</span></button>
+  <button class="bb" data-bb="contacts"><span class="bi">📇</span><span>Contacts</span></button>
+  <button class="bb" data-bb="links"><span class="bi">🔗</span><span>Links</span></button>
+  <button class="bb help" data-bb="help"><span class="bi">🆘</span><span>Help</span></button>
 </div></div>
 
 <script>
@@ -200,8 +213,11 @@ const CAMP = {
 
 const LINKS = {
   infoHub:"https://linktr.ee/thepursuitcamp",
-  email:"thepursuitcamp@gmail.com"
+  email:"thepursuitcamp@gmail.com",
+  rulebook:"",   // add a direct rulebook URL if you have one
+  website:""     // add the camp website URL if you have one
 };
+const HELP_PHONE = "";  // Asher's number for the Help button (e.g. "6155551234")
 // GPS coordinates for camp locations [lat,lng] (add more in Admin › Map pins).
 // Keys for activity spots match the Free Time schedule zone names so the
 // schedule's location links deep-link to directions.
@@ -470,6 +486,33 @@ const AREAS = [
   {key:"Cabin Sweeps",tag:"Cabin Sweep",lead:""},
   {key:"Pool",tag:"Pool",lead:"Austin Duncan"}
 ];
+/* ---- Team Competition teams (Cherokee name · animal · color · 2 leaders) ---- */
+const TEAMS = [
+  {name:"Awi",animal:"Deer",color:"Brown",hex:"#8b5a2b",leaders:["Ethan Myers","Aryn Harvey"]},
+  {name:"Kamama",animal:"Elephant",color:"Light Blue",hex:"#6fd0ec",leaders:["Nevaeh Rampulla","Owen Pastore"]},
+  {name:"Kanunu",animal:"Frog",color:"Green",hex:"#3fae46",leaders:["Tevin Parker","Daniel Johnson"]},
+  {name:"Ogana",animal:"Groundhog",color:"Gray",hex:"#9aa0a6",leaders:["Noble Swilley","Taryn Perkins"]},
+  {name:"Soquili",animal:"Horse",color:"Yellow",hex:"#f4d000",leaders:["Lisa Powell","Joshua Hann"]},
+  {name:"Tlvdatsi",animal:"Mountain Lion",color:"Purple",hex:"#7b3ff2",leaders:["Hailey Fields","Cade Granzow"]},
+  {name:"Tsula",animal:"Fox",color:"Orange",hex:"#f0883e",leaders:["Caeden Rosen","Naomi Bageant"]},
+  {name:"Ulano",animal:"Turtle",color:"Dark Green",hex:"#1c7a34",leaders:["Elijah Hoaglan","Paige Hardy"]},
+  {name:"Uwaholi",animal:"Eagle",color:"Navy",hex:"#24356e",leaders:["RC Tidwell","Tamya Spikes"]},
+  {name:"Wahuhi",animal:"Owl",color:"White",hex:"#eaeef2",leaders:["Kahanah Chuor","Martin Ikenna Ogbunugafor"]},
+  {name:"Yansa",animal:"Buffalo",color:"Tan",hex:"#c9a96a",leaders:["Seth Mehta","Ashantia"]},
+  {name:"Yona",animal:"Bear",color:"Red",hex:"#e5342b",leaders:["James Lowe II","Mallori Hann"]},
+  {name:"Utsonati",animal:"Rattlesnake",color:"Pink",hex:"#ff5fa2",leaders:["Luke Reid","Anabell Irizarry"]},
+  {name:"Wahya",animal:"Wolf",color:"Teal",hex:"#159a9a",leaders:["Pierson Nelson","Cardaja Harkins"]},
+  {name:"Utsisdalugi",animal:"Firefly",color:"Cream",hex:"#efe3bf",leaders:["Jackie Bragg","Chase Garrison"]},
+  {name:"Squaduli",animal:"Hornet",color:"Black",hex:"#2a2f37",leaders:["Daniel Burchfield","Enoc Moma"]},
+  {name:"Inoli",animal:"Badger",color:"Light Brown",hex:"#bd8a5a",leaders:["Ella Hufalar","Papa Hayford"]},
+  {name:"Wdulisi",animal:"Bee",color:"Magenta",hex:"#e0189a",leaders:["David Eli Carney","Maceline Green"]},
+  {name:"Tsisidu",animal:"Rabbit",color:"Light Purple",hex:"#b58bff",leaders:["Kara Lemonis","Israel Fayne"]},
+  {name:"Julasgi",animal:"Alligator",color:"Pastel Pink",hex:"#ffb0cf",leaders:["Titus Shelton","Serinah Ruiz"]},
+  {name:"Tsiya",animal:"Otter",color:"Mint",hex:"#7fe0bf",leaders:["Madison Reid","Kendale Lark Burch"]},
+  {name:"Tlameha",animal:"Bat",color:"TBD",hex:"#8b949e",leaders:["Xavier Keegan","Molly Roberts"]}
+];
+function teamOf(name){return TEAMS.find(t=>t.leaders.includes(name))||null;}
+
 /* ---- Free Time zones (drawn as labeled boxes on the map) ---- */
 const ZONES = [
   {name:"ZONE ONE",  bounds:[[36.00655,-87.51695],[36.00835,-87.51555]], color:"#ffd479"},
@@ -837,35 +880,57 @@ function churchLegendHTML(){
   h+='<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);"><span style="width:12px;height:12px;border-radius:50%;background:#e3b341;border:1px solid #0006;"></span>Activity spot</span></div>';
   return h;
 }
-function infoContentHTML(){
-  let h='<div class="sectionlabel">Camp links</div><div class="linkgrid">';
-  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">🔗</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">'+LINKS.infoHub+'</span></span><span class="go">›</span></a>';
-  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">💬</span><span class="lx"><span class="a">Join the GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a>';
-  h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">✉️</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
-  h+='</div>';
-  h+='<div class="sectionlabel">Getting there</div><div class="linkgrid">';
-  h+='<a class="linkrow" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🗺️</span><span class="lx"><span class="a">Open camp in Google Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
-  h+='<a class="linkrow" href="'+mapsApple(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🍎</span><span class="lx"><span class="a">Open camp in Apple Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
-  h+='</div>';
-  h+='<div class="sectionlabel">Reach a team lead</div><div class="linkgrid">';
+function openSheet(title,body){
+  const sheet=document.getElementById("sheet");
+  sheet.innerHTML='<div class="shead"><div style="font-size:17px;font-weight:700;">'+esc(title)+'</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">'+body+'</div>';
+  document.getElementById("modal").classList.add("open");
+}
+// Important contacts — team leaders + pastors + camp leaders
+function contactsHTML(){
+  let h='<div class="sectionlabel">Team / area leaders (tap to call)</div><div class="linkgrid">';
   CONTACTS.forEach(c=>{h+='<a class="linkrow" href="tel:'+c.tel.replace(/[^0-9]/g,"")+'"><span class="ic">📞</span><span class="lx"><span class="a">'+esc(c.n)+'</span><span class="b">'+esc(c.r)+' · '+esc(c.tel)+'</span></span><span class="go">›</span></a>';});
   h+='</div>';
-  // Church Key: color + church + lead
-  h+='<div class="sectionlabel">Church key</div><div class="linkgrid">';
+  h+='<div class="sectionlabel">Church pastors</div><div class="linkgrid">';
   CHURCHES.forEach(c=>{h+='<div class="linkrow"><span class="ic" style="width:24px;"><span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:'+CHURCH_COLOR[c]+';border:1px solid #0006;vertical-align:middle;"></span></span>'+
     '<span class="lx"><span class="a">'+esc(c)+'</span><span class="b">'+esc(CHURCH_LEAD[c]||"")+'</span></span></div>';});
   h+='</div>';
-  // Camp & area leaders
-  h+='<div class="sectionlabel">Camp &amp; area leaders</div><div class="linkgrid">';
+  h+='<div class="sectionlabel">Camp leadership</div><div class="linkgrid">';
   CAMP_LEADERS.forEach(([n,r])=>{h+='<div class="linkrow"><span class="ic">⭐</span><span class="lx"><span class="a">'+esc(n)+'</span><span class="b">'+esc(r)+'</span></span></div>';});
+  h+='</div>';
+  return h;
+}
+function openContacts(){openSheet("Important contacts",contactsHTML());}
+// Important pages / links — rulebook, info hub, website, getting there
+function linksHTML(){
+  let h='<div class="sectionlabel">Important pages</div><div class="linkgrid">';
+  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">🔗</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">rulebook, forms &amp; all links</span></span><span class="go">›</span></a>';
+  if(LINKS.rulebook) h+='<a class="linkrow" href="'+LINKS.rulebook+'" target="_blank" rel="noopener"><span class="ic">📖</span><span class="lx"><span class="a">Rule book</span><span class="b">'+esc(LINKS.rulebook)+'</span></span><span class="go">›</span></a>';
+  if(LINKS.website) h+='<a class="linkrow" href="'+LINKS.website+'" target="_blank" rel="noopener"><span class="ic">🌐</span><span class="lx"><span class="a">Camp website</span><span class="b">'+esc(LINKS.website)+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">💬</span><span class="lx"><span class="a">Join the GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">✉️</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
+  h+='</div>';
+  h+='<div class="sectionlabel">Getting to camp</div><div class="linkgrid">';
+  h+='<a class="linkrow" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🗺️</span><span class="lx"><span class="a">Open camp in Google Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+mapsApple(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🍎</span><span class="lx"><span class="a">Open camp in Apple Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
   h+='</div>';
   h+='<div class="banner">Main meeting space: <b>'+esc(CAMP.mainSpace)+'</b> · Leader parking: across from the Dining Hall.</div>';
   return h;
 }
-function openInfo(){
-  const sheet=document.getElementById("sheet");
-  sheet.innerHTML='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader Info</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">'+infoContentHTML()+'</div>';
-  document.getElementById("modal").classList.add("open");
+function openLinks(){openSheet("Important pages & links",linksHTML());}
+function helpAction(){
+  if(HELP_PHONE) location.href="sms:"+HELP_PHONE.replace(/[^0-9]/g,"")+"?&body="+encodeURIComponent("Pursuit app help: ");
+  else alert("The Help text line isn’t set up yet.");
+}
+function renderTeams(){
+  const myTeam=store.me?teamOf(store.me):null;
+  let h='<div class="sectionlabel">Team Competition · '+TEAMS.length+' teams</div>';
+  if(myTeam) h+='<div class="banner">Your team: <b style="color:'+myTeam.hex+'">'+esc(myTeam.name)+'</b> · '+esc(myTeam.animal)+' · '+esc(myTeam.color)+'</div>';
+  TEAMS.forEach(t=>{
+    h+='<div class="teamcard" style="border-left-color:'+t.hex+'"><div class="th"><span class="tdot" style="background:'+t.hex+'"></span>'+
+       '<span class="tn">'+esc(t.name)+'</span><span class="ta">'+esc(t.animal)+' · '+esc(t.color)+'</span></div>'+
+       '<div class="tlds"><b>Leaders:</b> '+t.leaders.map(esc).join(" · ")+'</div></div>';
+  });
+  main.innerHTML=h;
 }
 function renderChat(){
   let h='<div class="sectionlabel">Chat</div>';
@@ -877,9 +942,11 @@ function renderChat(){
 /* ---- person sheet ---- */
 function openPerson(name){
   const sheet=document.getElementById("sheet"), col=CHURCH_COLOR[churchOf(name)]||"#8b949e";
+  const tm=teamOf(name);
+  const subline=(churchOf(name)?esc(churchOf(name)):'No church set')+(tm?' · <span style="color:'+tm.hex+'">Team '+esc(tm.name)+' ('+esc(tm.animal)+')</span>':'');
   let h='<div class="shead"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
         '<div><div style="font-size:17px;font-weight:700;">'+esc(name)+'</div>'+
-        '<div style="font-size:12px;color:var(--dim);">'+(churchOf(name)?esc(churchOf(name)):'No church set')+'</div></div>'+
+        '<div style="font-size:12px;color:var(--dim);">'+subline+'</div></div>'+
         '<button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
   h+='<div class="days" style="margin-bottom:12px;">';
   CAMP.days.forEach(d=>h+='<div class="day'+(d===state.day?' active':'')+'" data-d="'+d+'">'+d.slice(0,3)+'</div>');
@@ -970,12 +1037,14 @@ function importPrompt(){const s=prompt("Paste exported JSON:");if(!s)return;
    wire up
    ============================================================ */
 function render(){
-  if(!["camp","find","map","chat"].includes(state.tab)) state.tab="camp";  // 'info' is now a bottom-bar modal
+  if(!["camp","find","teams","chat","map"].includes(state.tab)) state.tab="camp";
   renderClock();renderDayBar();
   if(state.tab!=="map")destroyMap();
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===state.tab));
+  document.querySelectorAll(".bottombar .bb").forEach(b=>b.classList.toggle("active",b.dataset.bb==="map"&&state.tab==="map"));
   if(state.tab==="camp")renderCamp();
   else if(state.tab==="find")renderFind();
+  else if(state.tab==="teams")renderTeams();
   else if(state.tab==="map")renderMap();
   else renderChat();
   document.getElementById("timeSlider").value=state.time;
@@ -984,8 +1053,14 @@ function render(){
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{state.tab=t.dataset.tab;render();});
 document.getElementById("timeSlider").oninput=e=>{state.time=+e.target.value;state.follow=false;render();};
 document.getElementById("nowBtn").onclick=()=>{state.time=nowMinutes();state.follow=true;const tn=todayName();if(tn)state.day=tn;render();};
-document.getElementById("bbInfo").onclick=openInfo;
-document.getElementById("bbAdmin").onclick=openAdmin;
+document.querySelectorAll(".bottombar .bb").forEach(b=>b.onclick=()=>{
+  const k=b.dataset.bb;
+  if(k==="map"){state.tab="map";render();}
+  else if(k==="contacts")openContacts();
+  else if(k==="links")openLinks();
+  else if(k==="help")helpAction();
+});
+document.getElementById("adminLink").onclick=openAdmin;
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
 /* ---- PWA: offline service worker + install hint ---- */
 if('serviceWorker' in navigator){
