@@ -136,6 +136,10 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .composer input{flex:1;padding:12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .composer button{flex:0 0 auto;padding:0 16px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;font-size:14px;cursor:pointer;}
 .chatname{display:flex;gap:8px;margin-bottom:10px;}
+.chanbar{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 8px;margin-bottom:2px;}
+.chanbar .chan{flex:0 0 auto;position:relative;background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:16px;cursor:pointer;white-space:nowrap;}
+.chanbar .chan.on{background:var(--pink);border-color:var(--pink);color:#101418;}
+.chanbar .chan .cbadge{display:inline-block;min-width:15px;height:15px;line-height:15px;text-align:center;font-size:9px;font-weight:800;color:#101418;background:var(--now);border-radius:8px;padding:0 4px;margin-left:5px;vertical-align:middle;}
 .chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
 .teamcard{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
@@ -315,6 +319,9 @@ const CHURCH_PASTOR = {
   "Seeds":"Zach Dimmock","Belmont Church":"Michelle Thomas","Nashville Life":"Grant Argent",
   "Restoration House":"Jared Wheeler"
 };
+// Admin / Leadership chat roster — the 10 church pastors + camp administrator.
+// Soft-gated: only these names see the Admin channel (same trust model as the rest of the app).
+const CHAT_ADMINS = [...new Set([...Object.values(CHURCH_PASTOR), "Macey Duncan"])];
 // Church Key — each church's lead(s) (for the resources page)
 const CHURCH_LEAD = {
   "New Song Nashville":"Pastor Grant · Macey Duncan","Christ Church":"Jacob Sharp · David Peery",
@@ -585,9 +592,11 @@ store.customDuties = store.customDuties || {};
 store.coords = store.coords || {};      // location name -> "lat,lng"
 store.me = store.me || "";              // "this is me" — remembered on this phone
 // Apply the authoritative roster once (version bump re-applies for returning users)
-if(store.rosterV!==3){
+if(store.rosterV!==4){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
-  store.rosterV=3;
+  // Make sure each pastor is placed in their own church (so they can pick themselves + get their church chat)
+  Object.entries(CHURCH_PASTOR).forEach(([ch,n])=>{ if(!store.churchOf[n]) store.churchOf[n]=ch; });
+  store.rosterV=4;
 }
 saveStore();
 
@@ -607,6 +616,7 @@ function allPeople(){
   Object.values(SNACK_EVENING).forEach(o=>{o.inside.forEach(add);o.outside.forEach(add);});
   Object.values(POOL).forEach(p=>{add(p.girls[2]);add(p.boys[2]);});
   Object.values(KNOWN_CHURCH).forEach(a=>a.forEach(add));
+  CHAT_ADMINS.forEach(add);   // pastors + camp admin are always pickable (so they can join their leadership chat)
   Object.keys(store.churchOf).forEach(add); Object.keys(store.customDuties).forEach(add);
   return [...set].sort((a,b)=>a.localeCompare(b));
 }
@@ -640,7 +650,7 @@ function membersOf(church){return allPeople().filter(n=>churchOf(n)===church);}
 /* ============================================================
    State
    ============================================================ */
-let state=Object.assign({tab:"camp",day:defaultDay(),findMode:"church",pickChurch:"",pickArea:""}, store.ui||{});
+let state=Object.assign({tab:"camp",day:defaultDay(),findMode:"church",pickChurch:"",pickArea:"",chatChan:"all"}, store.ui||{});
 state.time=nowMinutes(); state.follow=true;   // always start on live time
 function saveUI(){store.ui={tab:state.tab,day:state.day,findMode:state.findMode,pickChurch:state.pickChurch,pickArea:state.pickArea};saveStore();}
 function nowMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes();}
@@ -766,7 +776,7 @@ function renderMeRow(){
 function wireMe(){
   const set=document.getElementById("meSet");
   if(set) set.onclick=()=>{const v=(document.getElementById("meSearch").value||"").trim();
-    if(allPeople().includes(v)){store.me=v;saveStore();render();}
+    if(allPeople().includes(v)){store.me=v;saveStore();if(typeof subscribeChannels==="function")subscribeChannels();render();}
     else alert("Please pick your name from the list.");};
   const ch=document.getElementById("meChange");
   if(ch) ch.onclick=()=>{store.me="";saveStore();render();};
@@ -1025,26 +1035,46 @@ const FIREBASE_CONFIG = {
   messagingSenderId:"902781678522",
   appId:"1:902781678522:web:c4e24146b54ac452382383"
 };
-let chatDb=null, chatMsgs=[], chatInit=false, chatHistoryLoaded=false, unreadChat=0;
+let chatDb=null, chatInit=false, chatData={}, chatUnread={}, chatSubbed={}, chatLoaded={};
+/* ---- which channels does the current person belong to? (derived from their name pick) ---- */
+function chanSlug(ch){ return "church-"+ch.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
+function myChannels(){
+  const list=[{id:"all",label:"All Leaders",icon:"📣"}];
+  const ch=churchOf(store.me);
+  if(ch && CHURCHES.includes(ch)) list.push({id:chanSlug(ch),label:ch,icon:"⛪"});
+  if(store.me && CHAT_ADMINS.includes(store.me)) list.push({id:"admin",label:"Admin · Leadership",icon:"🔑"});
+  return list;
+}
 function initChat(){
   if(chatInit||!window.firebase) return;
   try{
     firebase.initializeApp(FIREBASE_CONFIG);
     chatDb=firebase.database();
-    const ref=chatDb.ref("messages").limitToLast(300);
-    ref.on("child_added",s=>{
-      const m=s.val()||{}; chatMsgs.push(m);
-      if(state.tab==="chat") appendChatMsg(m);
-      else if(chatHistoryLoaded && m.name!==store.me){ unreadChat++; updateChatBadge(); }
-    });
-    chatDb.ref("messages").once("value",()=>{ chatHistoryLoaded=true; });
     chatInit=true;
+    subscribeChannels();
     if(state.tab==="chat") render();
   }catch(e){ chatDb=null; }
 }
+/* Attach a listener to every channel this person can see. Safe to call again when identity changes. */
+function subscribeChannels(){
+  if(!chatDb) return;
+  myChannels().forEach(c=>{
+    if(chatSubbed[c.id]) return;
+    chatSubbed[c.id]=true; chatData[c.id]=chatData[c.id]||[]; chatUnread[c.id]=chatUnread[c.id]||0;
+    const ref=chatDb.ref("chat/"+c.id).limitToLast(300);
+    ref.on("child_added",s=>{
+      const m=s.val()||{}; (chatData[c.id]=chatData[c.id]||[]).push(m);
+      if(state.tab==="chat" && state.chatChan===c.id) appendChatMsg(m);
+      else if(chatLoaded[c.id] && m.name!==store.me){ chatUnread[c.id]=(chatUnread[c.id]||0)+1; updateChatBadge(); }
+    });
+    ref.once("value",()=>{ chatLoaded[c.id]=true; });
+  });
+}
+function totalUnread(){ return myChannels().reduce((s,c)=>s+(chatUnread[c.id]||0),0); }
 function updateChatBadge(){
   const t=document.querySelector('.tab[data-tab="chat"]'); if(!t)return;
-  t.innerHTML="Chat"+(unreadChat>0?' <span class="tabbadge">'+unreadChat+'</span>':"");
+  const n=totalUnread();
+  t.innerHTML="Chat"+(n>0?' <span class="tabbadge">'+n+'</span>':"");
 }
 function mentionsMe(text){
   if(!store.me||!text) return false;
@@ -1067,12 +1097,13 @@ function sendChat(){
   const inp=document.getElementById("chatInput"); if(!inp)return;
   const txt=inp.value.trim(); if(!txt||!chatDb)return;
   if(!store.me){alert("Pick your name first so people know who’s talking.");return;}
-  chatDb.ref("messages").push({name:store.me,text:txt.slice(0,1000),ts:firebase.database.ServerValue.TIMESTAMP});
+  const chan=myChannels().some(c=>c.id===state.chatChan)?state.chatChan:"all";
+  chatDb.ref("chat/"+chan).push({name:store.me,text:txt.slice(0,1000),ts:firebase.database.ServerValue.TIMESTAMP});
   inp.value="";
 }
 function joinChatName(){
   const v=(document.getElementById("chatNameInput").value||"").trim();
-  if(allPeople().includes(v)){store.me=v;saveStore();render();}
+  if(allPeople().includes(v)){store.me=v;saveStore();subscribeChannels();render();}
   else alert("Please pick your name from the list.");
 }
 function renderChat(){
@@ -1082,19 +1113,31 @@ function renderChat(){
     h+='<div class="linkgrid"><a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="lx"><span class="a">Open the leaders’ GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a></div>';
     main.innerHTML=h; return;
   }
-  unreadChat=0; updateChatBadge();
-  let h='<div class="sectionlabel">Camp Chat · everyone</div>';
-  h+='<div style="font-size:11px;color:var(--dim);margin:-4px 2px 8px;">Tip: type <b>@FirstName</b> to tag someone.</div>';
+  subscribeChannels();
+  const chans=myChannels();
+  if(!chans.some(c=>c.id===state.chatChan)) state.chatChan="all";
+  const cur=chans.find(c=>c.id===state.chatChan)||chans[0];
+  chatUnread[cur.id]=0; updateChatBadge();
+  let h='';
+  if(chans.length>1){
+    h+='<div class="chanbar">'+chans.map(c=>'<button class="chan'+(c.id===cur.id?' on':'')+'" data-chan="'+c.id+'">'+c.icon+' '+esc(c.label)+
+       ((c.id!==cur.id&&chatUnread[c.id])?'<span class="cbadge">'+chatUnread[c.id]+'</span>':'')+'</button>').join('')+'</div>';
+  }
+  h+='<div class="sectionlabel">'+cur.icon+' '+esc(cur.label)+'</div>';
+  h+='<div style="font-size:11px;color:var(--dim);margin:-4px 2px 8px;">'+
+     (cur.id==="all"?'Everyone at camp is here. ':cur.id==="admin"?'Pastors + camp admin only. ':'Just your '+esc(cur.label)+' team. ')+
+     'Tip: type <b>@FirstName</b> to tag someone.</div>';
   if(!store.me){
     h+='<div class="banner">Pick your name to join the chat:</div>';
     h+='<div class="chatname"><input id="chatNameInput" list="chatPeople" placeholder="Type your name…" autocomplete="off"><button onclick="joinChatName()">Join</button></div>';
     h+='<datalist id="chatPeople">'+allPeople().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>';
   }
   h+='<div id="chatlist" class="chatlist"></div>';
-  if(store.me) h+='<div class="composer"><input id="chatInput" placeholder="Message as '+esc(store.me.split(" ")[0])+'…" maxlength="1000"><button id="chatSend">Send</button></div>';
+  if(store.me) h+='<div class="composer"><input id="chatInput" placeholder="Message '+esc(cur.label)+' as '+esc(store.me.split(" ")[0])+'…" maxlength="1000"><button id="chatSend">Send</button></div>';
   main.innerHTML=h;
+  main.querySelectorAll(".chan").forEach(b=>b.onclick=()=>{state.chatChan=b.dataset.chan;renderChat();});
   const list=document.getElementById("chatlist");
-  list.innerHTML=chatMsgs.map(chatMsgHTML).join("")||'<div class="empty">No messages yet — say hi!</div>';
+  list.innerHTML=(chatData[cur.id]||[]).map(chatMsgHTML).join("")||'<div class="empty">No messages yet — say hi!</div>';
   list.scrollTop=list.scrollHeight;
   const send=document.getElementById("chatSend");
   if(send){send.onclick=sendChat;
