@@ -36,6 +36,14 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .brand .badge{font-size:11px;background:#21262d;color:var(--dim);border:1px solid var(--line);padding:2px 8px;border-radius:20px;}
 .clock{margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--dim);}
 .clock .live{display:inline-flex;align-items:center;gap:5px;color:var(--now);font-weight:600;}
+.rfsh{margin-left:auto;background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:11px;font-weight:600;padding:4px 9px;border-radius:16px;cursor:pointer;}
+.rfsh:active{transform:scale(.96);}
+.updatebar{position:fixed;left:0;right:0;bottom:52px;z-index:41;background:#123018;border-top:1px solid #245c34;border-bottom:1px solid #245c34;padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
+.updatebar.show{display:flex;}
+.updatebar .t{flex:1;font-size:13px;color:#b6f0c4;font-weight:600;}
+.tabbadge{display:inline-block;min-width:16px;height:16px;line-height:16px;text-align:center;font-size:10px;font-weight:800;color:#101418;background:var(--now);border-radius:9px;padding:0 4px;margin-left:5px;vertical-align:middle;}
+.mention{color:#f7c948;font-weight:700;}
+.msg.mentionsme{border-color:#f7c948;box-shadow:0 0 0 1px rgba(247,201,72,.35);}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--now);box-shadow:0 0 0 0 rgba(255,255,255,.6);animation:pulse 2s infinite;}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.5);}70%{box-shadow:0 0 0 8px rgba(255,255,255,0);}100%{box-shadow:0 0 0 0 rgba(255,255,255,0);}}
 .days{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
@@ -109,7 +117,6 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .bottombar .bb{flex:1;text-align:center;padding:9px 6px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;}
 .bottombar .bb:active{transform:scale(.98);}
 .bottombar .bb.active{background:var(--panel2);border-color:var(--pink);color:var(--txt);}
-.bottombar .bb.help{color:var(--amber);border-color:#5c4a12;}
 .chatlist{height:58vh;min-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px;-webkit-overflow-scrolling:touch;}
 .msg{max-width:82%;align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 11px;}
 .msg.mine{align-self:flex-end;background:#20303f;border-color:#2f4658;}
@@ -169,6 +176,7 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
     <div class="clock">
       <span class="live" id="liveBadge" style="display:none;"><span class="dot"></span>LIVE</span>
       <span id="clockTxt">—</span>
+      <button class="rfsh" id="refreshBtn" title="Refresh to latest">↻ Refresh</button>
     </div>
     <div class="days" id="dayBar"></div>
     <div class="timerow">
@@ -188,6 +196,11 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
 <main class="wrap" id="main"></main>
 
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+
+<div class="updatebar" id="updateBar">
+  <span class="t">🔄 A newer version is ready.</span>
+  <button class="btn pink" onclick="location.reload()">Refresh</button>
+</div>
 
 <div class="installbar" id="installBar">
   <img src="./pursuit-icon-192.png" alt="">
@@ -383,6 +396,8 @@ const SHIFT_CHURCHES = {
   2:"New Song, Gateway, Belmont, Restoration House, Bethel M/C/D"
 };
 function shiftOf(name){return CHURCH_SHIFT[churchOf(name)]||0;}
+// Custom titles for people with no camp duties (shown in People list & profile)
+const SPECIAL_TITLES = {"Scott Asher":"Jedi Master · App Support"};
 
 /* ---- Admin / Welcome Table ---- */
 const ADMIN_TABLE = {
@@ -489,7 +504,7 @@ const POOL = {
 /* ---- Full leader rosters by church (from the PC26 Leader roster) ---- */
 const KNOWN_CHURCH = {
   "New Song Nashville":["Grant Ebright","Macey Duncan","Austin Duncan","Kaitlyn Rupert","Chelsey Smith","John Hagan","Melody Hagan","Dana Lathrop","Julia B Morris","Joy Clapp","Alex R Hart","Mark Schamel","Stuart Fritz","Mabel O'Neal","Luca Zapata","Chas Tippett","Jamie Waters","Zachariah McGahey","Pomaikai Chiara Romano","Caeden Rosen","Al Pearson","Judah Siegand","Stewart Fleming","Victoria Phillips","Nathan Cress","Kameryn King","Cameron King","Isabella Gautsche","Brent Lathrop","Allie Wilson","Martha Pearson","Kirk Roncskevitz","Grace Geeslin","Wesley Garrett","Victoria Joy Lanford","Micah Elliott","Ezra Siegand","Ruben Rivera III","Israel Schamel","Manny Schamel","Bryan Hagan","Crystal Schamel","Joel Evrist","Kayla Fritz","Chris Martin","Matthew Peels","Tyler Beiden","Nancy Ochiel","Peter Ochiel"],
-  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock"],
+  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock","Scott Asher"],
   "Southview":["Nevaeh Rampulla","Kahanah Chuor","Amy Myers","Jon Myers","Lily Owens","Sean Baxter","Jim Tannahill","Sheryl Tannahill","Ethan Rain Myers","Marlee Rampulla","Elijah Hoaglan","Seth Mehta","Jaic So'osemea","Tina So'osemea","Madison Reid","Luke Reid","Aadyn Rampulla","Ryan Chew"],
   "Gateway":["Daniel Burchfield","Paige Hardy","Ella Hufalar","Molly Roberts","Hailey Fields","Brennan Harper","Lisa Powell","Trent Tatum","Pierson Nelson","Christian Wylder"],
   "Nashville Life":["Grant Argent","Dr. Dorothy Gunn","Talesha Kenyetta Simpson","Khadijah Faison","David Veney","Kendale Lark Burch","Noah Lutche","Kayden Alford","Jeremiah Davis","Lydia Akin","Bobby Rhodes","Lily Huseby","Joel Isaacson","Chloe Perrin","Fanchon Tindal","Rosita Williams","Kirby Shepherd","Tyra Harris"],
@@ -555,9 +570,9 @@ store.customDuties = store.customDuties || {};
 store.coords = store.coords || {};      // location name -> "lat,lng"
 store.me = store.me || "";              // "this is me" — remembered on this phone
 // Apply the authoritative roster once (version bump re-applies for returning users)
-if(store.rosterV!==2){
+if(store.rosterV!==3){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
-  store.rosterV=2;
+  store.rosterV=3;
 }
 saveStore();
 
@@ -821,7 +836,8 @@ function renderFind(){
       const on=d&&state.time>=T(d.s)&&state.time<T(d.e);
       wText=d?d.where:"—"; wSub=d?fmtRange(d.s,d.e):("not "+state.day.slice(0,3)); wDuty=!!on;
     }else{const w=whereNow(n);wText=w.text;wSub=w.sub;wDuty=w.duty;}
-    const sub2 = state.findMode==="church" ? (rolesOf(n).join(" · ")||"Follows camp schedule") : (churchOf(n)||"No church set");
+    const sub2 = SPECIAL_TITLES[n] ? SPECIAL_TITLES[n]
+               : state.findMode==="church" ? (rolesOf(n).join(" · ")||"Follows camp schedule") : (churchOf(n)||"No church set");
     const isPastor = state.findMode==="church" && CHURCH_PASTOR[state.pickChurch]===n;
     const nameHtml = isPastor
       ? '<div class="n" style="color:'+col+'">'+esc(n)+'<span class="pastortag" style="background:'+col+'">Pastor</span></div>'
@@ -974,24 +990,38 @@ const FIREBASE_CONFIG = {
   messagingSenderId:"902781678522",
   appId:"1:902781678522:web:c4e24146b54ac452382383"
 };
-let chatDb=null, chatMsgs=[], chatInit=false;
+let chatDb=null, chatMsgs=[], chatInit=false, chatHistoryLoaded=false, unreadChat=0;
 function initChat(){
   if(chatInit||!window.firebase) return;
   try{
     firebase.initializeApp(FIREBASE_CONFIG);
     chatDb=firebase.database();
-    chatDb.ref("messages").limitToLast(300).on("child_added",s=>{
+    const ref=chatDb.ref("messages").limitToLast(300);
+    ref.on("child_added",s=>{
       const m=s.val()||{}; chatMsgs.push(m);
       if(state.tab==="chat") appendChatMsg(m);
+      else if(chatHistoryLoaded && m.name!==store.me){ unreadChat++; updateChatBadge(); }
     });
+    chatDb.ref("messages").once("value",()=>{ chatHistoryLoaded=true; });
     chatInit=true;
     if(state.tab==="chat") render();
   }catch(e){ chatDb=null; }
 }
+function updateChatBadge(){
+  const t=document.querySelector('.tab[data-tab="chat"]'); if(!t)return;
+  t.innerHTML="Chat"+(unreadChat>0?' <span class="tabbadge">'+unreadChat+'</span>':"");
+}
+function mentionsMe(text){
+  if(!store.me||!text) return false;
+  const f=store.me.split(" ")[0].toLowerCase();
+  return text.toLowerCase().indexOf("@"+f)!==-1;
+}
 function fmtClock(ts){ if(!ts)return""; const d=new Date(ts); let h=d.getHours(),m=d.getMinutes(); const ap=h<12?"a":"p"; h=h%12||12; return h+":"+String(m).padStart(2,"0")+ap; }
 function chatMsgHTML(m){
   const mine=m.name&&m.name===store.me, t=fmtClock(m.ts);
-  return '<div class="msg'+(mine?" mine":"")+'"><div class="mname">'+esc(m.name||"?")+(t?" · "+t:"")+'</div><div class="mtext">'+esc(m.text||"")+'</div></div>';
+  const text=esc(m.text||"").replace(/@([A-Za-z][\w'’.\-]*)/g,'<span class="mention">@$1</span>');
+  const cls="msg"+(mine?" mine":"")+((!mine&&mentionsMe(m.text))?" mentionsme":"");
+  return '<div class="'+cls+'"><div class="mname">'+esc(m.name||"?")+(t?" · "+t:"")+'</div><div class="mtext">'+text+'</div></div>';
 }
 function appendChatMsg(m){
   const list=document.getElementById("chatlist"); if(!list)return;
@@ -1017,7 +1047,9 @@ function renderChat(){
     h+='<div class="linkgrid"><a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="lx"><span class="a">Open the leaders’ GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a></div>';
     main.innerHTML=h; return;
   }
+  unreadChat=0; updateChatBadge();
   let h='<div class="sectionlabel">Camp Chat · everyone</div>';
+  h+='<div style="font-size:11px;color:var(--dim);margin:-4px 2px 8px;">Tip: type <b>@FirstName</b> to tag someone.</div>';
   if(!store.me){
     h+='<div class="banner">Pick your name to join the chat:</div>';
     h+='<div class="chatname"><input id="chatNameInput" list="chatPeople" placeholder="Type your name…" autocomplete="off"><button onclick="joinChatName()">Join</button></div>';
@@ -1162,6 +1194,20 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 window.addEventListener('load',()=>initChat());
+/* ---- Manual refresh + auto "update available" (works on iOS PWAs) ---- */
+document.getElementById("refreshBtn").onclick=()=>location.reload();
+let selfSnap=null, lastUpdCheck=0;
+async function fetchSelf(){ const r=await fetch('./pursuit.html?ts='+Date.now(),{cache:'no-store'}); return await r.text(); }
+async function checkForUpdate(){
+  const now=Date.now(); if(now-lastUpdCheck<45000) return; lastUpdCheck=now;
+  try{ const t=await fetchSelf();
+    if(selfSnap===null) selfSnap=t;
+    else if(t!==selfSnap) document.getElementById("updateBar").classList.add("show");
+  }catch(e){}
+}
+window.addEventListener('load',()=>{ fetchSelf().then(t=>selfSnap=t).catch(()=>{}); });
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkForUpdate(); });
+setInterval(()=>{ if(!document.hidden) checkForUpdate(); }, 300000);
 function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true;}
 function installSteps(){
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
