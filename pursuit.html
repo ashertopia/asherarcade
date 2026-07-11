@@ -587,9 +587,9 @@ function mapToolsHTML(withCal){
    ============================================================ */
 const main=document.getElementById("main");
 function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
-function locLink(l){ if(!l) return ""; const c=coordFor(l);
-  const url=c?dirGoogle(c[0],c[1]):mapsGoogle(l+", "+CAMP.address);
-  return '<a href="'+url+'" target="_blank" rel="noopener">📍 '+esc(l)+(c?' ›':'')+'</a>'; }
+// Locations are plain text (not links). Navigation lives in the Maps tab —
+// a Google Maps pin at the camp entrance isn't useful for cabins/fields/small groups.
+function locLink(l){ if(!l) return ""; return '📍 '+esc(l); }
 
 function renderClock(){
   const t=document.getElementById("clockTxt"), live=todayName();
