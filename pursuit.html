@@ -380,10 +380,10 @@ const FREE_TIME = {
   Thursday:{
     "Gaga Ball":["Jackie Bragg","Luke Reid"],"Playground":["Tamya Spikes","Chance Fielder"],
     "Basketball":["Madison Reid","Israel Fayne"],"Volleyball Court":["Aryn Harvey","Caeden Rosen"],
-    "Game Field 2":["Serinah Ruiz","Papa Hayford"],"Tabernacle":["Cardaja Harkins","Enoc Moma"],
-    "Game Field 1":["Nevaeh Rampulla","Daniel Johnson"],"Creek / Bridge":["Michelle Thomas","Xavier Keegan"],
-    "Floaters Zone 1":["Paige Hardy","Al Pearson"],"Floaters Zone 2":["Naomi Bageant","Chase Garrison"],
-    "Floaters Zone 3":["Anabell Irizarry","Fanchon Tindal"]},
+    "Game Field 2":["Serinah Ruiz","Papa Hayford"],"Tabernacle":["Anabell Irizarry","Fanchon Tindal"],
+    "Game Field 1":["Cardaja Harkins","Enoc Moma"],"Creek / Bridge":["Nevaeh Rampulla","Daniel Johnson"],
+    "Floaters Zone 1":["Michelle Thomas","Xavier Keegan"],"Floaters Zone 2":["Paige Hardy","Al Pearson"],
+    "Floaters Zone 3":["Naomi Bageant","Chase Garrison"]},
   Friday:{
     "Gaga Ball":["Michelle Thomas","Caeden Rosen"],"Playground":["Cardaja Harkins","Chase Garrison"],
     "Basketball":["Paige Hardy","Enoc Moma"],"Volleyball Court":["Nevaeh Rampulla","Israel Fayne"],
@@ -496,10 +496,11 @@ function allPeople(){
 function dutiesFor(name,day){
   const out=[];
   const hd=HOSPITALITY[day];
-  if(hd) for(const shift of ["PREP","REFILL","RESET"]) if((hd[shift]||[]).includes(name)){
-    out.push({s:"08:00",e:"08:45",what:"Hospitality ("+shift+") — room open / fill water jugs",where:"Hospitality Room · Tabernacle",tag:"Hospitality"});
-    if(day!=="Saturday") out.push({s:"17:45",e:"18:30",what:"Hospitality ("+shift+") — room open until worship",where:"Hospitality Room · Tabernacle",tag:"Hospitality"});
-  }
+  if(hd) for(const shift of ["PREP","REFILL","RESET"]){ if((hd[shift]||[]).includes(name)){
+    const job="Hospitality — "+shift.charAt(0)+shift.slice(1).toLowerCase();  // Prep / Refill / Reset
+    out.push({s:"08:00",e:"08:45",what:job,where:"Hospitality Room · Tabernacle",tag:"Hospitality"});
+    if(day!=="Saturday") out.push({s:"17:45",e:"18:30",what:job,where:"Hospitality Room · Tabernacle",tag:"Hospitality"});
+  }}
   (ADMIN_TABLE[day]||[]).forEach(r=>{if(r[3].includes(name))out.push({s:r[0],e:r[1],what:r[2],where:"Admin / Welcome Table",tag:"Admin"});});
   const z=FREE_TIME[day]; if(z)Object.entries(z).forEach(([zone,p])=>{if(p.includes(name))out.push({s:"15:15",e:"16:45",what:"Free Time — "+zone,where:zone,tag:"Free Time"});});
   if((CABIN_SWEEPS[day]||[]).includes(name)) out.push({s:"15:15",e:"16:45",what:"Cabin Sweeps",where:"Cabins",tag:"Cabin Sweep"});
