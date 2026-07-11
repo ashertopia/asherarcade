@@ -117,6 +117,12 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .pinlbl.leaflet-tooltip-top:before{border-top-color:rgba(13,17,23,.82);}
 .leaflet-popup-content{font-size:13px;}
 .leaflet-popup-content a{color:#1a66ff;font-weight:600;}
+.mebar{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:6px;}
+.mebar.col{flex-direction:column;align-items:stretch;gap:8px;}
+.mebar .who{flex:1;font-size:14px;font-weight:600;}
+.mebar .melabel{font-size:13px;color:var(--dim);}
+.mebar input.search{margin-bottom:0;}
+.pastortag{display:inline-block;font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;padding:1px 6px;border-radius:20px;margin-left:7px;vertical-align:middle;font-weight:800;color:#101418;}
 .adminrow{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
 .adminrow .nm{flex:1;font-size:14px;}
 label.fld{display:block;font-size:12px;color:var(--dim);margin:12px 0 4px;}
@@ -238,6 +244,13 @@ const CONTACTS = [
   {n:"Austin Duncan",r:"Team Leader / Judicial / Set Up",tel:"615-478-1838"},
   {n:"Alex Hart",r:"Medical / Safety",tel:"615-498-4627"}
 ];
+// Each church's pastor / lead (roster name) — highlighted in the church list
+const CHURCH_PASTOR = {
+  "New Song Nashville":"Grant Ebright","Christ Church":"Jacob Sharp","Bethel":"James Lowe II",
+  "Gateway":"Christian Wylder","Sweetwater":"Chance Fielder","Southview":"Jaic So'osemea",
+  "Seeds":"Zach Dimmock","Belmont Church":"Michelle Thomas","Nashville Life":"Grant Argent",
+  "Restoration House":"Jared Wheeler"
+};
 // Church Key — each church's lead(s) (for the resources page)
 const CHURCH_LEAD = {
   "New Song Nashville":"Pastor Grant · Macey Duncan","Christ Church":"Jacob Sharp · David Peery",
@@ -466,6 +479,7 @@ function saveStore(){localStorage.setItem(LS_KEY,JSON.stringify(store));}
 store.churchOf = store.churchOf || {};
 store.customDuties = store.customDuties || {};
 store.coords = store.coords || {};      // location name -> "lat,lng"
+store.me = store.me || "";              // "this is me" — remembered on this phone
 // Apply the authoritative roster once (version bump re-applies for returning users)
 if(store.rosterV!==2){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
@@ -606,7 +620,50 @@ function renderDayBar(){
 function currentBlock(b){return b.find(x=>state.time>=T(x.s)&&state.time<T(x.e));}
 function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
 
-function renderCamp(){
+function meBarHTML(){
+  if(store.me && allPeople().includes(store.me)){
+    return '<div class="mebar"><span class="who">👤 '+esc(store.me)+(churchOf(store.me)?' · '+esc(churchOf(store.me)):'')+'</span>'+
+           '<button class="btn" id="meChange">Change</button></div>';
+  }
+  return '<div class="mebar col"><div class="melabel">👤 Make this <b>your</b> schedule — pick your name so it remembers you:</div>'+
+         '<input class="search" id="meSearch" list="mePeople" placeholder="Type your name…" autocomplete="off">'+
+         '<datalist id="mePeople">'+allPeople().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>'+
+         '<button class="btn pink" id="meSet">📌 This is me</button></div>';
+}
+function wireMe(){
+  const set=document.getElementById("meSet");
+  if(set) set.onclick=()=>{const v=(document.getElementById("meSearch").value||"").trim();
+    if(allPeople().includes(v)){store.me=v;saveStore();render();}
+    else alert("Please pick your name from the list.");};
+  const ch=document.getElementById("meChange");
+  if(ch) ch.onclick=()=>{store.me="";saveStore();render();};
+}
+function nowCard(items,curTitle,curLoc,curS,curE,isDuty){
+  const nxt=items.find(x=>T(x.s)>state.time);
+  let h='<div class="nowcard'+(isDuty?' duty':'')+'"><div class="lbl"'+(isDuty?' style="color:var(--green)"':'')+'>'+(isDuty?'Your assignment now':'Now')+'</div>'+
+        '<div class="title">'+esc(curTitle)+'</div><div class="meta">'+(curLoc?'📍 '+esc(curLoc):'')+'<span>🕑 '+fmtRange(curS,curE)+'</span></div>';
+  if(nxt)h+='<div class="next">Up next: <b>'+esc(nxt.t)+'</b> · '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>';
+  return h+'</div>';
+}
+function renderMeSchedule(name){
+  const day=state.day, duties=dutiesFor(name,day);
+  const merged=[...BASE[day].map(b=>({s:b.s,e:b.e,t:b.t,l:b.l,duty:false})),
+                ...duties.map(d=>({s:d.s,e:d.e,t:d.what,l:d.where,duty:true,tag:d.tag}))].sort((a,b)=>T(a.s)-T(b.s)||(a.duty?-1:1));
+  const nowDuty=duties.find(d=>state.time>=T(d.s)&&state.time<T(d.e));
+  const curBase=currentBlock(BASE[day]);
+  let h='<div class="sectionlabel">Happening now · '+day+'</div>';
+  if(nowDuty) h+=nowCard(merged,nowDuty.what,nowDuty.where,nowDuty.s,nowDuty.e,true);
+  else if(curBase) h+=nowCard(merged,curBase.t,curBase.l,curBase.s,curBase.e,false);
+  else{const nxt=merged.find(x=>T(x.s)>state.time);
+    h+='<div class="nowcard"><div class="lbl">'+(nxt?'Nothing right now':'Day complete')+'</div>'+(nxt?'<div class="title">'+esc(nxt.t)+'</div><div class="meta">Starts '+fmt(T(nxt.s))+(nxt.l?' · 📍 '+esc(nxt.l):'')+'</div>':'<div class="meta">See you tomorrow!</div>')+'</div>';}
+  h+='<div class="sectionlabel">Your day'+(duties.length?' — '+duties.length+' assignment'+(duties.length>1?'s':''):' — follows the camp schedule')+'</div><div class="timeline">';
+  merged.forEach(b=>{const isc=state.time>=T(b.s)&&state.time<T(b.e), past=state.time>=T(b.e);
+    h+='<div class="tl'+(b.duty?' duty':'')+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
+       '<div class="b"><div class="nm">'+esc(b.t)+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+(b.l?'<div class="lc">'+locLink(b.l)+'</div>':'')+'</div></div>';});
+  h+='</div><div class="banner">Meal shifts &nbsp;·&nbsp; '+MEAL_SHIFTS.map(esc).join(' &nbsp;·&nbsp; ')+'</div>';
+  return h+mapToolsHTML(true);
+}
+function renderCampGeneric(){
   const blocks=BASE[state.day], cur=currentBlock(blocks), nxt=nextBlock(blocks); let h="";
   h+='<div class="sectionlabel">Happening now · '+state.day+'</div>';
   if(cur){
@@ -624,8 +681,13 @@ function renderCamp(){
        '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(b.l?'<div class="lc">'+locLink(b.l)+'</div>':'')+'</div></div>';});
   h+='</div>';
   h+='<div class="banner">Meal shifts &nbsp;·&nbsp; '+MEAL_SHIFTS.map(esc).join(' &nbsp;·&nbsp; ')+'</div>';
-  h+=mapToolsHTML(true);
+  return h+mapToolsHTML(true);
+}
+function renderCamp(){
+  let h=meBarHTML();
+  h += (store.me && allPeople().includes(store.me)) ? renderMeSchedule(store.me) : renderCampGeneric();
   main.innerHTML=h;
+  wireMe();
 }
 function whereNow(name){
   const ds=dutiesFor(name,state.day).filter(d=>state.time>=T(d.s)&&state.time<T(d.e));
@@ -677,8 +739,12 @@ function renderFind(){
       wText=d?d.where:"—"; wSub=d?fmtRange(d.s,d.e):("not "+state.day.slice(0,3)); wDuty=!!on;
     }else{const w=whereNow(n);wText=w.text;wSub=w.sub;wDuty=w.duty;}
     const sub2 = state.findMode==="church" ? (rolesOf(n).join(" · ")||"Follows camp schedule") : (churchOf(n)||"No church set");
+    const isPastor = state.findMode==="church" && CHURCH_PASTOR[state.pickChurch]===n;
+    const nameHtml = isPastor
+      ? '<div class="n" style="color:'+col+'">'+esc(n)+'<span class="pastortag" style="background:'+col+'">Pastor</span></div>'
+      : '<div class="n">'+esc(n)+'</div>';
     h+='<div class="member" data-p="'+esc(n)+'"><div class="avatar" style="background:'+col+'">'+initials(n)+'</div>'+
-       '<div class="info"><div class="n">'+esc(n)+'</div><div class="r">'+esc(sub2)+'</div></div>'+
+       '<div class="info">'+nameHtml+'<div class="r">'+esc(sub2)+'</div></div>'+
        '<div class="wherenow"><div class="w'+(wDuty?' duty':'')+'">'+esc(wText)+'</div><div class="sub">'+esc(wSub)+'</div></div></div>';
   });
   h+=mapToolsHTML(false);
