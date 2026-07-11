@@ -1,7 +1,7 @@
 /* Pursuit Camp 2026 — service worker (offline support)
    Only handles the Pursuit app assets; every other request on the site
    falls through to normal network behavior. */
-const VERSION = 'pursuit-v1';
+const VERSION = 'pursuit-v2';
 const SHELL = 'pursuit-shell-' + VERSION;
 const TILES = 'pursuit-tiles';
 const LEAFLET_JS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
@@ -49,12 +49,22 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // App page: serve cached instantly (offline-safe), refresh in background.
+  // App page: NETWORK-FIRST so an online open always gets the newest version;
+  // fall back to cache (instant) if offline or the network is slow (>3.5s).
   if (isPursuitNav(url, req) || (isShellAsset(url) && url.pathname.endsWith('/pursuit.html'))) {
     e.respondWith((async () => {
-      const cached = await caches.match('./pursuit.html');
-      const net = fetch(req).then(r => { caches.open(SHELL).then(c => c.put('./pursuit.html', r.clone())); return r; }).catch(() => null);
-      return cached || net || new Response('Offline', { status: 503 });
+      const cache = await caches.open(SHELL);
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3500);
+      try {
+        const net = await fetch(req, { signal: controller.signal });
+        clearTimeout(timer);
+        if (net && net.ok) { cache.put('./pursuit.html', net.clone()); return net; }
+        throw new Error('bad response');
+      } catch (_) {
+        clearTimeout(timer);
+        return (await cache.match('./pursuit.html')) || new Response('Offline', { status: 503 });
+      }
     })());
     return;
   }
