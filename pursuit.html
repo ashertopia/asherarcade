@@ -137,8 +137,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .composer button{flex:0 0 auto;padding:0 16px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;font-size:14px;cursor:pointer;}
 .chatname{display:flex;gap:8px;margin-bottom:10px;}
 .chanbar{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 8px;margin-bottom:2px;}
-.chanbar .chan{flex:0 0 auto;position:relative;background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:16px;cursor:pointer;white-space:nowrap;}
-.chanbar .chan.on{background:var(--pink);border-color:var(--pink);color:#101418;}
+.chanbar .chan{flex:0 0 auto;position:relative;border:2px solid var(--line);background:transparent;font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:16px;cursor:pointer;white-space:nowrap;opacity:.55;transition:opacity .12s;}
+.chanbar .chan.on{opacity:1;box-shadow:0 0 0 2px rgba(255,255,255,.20);}
 .chanbar .chan .cbadge{display:inline-block;min-width:15px;height:15px;line-height:15px;text-align:center;font-size:9px;font-weight:800;color:#101418;background:var(--now);border-radius:8px;padding:0 4px;margin-left:5px;vertical-align:middle;}
 .chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
@@ -1037,12 +1037,14 @@ const FIREBASE_CONFIG = {
 };
 let chatDb=null, chatInit=false, chatData={}, chatUnread={}, chatSubbed={}, chatLoaded={};
 /* ---- which channels does the current person belong to? (derived from their name pick) ---- */
+const CHAT_PINK="#ff5d8f";
+function textOn(hex){const c=hex.replace('#','');const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return (0.299*r+0.587*g+0.114*b)>150?'#101418':'#ffffff';}
 function chanSlug(ch){ return "church-"+ch.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
 function myChannels(){
-  const list=[{id:"all",label:"All Leaders",icon:"📣"}];
+  const list=[{id:"all",label:"All Leaders",color:CHAT_PINK,fill:false}];
   const ch=churchOf(store.me);
-  if(ch && CHURCHES.includes(ch)) list.push({id:chanSlug(ch),label:ch,icon:"⛪"});
-  if(store.me && CHAT_ADMINS.includes(store.me)) list.push({id:"admin",label:"Admin · Leadership",icon:"🔑"});
+  if(ch && CHURCHES.includes(ch)) list.push({id:chanSlug(ch),label:ch,color:CHURCH_COLOR[ch]||"#8b949e",fill:true});
+  if(store.me && CHAT_ADMINS.includes(store.me)) list.push({id:"admin",label:"Admin · Leadership",color:CHAT_PINK,fill:true});
   return list;
 }
 function initChat(){
@@ -1120,10 +1122,15 @@ function renderChat(){
   chatUnread[cur.id]=0; updateChatBadge();
   let h='';
   if(chans.length>1){
-    h+='<div class="chanbar">'+chans.map(c=>'<button class="chan'+(c.id===cur.id?' on':'')+'" data-chan="'+c.id+'">'+c.icon+' '+esc(c.label)+
-       ((c.id!==cur.id&&chatUnread[c.id])?'<span class="cbadge">'+chatUnread[c.id]+'</span>':'')+'</button>').join('')+'</div>';
+    h+='<div class="chanbar">'+chans.map(c=>{
+      const sel=c.id===cur.id;
+      const style=c.fill? 'background:'+c.color+';border-color:'+c.color+';color:'+textOn(c.color)+';'
+                        : 'background:transparent;border-color:'+c.color+';color:'+c.color+';';
+      return '<button class="chan'+(sel?' on':'')+'" data-chan="'+c.id+'" style="'+style+'">'+esc(c.label)+
+        ((!sel&&chatUnread[c.id])?'<span class="cbadge">'+chatUnread[c.id]+'</span>':'')+'</button>';
+    }).join('')+'</div>';
   }
-  h+='<div class="sectionlabel">'+cur.icon+' '+esc(cur.label)+'</div>';
+  h+='<div class="sectionlabel">'+esc(cur.label)+'</div>';
   h+='<div style="font-size:11px;color:var(--dim);margin:-4px 2px 8px;">'+
      (cur.id==="all"?'Everyone at camp is here. ':cur.id==="admin"?'Pastors + camp admin only. ':'Just your '+esc(cur.label)+' team. ')+
      'Tip: type <b>@FirstName</b> to tag someone.</div>';
