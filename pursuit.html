@@ -217,7 +217,7 @@ const LINKS = {
   rulebook:"",   // add a direct rulebook URL if you have one
   website:""     // add the camp website URL if you have one
 };
-const HELP_PHONE = "";  // Asher's number for the Help button (e.g. "6155551234")
+const HELP_PHONE = "6155170726";  // Help button texts this number
 // GPS coordinates for camp locations [lat,lng] (add more in Admin › Map pins).
 // Keys for activity spots match the Free Time schedule zone names so the
 // schedule's location links deep-link to directions.
@@ -308,14 +308,14 @@ const CHURCH_COLOR = {
 const WEEKDAY = [
   {s:"06:30",e:"06:45",t:"Wake Up",l:"Cabins"},
   {s:"06:45",e:"07:15",t:"Tidy dorm & get ready",l:"Cabins"},
-  {s:"07:15",e:"08:25",t:"Breakfast / Secret Place",l:"Dining Hall"},
+  {s:"07:15",e:"08:25",t:"Breakfast / Secret Place",l:"Dining Hall",meal:"breakfast"},
   {s:"08:30",e:"11:00",t:"Team Competition",l:"Sports / Game Field"},
   {s:"11:00",e:"11:30",t:"Cabin Down Time",l:"Cabins"},
-  {s:"11:30",e:"13:00",t:"Lunch / Cabin Down Time",l:"Dining Hall"},
+  {s:"11:30",e:"13:00",t:"Lunch / Cabin Down Time",l:"Dining Hall",meal:"lunch"},
   {s:"13:00",e:"14:15",t:"Afternoon Session (Service)",l:"Tabernacle"},
   {s:"14:15",e:"15:00",t:"Small Group",l:"Small Group areas"},
   {s:"15:00",e:"17:00",t:"Free Time",l:"See Free Time map"},
-  {s:"17:00",e:"18:25",t:"Dinner",l:"Dining Hall"},
+  {s:"17:00",e:"18:25",t:"Dinner",l:"Dining Hall",meal:"dinner"},
   {s:"18:00",e:"18:30",t:"Pre-Service Huddle",l:"Tabernacle"},
   {s:"18:30",e:"21:00",t:"Evening Service",l:"Tabernacle"},
   {s:"21:00",e:"22:00",t:"Snack Shack",l:"Snack Shack"},
@@ -330,7 +330,7 @@ const BASE = {
     {s:"15:00",e:"15:15",t:"Session #1 — Kick-off",l:"Tabernacle"},
     {s:"15:15",e:"16:45",t:"Kick-off Game (theme intro)",l:"Tabernacle"},
     {s:"16:45",e:"17:00",t:"Worship Rehearsal (Worship Team)",l:"Tabernacle"},
-    {s:"17:00",e:"18:25",t:"Dinner",l:"Dining Hall"},
+    {s:"17:00",e:"18:25",t:"Dinner",l:"Dining Hall",meal:"dinner"},
     {s:"18:00",e:"18:30",t:"Pre-Service Huddle",l:"Tabernacle"},
     {s:"18:30",e:"21:00",t:"Evening Service",l:"Tabernacle"},
     {s:"21:00",e:"22:00",t:"Snack Shack",l:"Snack Shack"},
@@ -347,7 +347,7 @@ const BASE = {
   Saturday:[
     {s:"06:30",e:"06:45",t:"Wake Up",l:"Cabins"},
     {s:"06:45",e:"07:15",t:"Pack + Clean Dorm",l:"Cabins"},
-    {s:"07:15",e:"08:25",t:"Breakfast / Secret Place",l:"Dining Hall"},
+    {s:"07:15",e:"08:25",t:"Breakfast / Secret Place",l:"Dining Hall",meal:"breakfast"},
     {s:"08:00",e:"09:00",t:"Daily Briefing / Worship Rehearsal",l:"Tabernacle"},
     {s:"09:15",e:"09:30",t:"Group Photo",l:"TBD"},
     {s:"09:30",e:"12:00",t:"Morning Session / Baptisms",l:"Tabernacle"},
@@ -355,11 +355,22 @@ const BASE = {
     {s:"12:00",e:"12:30",t:"CAMP ENDS — See you next year!",l:""}
   ]
 };
-const MEAL_SHIFTS = [
-  "Breakfast: Shift 1 = 7:15–7:45a • Shift 2 = 7:45–8:15a",
-  "Lunch: Shift 1 = 11:45–12:15p • Shift 2 = 12:15–12:45p",
-  "Dinner: Shift 1 = 5:00–5:45p • Shift 2 = 5:45–6:25p"
-];
+// Meal shift times (corrected) and which shift each church eats
+const MEAL_TIMES = {
+  breakfast:{1:["07:15","07:50"],2:["07:50","08:25"]},
+  lunch:{1:["11:30","12:15"],2:["12:15","12:55"]},
+  dinner:{1:["17:00","17:45"],2:["17:45","18:25"]}
+};
+const CHURCH_SHIFT = {   // 1 or 2; 0 = spans both / unknown
+  "New Song Nashville":2,"Nashville Life":1,"Gateway":2,"Christ Church":1,
+  "Belmont Church":2,"Sweetwater":1,"Seeds":1,"Restoration House":2,
+  "Bethel":0,"Southview":0
+};
+const SHIFT_CHURCHES = {
+  1:"Christ Church, Nashville Life, Seeds, Sweetwater, Bethel Brentwood",
+  2:"New Song, Gateway, Belmont, Restoration House, Bethel M/C/D"
+};
+function shiftOf(name){return CHURCH_SHIFT[churchOf(name)]||0;}
 
 /* ---- Admin / Welcome Table ---- */
 const ADMIN_TABLE = {
@@ -655,6 +666,14 @@ function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUp
 // Locations are plain text (not links). Navigation lives in the Maps tab —
 // a Google Maps pin at the camp entrance isn't useful for cabins/fields/small groups.
 function locLink(l){ if(!l) return ""; return esc(l); }
+// Meal blocks show shift times: a selected person sees only their shift; otherwise both.
+function mealLine(block,who){
+  if(!block.meal) return null;
+  const mt=MEAL_TIMES[block.meal], sh=who?shiftOf(who):0;
+  if(sh===1||sh===2) return "Your "+block.meal+": "+fmtRange(mt[sh][0],mt[sh][1]);
+  return "Shift 1 "+fmtRange(mt[1][0],mt[1][1])+" · Shift 2 "+fmtRange(mt[2][0],mt[2][1]);
+}
+function blockLoc(b,who){ const m=mealLine(b,who); if(m)return m; return b.l?locLink(b.l):""; }
 
 function renderClock(){
   const t=document.getElementById("clockTxt"), live=todayName();
@@ -692,26 +711,27 @@ function wireMe(){
 function nowCard(items,curTitle,curLoc,curS,curE,isDuty){
   const nxt=items.find(x=>T(x.s)>state.time);
   let h='<div class="nowcard'+(isDuty?' duty':'')+'"><div class="lbl"'+(isDuty?' style="color:var(--green)"':'')+'>'+(isDuty?'Your assignment now':'Now')+'</div>'+
-        '<div class="title">'+esc(curTitle)+'</div><div class="meta">'+(curLoc?esc(curLoc):'')+'<span>🕑 '+fmtRange(curS,curE)+'</span></div>';
+        '<div class="title">'+esc(curTitle)+'</div><div class="meta">'+(curLoc||'')+'<span>🕑 '+fmtRange(curS,curE)+'</span></div>';
   if(nxt)h+='<div class="next">Up next: <b>'+esc(nxt.t)+'</b> · '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>';
   return h+'</div>';
 }
 function renderMeSchedule(name){
   const day=state.day, duties=dutiesFor(name,day);
-  const merged=[...BASE[day].map(b=>({s:b.s,e:b.e,t:b.t,l:b.l,duty:false})),
+  const merged=[...BASE[day].map(b=>({s:b.s,e:b.e,t:b.t,l:b.l,meal:b.meal,duty:false})),
                 ...duties.map(d=>({s:d.s,e:d.e,t:d.what,l:d.where,duty:true,tag:d.tag}))].sort((a,b)=>T(a.s)-T(b.s)||(a.duty?-1:1));
   const nowDuty=duties.find(d=>state.time>=T(d.s)&&state.time<T(d.e));
   const curBase=currentBlock(BASE[day]);
   let h='<div class="sectionlabel">Happening now · '+day+'</div>';
-  if(nowDuty) h+=nowCard(merged,nowDuty.what,nowDuty.where,nowDuty.s,nowDuty.e,true);
-  else if(curBase) h+=nowCard(merged,curBase.t,curBase.l,curBase.s,curBase.e,false);
+  if(nowDuty) h+=nowCard(merged,nowDuty.what,esc(nowDuty.where),nowDuty.s,nowDuty.e,true);
+  else if(curBase) h+=nowCard(merged,curBase.t,blockLoc(curBase,name),curBase.s,curBase.e,false);
   else{const nxt=merged.find(x=>T(x.s)>state.time);
     h+='<div class="nowcard"><div class="lbl">'+(nxt?'Nothing right now':'Day complete')+'</div>'+(nxt?'<div class="title">'+esc(nxt.t)+'</div><div class="meta">Starts '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>':'<div class="meta">See you tomorrow!</div>')+'</div>';}
   h+='<div class="sectionlabel">Your day'+(duties.length?' — '+duties.length+' assignment'+(duties.length>1?'s':''):' — follows the camp schedule')+'</div><div class="timeline">';
-  merged.forEach(b=>{const isc=state.time>=T(b.s)&&state.time<T(b.e), past=state.time>=T(b.e);
+  merged.forEach(b=>{const isc=state.time>=T(b.s)&&state.time<T(b.e), past=state.time>=T(b.e), L=blockLoc(b,name);
     h+='<div class="tl'+(b.duty?' duty':'')+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
-       '<div class="b"><div class="nm">'+esc(b.t)+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+(b.l?'<div class="lc">'+locLink(b.l)+'</div>':'')+'</div></div>';});
-  h+='</div><div class="banner">Meal shifts &nbsp;·&nbsp; '+MEAL_SHIFTS.map(esc).join(' &nbsp;·&nbsp; ')+'</div>';
+       '<div class="b"><div class="nm">'+esc(b.t)+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+'</div></div>';});
+  const msh=shiftOf(name);
+  h+='</div><div class="banner">'+(msh?'You’re on <b>Meal Shift '+msh+'</b> — the times above are yours.':'Your church eats on <b>both meal shifts</b> by congregation — check with your leader for your times.')+'</div>';
   return h+mapToolsHTML(true);
 }
 function renderCampGeneric(){
@@ -719,7 +739,7 @@ function renderCampGeneric(){
   h+='<div class="sectionlabel">Happening now · '+state.day+'</div>';
   if(cur){
     h+='<div class="nowcard"><div class="lbl">Now</div><div class="title">'+esc(cur.t)+'</div>'+
-       '<div class="meta">'+(cur.l?esc(cur.l):'')+'<span>🕑 '+fmtRange(cur.s,cur.e)+'</span></div>';
+       '<div class="meta">'+blockLoc(cur,null)+'<span>🕑 '+fmtRange(cur.s,cur.e)+'</span></div>';
     if(nxt)h+='<div class="next">Up next: <b>'+esc(nxt.t)+'</b> · '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>';
     h+='</div>';
   }else{
@@ -727,11 +747,11 @@ function renderCampGeneric(){
        (nxt?'<div class="title">'+esc(nxt.t)+'</div><div class="meta">Starts '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>':'<div class="meta">See you tomorrow!</div>')+'</div>';
   }
   h+='<div class="sectionlabel">Full day</div><div class="timeline">';
-  blocks.forEach(b=>{const isc=cur&&b.s===cur.s&&b.t===cur.t, past=state.time>=T(b.e);
+  blocks.forEach(b=>{const isc=cur&&b.s===cur.s&&b.t===cur.t, past=state.time>=T(b.e), L=blockLoc(b,null);
     h+='<div class="tl'+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
-       '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(b.l?'<div class="lc">'+locLink(b.l)+'</div>':'')+'</div></div>';});
+       '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+'</div></div>';});
   h+='</div>';
-  h+='<div class="banner">Meal shifts &nbsp;·&nbsp; '+MEAL_SHIFTS.map(esc).join(' &nbsp;·&nbsp; ')+'</div>';
+  h+='<div class="banner"><b>Meal shifts</b> · Shift 1 ('+SHIFT_CHURCHES[1]+') · Shift 2 ('+SHIFT_CHURCHES[2]+')</div>';
   return h+mapToolsHTML(true);
 }
 function renderCamp(){
@@ -918,7 +938,7 @@ function linksHTML(){
 }
 function openLinks(){openSheet("Important pages & links",linksHTML());}
 function helpAction(){
-  if(HELP_PHONE) location.href="sms:"+HELP_PHONE.replace(/[^0-9]/g,"")+"?&body="+encodeURIComponent("Pursuit app help: ");
+  if(HELP_PHONE) location.href="sms:"+HELP_PHONE.replace(/[^0-9]/g,"")+"?&body="+encodeURIComponent("Pursuit Camp — I have a question/concern: ");
   else alert("The Help text line isn’t set up yet.");
 }
 function renderTeams(){
@@ -964,14 +984,14 @@ function openPerson(name){
 }
 function personDay(name,day){
   const duties=dutiesFor(name,day);
-  const base=BASE[day].map(b=>({s:b.s,e:b.e,t:b.t,l:b.l,duty:false}));
+  const base=BASE[day].map(b=>({s:b.s,e:b.e,t:b.t,l:b.l,meal:b.meal,duty:false}));
   const di=duties.map(d=>({s:d.s,e:d.e,t:d.what,l:d.where,duty:true,tag:d.tag}));
   const items=[...base,...di].sort((a,b)=>T(a.s)-T(b.s)||(a.duty?-1:1));
   let h='<div id="personDayWrap"><div class="sectionlabel">'+day+' — '+(duties.length?duties.length+' assignment'+(duties.length>1?'s':''):'no special duties')+'</div><div class="timeline">';
-  items.forEach(b=>{const isc=(day===state.day)&&state.time>=T(b.s)&&state.time<T(b.e);
+  items.forEach(b=>{const isc=(day===state.day)&&state.time>=T(b.s)&&state.time<T(b.e), L=blockLoc(b,name);
     h+='<div class="tl'+(b.duty?' duty':'')+(isc?' cur':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
        '<div class="b"><div class="nm">'+esc(b.t)+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+
-       (b.l?'<div class="lc">'+locLink(b.l)+'</div>':'')+'</div></div>';});
+       (L?'<div class="lc">'+L+'</div>':'')+'</div></div>';});
   h+='</div>';
   if(!duties.length) h+='<div class="banner">'+esc(name)+' has no role duties on '+day+' — follows the normal camp schedule above.</div>';
   h+='</div>'; return h;
