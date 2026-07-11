@@ -36,8 +36,18 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .brand .badge{font-size:11px;background:#21262d;color:var(--dim);border:1px solid var(--line);padding:2px 8px;border-radius:20px;}
 .clock{margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--dim);}
 .clock .live{display:inline-flex;align-items:center;gap:5px;color:var(--now);font-weight:600;}
-.rfsh{margin-left:auto;background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:11px;font-weight:600;padding:4px 9px;border-radius:16px;cursor:pointer;}
+.brandtxt{min-width:0;}
+.dtcluster{margin-left:auto;display:flex;align-items:center;gap:8px;flex:0 0 auto;}
+.dtbox{display:flex;flex-direction:column;align-items:flex-end;line-height:1.15;}
+.dtbox .dtday{font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.dtbox .dttime{font-size:15px;font-weight:700;color:var(--txt);font-variant-numeric:tabular-nums;}
+.rfsh{background:var(--panel2);border:1px solid var(--line);color:var(--dim);font-size:14px;font-weight:600;padding:5px 9px;border-radius:16px;cursor:pointer;flex:0 0 auto;}
 .rfsh:active{transform:scale(.96);}
+.meRow{margin-top:9px;}
+.meRow .mebar{margin-bottom:0;padding:7px 10px;}
+.meRow .merow2{display:flex;align-items:center;gap:8px;}
+.meRow .merow2 input.search{flex:1;}
+.btn.tiny{font-size:12px;padding:5px 10px;flex:0 0 auto;}
 .updatebar{position:fixed;left:0;right:0;bottom:52px;z-index:41;background:#123018;border-top:1px solid #245c34;border-bottom:1px solid #245c34;padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
 .updatebar.show{display:flex;}
 .updatebar .t{flex:1;font-size:13px;color:#b6f0c4;font-weight:600;}
@@ -172,17 +182,22 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
         <h1>Pursuit Camp 2026</h1>
         <span class="badge" id="loc">Camp Garner Creek</span>
       </div>
+      <div class="dtcluster">
+        <div class="dtbox" id="dtBox"></div>
+      </div>
     </div>
+    <div class="meRow" id="meRow"></div>
+    <div id="schedControls">
     <div class="clock">
       <span class="live" id="liveBadge" style="display:none;"><span class="dot"></span>LIVE</span>
       <span id="clockTxt">—</span>
-      <button class="rfsh" id="refreshBtn" title="Refresh to latest">↻ Refresh</button>
     </div>
     <div class="days" id="dayBar"></div>
     <div class="timerow">
       <span id="tLabel" style="flex:0 0 auto;">Time</span>
       <input type="range" id="timeSlider" min="360" max="1439" step="5">
       <button class="btn" id="nowBtn">Now</button>
+    </div>
     </div>
     <div class="tabs">
       <div class="tab active" data-tab="camp">Schedule</div>
@@ -702,6 +717,21 @@ function mealLine(block,who){
 }
 function blockLoc(b,who){ const m=mealLine(b,who); if(m)return m; return b.l?locLink(b.l):""; }
 
+function updateDtBox(){
+  const box=document.getElementById("dtBox"); if(!box)return;
+  const d=new Date(), wd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][d.getDay()];
+  let h=d.getHours(),m=d.getMinutes(); const ap=h<12?"a":"p"; h=h%12||12;
+  box.innerHTML='<span class="dtday">'+wd+" "+(d.getMonth()+1)+"/"+d.getDate()+'</span><span class="dttime">'+h+":"+String(m).padStart(2,"0")+ap+'</span>';
+}
+function sizeChat(){
+  const list=document.getElementById("chatlist"); if(!list)return;
+  const comp=document.querySelector(".composer");
+  const top=list.getBoundingClientRect().top;
+  const compH=comp?comp.offsetHeight+10:0;
+  const vh=(window.visualViewport?window.visualViewport.height:window.innerHeight);
+  list.style.height=Math.max(150, vh-top-compH-52-14)+"px";
+  list.scrollTop=list.scrollHeight;
+}
 function renderClock(){
   const t=document.getElementById("clockTxt"), live=todayName();
   document.getElementById("liveBadge").style.display=isLive()?"inline-flex":"none";
@@ -720,12 +750,18 @@ function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
 function meBarHTML(){
   if(store.me && allPeople().includes(store.me)){
     return '<div class="mebar"><span class="who">👤 '+esc(store.me)+(churchOf(store.me)?' · '+esc(churchOf(store.me)):'')+'</span>'+
-           '<button class="btn" id="meChange">Change</button></div>';
+           '<button class="btn tiny" id="meChange">Change</button>'+
+           '<button class="rfsh" id="refreshBtn" title="Refresh to latest">↻</button></div>';
   }
-  return '<div class="mebar col"><div class="melabel">👤 Make this <b>your</b> schedule — pick your name so it remembers you:</div>'+
-         '<input class="search" id="meSearch" list="mePeople" placeholder="Type your name…" autocomplete="off">'+
+  return '<div class="mebar col"><div class="melabel">👤 First time? Pick your name so the app remembers you and can make this <b>your</b> schedule:</div>'+
+         '<div class="merow2"><input class="search" id="meSearch" list="mePeople" placeholder="Type your name…" autocomplete="off">'+
+         '<button class="rfsh" id="refreshBtn" title="Refresh to latest">↻</button></div>'+
          '<datalist id="mePeople">'+allPeople().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>'+
          '<button class="btn pink" id="meSet">📌 This is me</button></div>';
+}
+function renderMeRow(){
+  const row=document.getElementById("meRow");
+  if(row){ row.innerHTML=meBarHTML(); wireMe(); }
 }
 function wireMe(){
   const set=document.getElementById("meSet");
@@ -734,6 +770,8 @@ function wireMe(){
     else alert("Please pick your name from the list.");};
   const ch=document.getElementById("meChange");
   if(ch) ch.onclick=()=>{store.me="";saveStore();render();};
+  const rf=document.getElementById("refreshBtn");
+  if(rf) rf.onclick=()=>location.reload();
 }
 function nowCard(items,curTitle,curLoc,curS,curE,isDuty){
   const nxt=items.find(x=>T(x.s)>state.time);
@@ -782,10 +820,7 @@ function renderCampGeneric(){
   return h+mapToolsHTML(true);
 }
 function renderCamp(){
-  let h=meBarHTML();
-  h += (store.me && allPeople().includes(store.me)) ? renderMeSchedule(store.me) : renderCampGeneric();
-  main.innerHTML=h;
-  wireMe();
+  main.innerHTML = (store.me && allPeople().includes(store.me)) ? renderMeSchedule(store.me) : renderCampGeneric();
 }
 function whereNow(name){
   const ds=dutiesFor(name,state.day).filter(d=>state.time>=T(d.s)&&state.time<T(d.e));
@@ -1064,6 +1099,7 @@ function renderChat(){
   const send=document.getElementById("chatSend");
   if(send){send.onclick=sendChat;
     document.getElementById("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat();});}
+  sizeChat();
 }
 
 /* ---- person sheet ---- */
@@ -1165,7 +1201,8 @@ function importPrompt(){const s=prompt("Paste exported JSON:");if(!s)return;
    ============================================================ */
 function render(){
   if(!["camp","find","teams","chat","map"].includes(state.tab)) state.tab="camp";
-  renderClock();renderDayBar();
+  renderClock();renderDayBar();updateDtBox();renderMeRow();
+  document.getElementById("schedControls").style.display = state.tab==="camp" ? "" : "none";
   if(state.tab!=="map")destroyMap();
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===state.tab));
   document.querySelectorAll(".bottombar .bb").forEach(b=>b.classList.toggle("active",b.dataset.bb==="map"&&state.tab==="map"));
@@ -1194,8 +1231,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 window.addEventListener('load',()=>initChat());
-/* ---- Manual refresh + auto "update available" (works on iOS PWAs) ---- */
-document.getElementById("refreshBtn").onclick=()=>location.reload();
+/* ---- Auto "update available" check (refresh button lives in meRow, wired in wireMe) ---- */
 let selfSnap=null, lastUpdCheck=0;
 async function fetchSelf(){ const r=await fetch('./pursuit.html?ts='+Date.now(),{cache:'no-store'}); return await r.text(); }
 async function checkForUpdate(){
@@ -1233,10 +1269,14 @@ maybeShowInstall();
 // Live tick: only advance during camp, only full-rerender the schedule tab
 // (avoids rebuilding the map/people views — and the flicker — when you return).
 setInterval(()=>{
+  updateDtBox();
   if(document.hidden||!state.follow||!todayName())return;
   state.time=nowMinutes();
   if(state.tab==="camp")render(); else renderClock();
 },30000);
+setInterval(updateDtBox,20000);
+window.addEventListener("resize",()=>{ if(state.tab==="chat") sizeChat(); });
+if(window.visualViewport) window.visualViewport.addEventListener("resize",()=>{ if(state.tab==="chat") sizeChat(); });
 render();
 </script>
 </body>
