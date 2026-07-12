@@ -164,7 +164,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
 .teamcard{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
 .teamcard.mine{box-shadow:0 0 0 2px var(--pink);}
-.teamcard .trank{flex:0 0 20px;text-align:center;font-size:15px;font-weight:800;color:var(--dim);}
+.teamcard .trank{flex:0 0 26px;text-align:center;font-size:15px;font-weight:800;color:var(--dim);}
+.teamcard .trank .trophy{display:block;margin:0 auto;}
 .teamcard .tdot{width:16px;height:16px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
 .teamcard .tinfo{flex:1;min-width:0;}
 .teamcard .tn{font-size:16px;font-weight:700;}
@@ -1146,6 +1147,11 @@ function helpAction(){
   if(HELP_PHONE) location.href="sms:"+HELP_PHONE.replace(/[^0-9]/g,"")+"?&body="+encodeURIComponent("Pursuit Camp — I have a question/concern: ");
   else alert("The Help text line isn’t set up yet.");
 }
+// Flat, solid-color trophy (gold/silver/bronze) for the top 3 — matches the app's flat style
+function trophySVG(color){ return '<svg class="trophy" viewBox="0 0 24 24" width="22" height="22" fill="'+color+'"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.96V19H7v2h10v-2h-4v-3.1c1.63-.33 2.98-1.46 3.61-2.96C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z"/></svg>'; }
+const MEDALS=["#f4c430","#c8d0da","#cd7f32"];   // gold, silver, bronze
+// Return the team color, lightened only if it's too dark to read on the dark background
+function litColor(hex){ const c=hex.replace('#','');let r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16); const L=0.299*r+0.587*g+0.114*b; if(L>=95) return hex; r=Math.round(r+(255-r)*0.5);g=Math.round(g+(255-g)*0.5);b=Math.round(b+(255-b)*0.5); return 'rgb('+r+','+g+','+b+')'; }
 function renderTeams(){
   const myTeam=store.me?teamOf(store.me):null;
   const ptsOf=t=>+((chatScores||{})[t.name])||0;
@@ -1154,9 +1160,10 @@ function renderTeams(){
   let h='<div class="sectionlabel">🏆 Team Standings · '+TEAMS.length+' teams'+(anyScore?'':' — updates once scores are posted')+'</div>';
   ranked.forEach((r,i)=>{
     const t=r.t, mine=myTeam&&myTeam.name===t.name;
+    const rankHTML=(i<3 && r.pts>0) ? trophySVG(MEDALS[i]) : (i+1);
     h+='<div class="teamcard'+(mine?' mine':'')+'" style="border-left-color:'+t.hex+'">'+
-       '<span class="trank">'+(i+1)+'</span>'+
-       '<div class="tinfo"><div class="tn">'+esc(t.name)+'</div>'+
+       '<span class="trank">'+rankHTML+'</span>'+
+       '<div class="tinfo"><div class="tn" style="color:'+litColor(t.hex)+'">'+esc(t.name)+'</div>'+
          '<div class="tlds">'+t.leaders.map(esc).join(" · ")+'</div>'+
          '<div class="tac">'+esc(t.animal)+' · '+esc(t.color)+'</div></div>'+
        '<span class="tpts">'+r.pts+'</span></div>';
