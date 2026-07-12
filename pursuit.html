@@ -580,17 +580,10 @@ const TEAMS = [
   {name:"Tlameha",animal:"Bat",color:"TBD",hex:"#8b949e",leaders:["Xavier Keegan","Molly Roberts"]}
 ];
 function teamOf(name){return TEAMS.find(t=>t.leaders.includes(name))||null;}
-// Emoji for each team animal (best available match)
-const ANIMAL_EMOJI = {
-  "Deer":"🦌","Elephant":"🐘","Frog":"🐸","Groundhog":"🐿️","Horse":"🐴","Mountain Lion":"🦁",
-  "Fox":"🦊","Turtle":"🐢","Eagle":"🦅","Owl":"🦉","Buffalo":"🦬","Bear":"🐻","Rattlesnake":"🐍",
-  "Wolf":"🐺","Firefly":"🐛","Hornet":"🐝","Badger":"🦡","Bee":"🐝","Rabbit":"🐰","Alligator":"🐊",
-  "Otter":"🦦","Bat":"🦇"
-};
-// Colored team badge (animal + team name in the team's color)
+// Colored team badge — team name in the team's official color (no icon)
 function teamChipHTML(name){
   const t=teamOf(name); if(!t) return "";
-  return ' <span class="teamchip" style="color:'+t.hex+';border-color:'+t.hex+'">'+(ANIMAL_EMOJI[t.animal]||"")+' '+esc(t.name)+'</span>';
+  return ' <span class="teamchip" style="color:'+t.hex+';border-color:'+t.hex+'">'+esc(t.name)+'</span>';
 }
 // A church name rendered in its official color
 function chSpan(ch){ const c=CHURCH_COLOR[ch]; return c?'<span style="color:'+c+';font-weight:600">'+esc(ch)+'</span>':esc(ch); }
@@ -870,7 +863,7 @@ function renderFind(){
   if(state.findMode==="church"){
     h+='<select class="select" id="pick"><option value="">— Select your church —</option>';
     CHURCHES.forEach(c=>h+='<option value="'+esc(c)+'"'+(c===state.pickChurch?' selected':'')+'>'+esc(c)+'</option>');
-    h+='<option value="__un"'+(state.pickChurch==="__un"?' selected':'')+'>— Unassigned people —</option></select>';
+    h+='<option value="__un"'+(state.pickChurch==="__un"?' selected':'')+'>Unassigned (no church listed)</option></select>';
   }else{
     h+='<select class="select" id="pick"><option value="">— Select a service area —</option>';
     AREAS.forEach(a=>h+='<option value="'+esc(a.key)+'"'+(a.key===state.pickArea?' selected':'')+'>'+esc(a.key)+'</option>');
@@ -1213,7 +1206,7 @@ function renderChat(){
 function openPerson(name){
   const sheet=document.getElementById("sheet"), col=CHURCH_COLOR[churchOf(name)]||"#8b949e";
   const tm=teamOf(name);
-  const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(tm?' · <span style="color:'+tm.hex+'">'+(ANIMAL_EMOJI[tm.animal]||"")+' Team '+esc(tm.name)+' ('+esc(tm.animal)+')</span>':'');
+  const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(tm?' · <span style="color:'+tm.hex+'">Team '+esc(tm.name)+' ('+esc(tm.animal)+')</span>':'');
   let h='<div class="shead"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
         '<div><div style="font-size:17px;font-weight:700;">'+esc(name)+(PERSON_ICON[name]||"")+'</div>'+
         '<div style="font-size:12px;color:var(--dim);">'+subline+'</div></div>'+
