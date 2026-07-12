@@ -114,8 +114,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .linkrow .lx{flex:1;min-width:0;}
 .linkrow .lx .a{display:block;font-size:15px;font-weight:600;}
 .linkrow .lx .b{display:block;font-size:12px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.linkrow.role{align-items:flex-start;}
-.linkrow.role .lx .b{white-space:normal;overflow:visible;line-height:1.45;margin-top:3px;}
+.linkrow.lead{align-items:flex-start;}
+.linkrow.lead .lx .b{white-space:normal;overflow:visible;line-height:1.4;margin-top:3px;}
 .linkrow .go{color:var(--dim);font-size:18px;}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:50;display:none;align-items:flex-end;justify-content:center;}
@@ -1024,31 +1024,29 @@ function openSheet(title,body){
   sheet.innerHTML='<div class="shead"><div style="font-size:17px;font-weight:700;">'+esc(title)+'</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">'+body+'</div>';
   document.getElementById("modal").classList.add("open");
 }
-// Service teams & roles (from the Leader Handbook "Teams + Roles" page) — description + who to ask
-const TEAM_ROLES = [
-  {n:"Worship Team", d:"Leads worship for the week (rehearsal times shared separately). Applied for through your youth pastor + worship director.", c:"Chelsey Smith", tel:"615-967-1816"},
-  {n:"Welcome Table Team", d:"Staffs the Welcome Table in shifts — schedules, check-ins, greeting parents, early pick-ups / late drop-offs.", c:"Macey Duncan", tel:"615-686-1993"},
-  {n:"Hospitality Team", d:"Refreshments, restocking, Leader Room setup & teardown, water-station refills — scheduled in shifts.", c:"Dana Lathrop", tel:"818-384-8080"},
-  {n:"Medical Liaison", d:"Connects your youth community with the Medical Team for med passes at prescribed times. Great for First Aid/CPR-certified leaders.", c:"Alex Hart", tel:"615-498-4627"},
-  {n:"Medical Team", d:"Nurses / Medical — cares for students needing medical attention: meds, allergy & prescription, emergency coordination.", c:"Alex Hart", tel:"615-498-4627"},
-  {n:"Team Leader", d:"Leads a group of students in team-competition game play — encourage, support and cover your team on & off the field.", c:"Austin Duncan", tel:"615-478-1838"},
-  {n:"Judicial Team", d:"Judges game play during each team competition. (On this team you are NOT a Team Leader.)", c:"Austin Duncan", tel:"615-478-1838"},
-  {n:"Set Up Team", d:"Preps, sets up and tears down for team competition; may also help judge games. (Not a Team Leader role.)", c:"Austin Duncan", tel:"615-478-1838"}
+// Camp & team leaders — ONE per team/group (the main contact). Rows with a number are tap-to-call.
+const LEADERS = [
+  {n:"Grant Ebright", r:"Camp Pastor", tel:""},
+  {n:"Macey Duncan", r:"Camp Administrator · Welcome Table", tel:"615-686-1993"},
+  {n:"Ethan Myers / Liliana So'osemea", r:"Camp Directors", tel:""},
+  {n:"Chelsey Smith", r:"Worship Team", tel:"615-967-1816"},
+  {n:"Austin Duncan", r:"Activities / Competitions · Team Leader · Judicial · Set Up", tel:"615-478-1838"},
+  {n:"Dana Lathrop", r:"Hospitality", tel:"818-384-8080"},
+  {n:"Alex Hart", r:"Medical · Safety", tel:"615-498-4627"},
+  {n:"Mark Schamel", r:"Medical Team Director", tel:""},
+  {n:"Stu Fritz", r:"Visual Team", tel:""}
 ];
-// Important contacts — team leaders + pastors + camp leaders
+// Important contacts — main leaders (one per group) + church pastors
 function contactsHTML(){
-  let h='<div class="sectionlabel">Service teams & roles (tap to call the lead)</div><div class="linkgrid">';
-  TEAM_ROLES.forEach(t=>{h+='<a class="linkrow" href="tel:'+t.tel.replace(/[^0-9]/g,"")+'"><span class="ic">📞</span><span class="lx"><span class="a">'+esc(t.n)+'</span><span class="b">'+esc(t.c)+' · '+esc(t.tel)+'</span></span><span class="go">›</span></a>';});
-  h+='</div>';
-  h+='<div class="sectionlabel">Team / area leaders (tap to call)</div><div class="linkgrid">';
-  CONTACTS.forEach(c=>{h+='<a class="linkrow" href="tel:'+c.tel.replace(/[^0-9]/g,"")+'"><span class="ic">📞</span><span class="lx"><span class="a">'+esc(c.n)+'</span><span class="b">'+esc(c.r)+' · '+esc(c.tel)+'</span></span><span class="go">›</span></a>';});
+  let h='<div class="sectionlabel">Camp & team leaders</div><div class="linkgrid">';
+  LEADERS.forEach(t=>{
+    if(t.tel) h+='<a class="linkrow lead" href="tel:'+t.tel.replace(/[^0-9]/g,"")+'"><span class="ic">📞</span><span class="lx"><span class="a">'+esc(t.n)+'</span><span class="b">'+esc(t.r)+' · '+esc(t.tel)+'</span></span><span class="go">›</span></a>';
+    else h+='<div class="linkrow lead"><span class="ic">⭐</span><span class="lx"><span class="a">'+esc(t.n)+'</span><span class="b">'+esc(t.r)+'</span></span></div>';
+  });
   h+='</div>';
   h+='<div class="sectionlabel">Church pastors</div><div class="linkgrid">';
   CHURCHES.forEach(c=>{h+='<div class="linkrow"><span class="ic" style="width:24px;"><span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:'+CHURCH_COLOR[c]+';border:1px solid #0006;vertical-align:middle;"></span></span>'+
     '<span class="lx"><span class="a">'+chSpan(c)+'</span><span class="b">'+esc(CHURCH_LEAD[c]||"")+'</span></span></div>';});
-  h+='</div>';
-  h+='<div class="sectionlabel">Camp leadership</div><div class="linkgrid">';
-  CAMP_LEADERS.forEach(([n,r])=>{h+='<div class="linkrow"><span class="ic">⭐</span><span class="lx"><span class="a">'+esc(n)+'</span><span class="b">'+esc(r)+'</span></span></div>';});
   h+='</div>';
   return h;
 }
