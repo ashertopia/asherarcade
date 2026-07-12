@@ -144,6 +144,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .lockbtn{font-size:11px;font-weight:600;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:3px 9px;margin-left:8px;cursor:pointer;vertical-align:middle;}
 .teamchip{display:inline-block;font-size:11px;font-weight:700;border:1px solid;border-radius:11px;padding:1px 7px;margin-left:6px;vertical-align:middle;background:rgba(255,255,255,.04);white-space:nowrap;}
 .pic{vertical-align:middle;margin-left:5px;}
+.badges{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;}
+.badges .teamchip,.badges .pastortag,.badges .pic{margin-left:0;}
 .chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
 .teamcard{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
@@ -910,10 +912,10 @@ function renderFind(){
     else if(state.findMode==="church") sub2Html=esc(rolesOf(n).join(" · ")||"Follows camp schedule");
     else sub2Html=churchOf(n)?chSpan(churchOf(n)):"No church set";
     const isPastor = state.findMode==="church" && CHURCH_PASTOR[state.pickChurch]===n;
-    const extra = (PERSON_ICON[n]||"") + teamChipHTML(n);
-    const nameHtml = isPastor
-      ? '<div class="n" style="color:'+col+'">'+esc(n)+'<span class="pastortag" style="background:'+col+'">Pastor</span>'+extra+'</div>'
-      : '<div class="n">'+esc(n)+extra+'</div>';
+    const badges = (isPastor?'<span class="pastortag" style="background:'+col+'">Pastor</span>':'')
+                 + (PERSON_ICON[n]||"") + teamChipHTML(n);
+    const nameHtml = '<div class="n"'+(isPastor?' style="color:'+col+'"':'')+'>'+esc(n)+'</div>'
+                 + (badges?'<div class="badges">'+badges+'</div>':'');
     h+='<div class="member" data-p="'+esc(n)+'"><div class="avatar" style="background:'+col+'">'+initials(n)+'</div>'+
        '<div class="info">'+nameHtml+'<div class="r">'+sub2Html+'</div></div>'+
        '<div class="wherenow"><div class="w'+(wDuty?' duty':'')+'">'+esc(wText)+'</div><div class="sub">'+esc(wSub)+'</div></div></div>';
