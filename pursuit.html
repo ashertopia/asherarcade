@@ -326,6 +326,8 @@ const CHURCH_PASTOR = {
 // Admin / Leadership chat roster — the 10 church pastors + camp administrator.
 // Soft-gated: only these names see the Admin channel (same trust model as the rest of the app).
 const CHAT_ADMINS = [...new Set([...Object.values(CHURCH_PASTOR), "Macey Duncan", "Grant Ebright", "Scott Asher"])];
+// Leader / Admin TOOLS (edit rosters, coords, data) — tighter than the chat: only these 3, and the passcode.
+const ADMIN_TOOLS = ["Grant Ebright","Macey Duncan","Scott Asher"];
 // Church Key — each church's lead(s) (for the resources page)
 const CHURCH_LEAD = {
   "New Song Nashville":"Pastor Grant · Macey Duncan","Christ Church":"Jacob Sharp · David Peery",
@@ -1246,6 +1248,7 @@ function closeModal(){document.getElementById("modal").classList.remove("open");
 
 /* ---- admin sheet ---- */
 function openAdmin(){
+  if(!ADMIN_TOOLS.includes(store.me) || !store.adminOK) return;   // gated: 3 admins + verified passcode
   const sheet=document.getElementById("sheet");
   let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
   h+='<div class="banner">Assign leaders to churches, and add GPS pins so more spots show on the Map. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
@@ -1306,6 +1309,7 @@ function render(){
   if(!["camp","find","teams","chat","map"].includes(state.tab)) state.tab="camp";
   renderClock();renderDayBar();updateDtBox();renderMeRow();
   document.getElementById("schedControls").style.display = state.tab==="camp" ? "" : "none";
+  const al=document.getElementById("adminLink"); if(al) al.style.display = ADMIN_TOOLS.includes(store.me) ? "" : "none";
   if(state.tab!=="map")destroyMap();
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===state.tab));
   document.querySelectorAll(".bottombar .bb").forEach(b=>b.classList.toggle("active",b.dataset.bb==="map"&&state.tab==="map"));
@@ -1328,7 +1332,13 @@ document.querySelectorAll(".bottombar .bb").forEach(b=>b.onclick=()=>{
   else if(k==="help")helpAction();
   else if(k==="refresh")location.reload();
 });
-document.getElementById("adminLink").onclick=openAdmin;
+document.getElementById("adminLink").onclick=()=>{
+  if(!ADMIN_TOOLS.includes(store.me)){ alert("Leader tools are for camp admin only. Pick your name first if you're Grant, Macey, or Scott."); return; }
+  if(store.adminOK){ openAdmin(); return; }                       // already unlocked on this device — no re-typing
+  const code=(prompt("Enter the Admin passcode to open Leader tools:")||"").trim();
+  if(!code) return;
+  unlockAdmin(code, ()=>openAdmin(), (msg)=>alert(msg));           // same passcode as Admin chat; unlock sticks everywhere
+};
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
 /* ---- PWA: offline service worker + install hint ---- */
 if('serviceWorker' in navigator){
