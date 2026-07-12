@@ -563,6 +563,17 @@ const AREAS = [
   {key:"Cabin Sweeps",tag:"Cabin Sweep",lead:""},
   {key:"Pool",tag:"Pool",lead:"Austin Duncan"}
 ];
+/* ---- Service TEAMS (by role, from the leader roster) — selectable in People → By Service Area ---- */
+const SERVICE_TEAMS = {
+  "Worship":["Chelsey Smith","Ezra Siegand","Jaic So'osemea","Joel Evrist","John Hagan","Kayla Fritz","Liliana So'osemea","Lily Huseby","Marquis Ferguson","Matthew Peels","Melody Hagan","Noble Swilley","Ryan Chew","Stewart Fleming","Tyler Beiden"],
+  "Medical":["Chas Tippett","Crystal Schamel","Isabella Gautsche","Israel Schamel","Joy Clapp","Julia B Morris","Kirk Roncskevitz","Manny Schamel","Mark Schamel"],
+  "Safety":["Alex R Hart","Chris Martin","Jim Tannahill","Martha Pearson","Matthew Almaguer","Sheryl Tannahill","Zachariah McGahey"],
+  "Visual":["Bryan Hagan","Kameryn King","Lailah Watts","Monica Almaguer","Rebekah Evans","Seth Mehta","Stuart Fritz"],
+  "Activities / Team Leaders":["Aadyn Rampulla","Anabell Irizarry","Aryn Harvey","Ashantia","Austin Duncan","Cade Granzow","Caeden Rosen","Cardaja Harkins","Chase Garrison","Christian Wylder","Daniel Burchfield","Daniel Johnson","David Eli Carney","Elijah Hoaglan","Ella Hufalar","Enoc Moma","Ethan Rain Myers","Grace Geeslin","Hailey Fields","Israel Fayne","Jackie Bragg","James Lowe II","Joshua Hann","Kahanah Chuor","Kara Lemonis","Kendale Lark Burch","Lily Owens","Lisa Powell","Luke Reid","Maceline Green","Madison Reid","Mallori Hann","Marlee Rampulla","Martin Ikenna Ogbunugafor","Micah Elliott","Molly Roberts","Naomi Bageant","Nevaeh Rampulla","Noble Swilley","Owen Pastore","Paige Hardy","Papa Hayford","Pierson Nelson","Rc Tidwell","Ruben Rivera III","Serinah Ruiz","Seth Mehta","Tamya Spikes","Taryn Perkins","Tevin Parker","Titus Shelton","Victoria Joy Lanford","Wesley Garrett","Xavier Keegan"],
+  "Judicial / Judges":["Abby Myers","Al Pearson","Allie Wilson","Brent Lathrop","Chance Fielder","Cris Contreras","Darryl E. Reynolds","David Veney","Deanna Crow","Emily Vickers","Garrett Bland","Gavin Kenney","Jamie Waters","Michelle Thomas","Robert L Smith","Sean Baxter","Trent Tatum","Victoria Phillips","Weston Burris"],
+  "Set Up":["Judah Siegand","Nathan Cress","Stewart Fleming"]
+};
+const SERVICE_TEAM_LEAD = {"Worship":"Chelsey Smith","Medical":"Mark Schamel","Safety":"Alex Hart","Visual":"Stu Fritz","Activities / Team Leaders":"Austin Duncan","Judicial / Judges":"Austin Duncan","Set Up":"Austin Duncan"};
 /* ---- Team Competition teams (Cherokee name · animal · color · 2 leaders) ---- */
 const TEAMS = [
   {name:"Awi",animal:"Deer",color:"Brown",hex:"#8b5a2b",leaders:["Ethan Myers","Aryn Harvey"]},
@@ -881,7 +892,7 @@ function whereNow(name){
 
 function renderFind(){
   let h='<div class="seg"><div class="s'+(state.findMode==="church"?" active":"")+'" data-m="church">By Church</div>'+
-        '<div class="s'+(state.findMode==="area"?" active":"")+'" data-m="area">By Service Area</div></div>';
+        '<div class="s'+(state.findMode==="area"?" active":"")+'" data-m="area">By Team / Area</div></div>';
   if(state.findMode==="church"){
     h+='<select class="select" id="pick"><option value="">— Select your church —</option>';
     CHURCHES.forEach(c=>h+='<option value="'+esc(c)+'"'+(c===state.pickChurch?' selected':'')+'>'+esc(c)+'</option>');
@@ -889,9 +900,12 @@ function renderFind(){
       h+='<option value="__un"'+(state.pickChurch==="__un"?' selected':'')+'>Unassigned (no church listed)</option>';
     h+='</select>';
   }else{
-    h+='<select class="select" id="pick"><option value="">— Select a service area —</option>';
+    h+='<select class="select" id="pick"><option value="">— Select a team or area —</option>';
+    h+='<optgroup label="Teams">';
+    Object.keys(SERVICE_TEAMS).forEach(k=>h+='<option value="'+esc(k)+'"'+(k===state.pickArea?' selected':'')+'>'+esc(k)+'</option>');
+    h+='</optgroup><optgroup label="Scheduled areas">';
     AREAS.forEach(a=>h+='<option value="'+esc(a.key)+'"'+(a.key===state.pickArea?' selected':'')+'>'+esc(a.key)+'</option>');
-    h+='</select>';
+    h+='</optgroup></select>';
   }
   const picked = state.findMode==="church"?state.pickChurch:state.pickArea;
   if(!picked){
@@ -904,13 +918,15 @@ function renderFind(){
   if(state.findMode==="church"){
     list = state.pickChurch==="__un"?allPeople().filter(n=>!churchOf(n)):membersOf(state.pickChurch);
     headline=(state.pickChurch==="__un"?"Unassigned":state.pickChurch);
+  }else if(SERVICE_TEAMS[state.pickArea]){
+    list=SERVICE_TEAMS[state.pickArea].filter(n=>allPeople().includes(n)); headline=state.pickArea;
   }else{
     const tag=(AREAS.find(a=>a.key===state.pickArea)||{}).tag;
     list=allPeople().filter(n=>hasArea(n,tag)); headline=state.pickArea;
   }
   if(state.findMode==="area"){
-    const lead=(AREAS.find(a=>a.key===state.pickArea)||{}).lead;
-    if(lead) h+='<div class="banner">Service lead: <b>'+esc(lead)+'</b></div>';
+    const lead=SERVICE_TEAMS[state.pickArea]?SERVICE_TEAM_LEAD[state.pickArea]:(AREAS.find(a=>a.key===state.pickArea)||{}).lead;
+    if(lead) h+='<div class="banner">Team lead: <b>'+esc(lead)+'</b></div>';
   }
   const headHtml=(state.findMode==="church"&&state.pickChurch!=="__un")?chSpan(headline):esc(headline);
   h+='<div class="sectionlabel">'+headHtml+' · '+list.length+' '+(list.length===1?'person':'people')+' · '+state.day+' '+fmt(state.time)+'</div>';
@@ -918,7 +934,7 @@ function renderFind(){
   list.forEach(n=>{
     const col=CHURCH_COLOR[churchOf(n)]||"#8b949e";
     let wText,wSub,wDuty;
-    if(state.findMode==="area"){
+    if(state.findMode==="area" && !SERVICE_TEAMS[state.pickArea]){
       const tag=(AREAS.find(a=>a.key===state.pickArea)||{}).tag;
       const d=dutiesFor(n,state.day).find(x=>x.tag===tag);
       const on=d&&state.time>=T(d.s)&&state.time<T(d.e);
