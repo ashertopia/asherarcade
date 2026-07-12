@@ -139,6 +139,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .composer input{flex:1;padding:12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .composer button{flex:0 0 auto;padding:0 16px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;font-size:14px;cursor:pointer;}
 .chatname{display:flex;gap:8px;margin-bottom:10px;}
+.notifbar{display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-left:3px solid #f4d000;border-radius:11px;padding:9px 12px;margin-bottom:10px;font-size:12.5px;color:var(--txt);}
+.notifbar button{flex:0 0 auto;background:#f4d000;color:#101418;border:none;font-weight:800;font-size:12px;padding:6px 13px;border-radius:16px;cursor:pointer;}
 .chanbar{display:flex;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 8px;margin-bottom:2px;}
 .chanbar .chan{flex:0 0 auto;position:relative;border:2px solid var(--line);background:transparent;font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:16px;cursor:pointer;white-space:nowrap;opacity:.55;transition:opacity .12s;}
 .chanbar .chan.on{opacity:1;box-shadow:0 0 0 2px rgba(255,255,255,.20);}
@@ -1129,6 +1131,37 @@ function initChat(){
     if(state.tab==="chat") render();
   }catch(e){ chatDb=null; }
 }
+/* ---- Chat notifications (free, app-open): buzz + system banner + soft ping ---- */
+let _actx=null;
+function chatPing(){
+  try{
+    _actx=_actx||new (window.AudioContext||window.webkitAudioContext)();
+    if(_actx.state==="suspended") _actx.resume();
+    const o=_actx.createOscillator(), g=_actx.createGain(), t=_actx.currentTime;
+    o.type="sine"; o.frequency.setValueAtTime(880,t); o.frequency.setValueAtTime(1174,t+0.11);
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.22,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+0.32);
+    o.connect(g); g.connect(_actx.destination); o.start(t); o.stop(t+0.34);
+  }catch(e){}
+}
+function notifyMsg(m, chanLabel){
+  try{ if(navigator.vibrate) navigator.vibrate([90,50,90]); }catch(e){}
+  chatPing();
+  try{
+    if("Notification" in window && Notification.permission==="granted"){
+      const title=(m.name||"New message")+(chanLabel?" · "+chanLabel:"");
+      const opts={body:(m.text||"").slice(0,140),tag:"pursuit-chat",renotify:true,icon:"./pursuit-icon-192.png",badge:"./pursuit-icon-192.png"};
+      if(navigator.serviceWorker&&navigator.serviceWorker.ready)
+        navigator.serviceWorker.ready.then(r=>r.showNotification(title,opts)).catch(()=>{try{new Notification(title,opts);}catch(e){}});
+      else { try{new Notification(title,opts);}catch(e){} }
+    }
+  }catch(e){}
+}
+function askNotify(){
+  if(!("Notification" in window)) return;
+  try{ _actx=_actx||new (window.AudioContext||window.webkitAudioContext)(); if(_actx.state==="suspended")_actx.resume(); }catch(e){}  // unlock sound on this tap
+  Notification.requestPermission().then(()=>{ if(state.tab==="chat") renderChat(); });
+}
 /* Attach a listener to every channel this person can see. Safe to call again when identity changes. */
 function subscribeChannels(){
   if(!chatDb) return;
@@ -1139,8 +1172,12 @@ function subscribeChannels(){
     const ref=chatDb.ref("chat/"+c.id).limitToLast(300);
     ref.on("child_added",s=>{
       const m=s.val()||{}; (chatData[c.id]=chatData[c.id]||[]).push(m);
-      if(state.tab==="chat" && state.chatChan===c.id) appendChatMsg(m);
-      else if(chatLoaded[c.id] && m.name!==store.me){ chatUnread[c.id]=(chatUnread[c.id]||0)+1; updateChatBadge(); }
+      const viewingThis = state.tab==="chat" && state.chatChan===c.id && !document.hidden;
+      if(viewingThis) appendChatMsg(m);
+      else if(chatLoaded[c.id] && m.name!==store.me){
+        chatUnread[c.id]=(chatUnread[c.id]||0)+1; updateChatBadge();
+        notifyMsg(m, c.label);   // buzz + banner + ping (only for messages you didn't send)
+      }
     });
     ref.once("value",()=>{ chatLoaded[c.id]=true; });
   });
@@ -1233,6 +1270,8 @@ function renderChat(){
   }
   h+='<div class="sectionlabel">'+esc(cur.label)+(cur.id==="admin"?' <button class="lockbtn" id="adminLock">🔒 Lock</button>':'')+'</div>';
   h+='<div style="font-size:11px;color:var(--dim);margin:-4px 2px 8px;">Tip: type <b>@FirstName</b> to tag someone.</div>';
+  if(store.me && ("Notification" in window) && Notification.permission==="default")
+    h+='<div class="notifbar"><span>🔔 Get a buzz &amp; alert when new messages come in?</span><button id="notifBtn">Turn on</button></div>';
   if(!store.me){
     h+='<div class="banner">Pick your name to join the chat:</div>';
     h+='<div class="chatname"><input id="chatNameInput" list="chatPeople" placeholder="Type your name…" autocomplete="off"><button onclick="joinChatName()">Join</button></div>';
@@ -1249,6 +1288,7 @@ function renderChat(){
   if(send){send.onclick=sendChat;
     document.getElementById("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat();});}
   const lk=document.getElementById("adminLock"); if(lk) lk.onclick=lockAdmin;
+  const nb=document.getElementById("notifBtn"); if(nb) nb.onclick=askNotify;
   sizeChat();
 }
 

@@ -1,7 +1,7 @@
 /* Pursuit Camp 2026 — service worker (offline support)
    Only handles the Pursuit app assets; every other request on the site
    falls through to normal network behavior. */
-const VERSION = 'pursuit-v2';
+const VERSION = 'pursuit-v3';
 const SHELL = 'pursuit-shell-' + VERSION;
 const TILES = 'pursuit-tiles';
 const LEAFLET_JS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
@@ -30,6 +30,18 @@ self.addEventListener('activate', (e) => {
     const keys = await caches.keys();
     await Promise.all(keys.filter(k => k.startsWith('pursuit-shell-') && k !== SHELL).map(k => caches.delete(k)));
     await self.clients.claim();
+  })());
+});
+
+// Tapping a chat notification: focus the open app, or open it fresh.
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  e.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) {
+      if (c.url.includes('pursuit.html') && 'focus' in c) return c.focus();
+    }
+    if (self.clients.openWindow) return self.clients.openWindow('./pursuit.html');
   })());
 });
 
