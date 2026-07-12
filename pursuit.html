@@ -168,6 +168,19 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .teamcard .tn{font-size:16px;font-weight:700;}
 .teamcard .ta{font-size:13px;color:var(--dim);}
 .teamcard .tlds{font-size:13px;margin-top:5px;color:var(--txt);}
+.teamcard .cpts{margin-left:auto;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt);min-width:46px;text-align:right;}
+.standings{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;}
+.standrow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:9px;background:var(--panel);border:1px solid var(--line);}
+.standrow.me{border-color:var(--pink);background:var(--panel2);}
+.standrow .rank{flex:0 0 22px;text-align:center;font-size:13px;font-weight:800;color:var(--dim);}
+.standrow .sdot{flex:0 0 auto;width:14px;height:14px;border-radius:50%;border:1px solid #0006;}
+.standrow .sname{flex:1;min-width:0;font-size:14.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.standrow .spts{flex:0 0 auto;min-width:54px;text-align:right;font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt);}
+.scoreedit{display:flex;flex-direction:column;gap:6px;}
+.scrow{display:flex;align-items:center;gap:9px;}
+.scrow .sdot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;border:1px solid #0006;}
+.scrow .scname{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.scrow .scinput{flex:0 0 74px;width:74px;padding:8px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:16px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
 .teamcard .tlds b{color:var(--dim);font-weight:600;}
 .installbar{position:fixed;left:0;right:0;bottom:52px;z-index:40;background:#161b22;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
 .installbar.show{display:flex;}
@@ -1115,11 +1128,22 @@ function helpAction(){
 }
 function renderTeams(){
   const myTeam=store.me?teamOf(store.me):null;
-  let h='<div class="sectionlabel">Team Competition · '+TEAMS.length+' teams</div>';
+  const ptsOf=t=>+((chatScores||{})[t.name])||0;
+  const ranked=[...TEAMS].map(t=>({t,pts:ptsOf(t)})).sort((a,b)=>b.pts-a.pts||a.t.name.localeCompare(b.t.name));
+  const anyScore=ranked.some(r=>r.pts>0);
+  let h='<div class="sectionlabel">🏆 Standings'+(anyScore?'':' — updates once scores are posted')+'</div>';
+  h+='<div class="standings">';
+  ranked.forEach((r,i)=>{
+    h+='<div class="standrow'+(myTeam&&myTeam.name===r.t.name?' me':'')+'"><span class="rank">'+(i+1)+'</span>'+
+       '<span class="sdot" style="background:'+r.t.hex+'"></span><span class="sname">'+esc(r.t.name)+'</span>'+
+       '<span class="spts">'+r.pts+'</span></div>';
+  });
+  h+='</div>';
+  h+='<div class="sectionlabel">Teams &amp; leaders</div>';
   if(myTeam) h+='<div class="banner">Your team: <b style="color:'+myTeam.hex+'">'+esc(myTeam.name)+'</b> · '+esc(myTeam.animal)+' · '+esc(myTeam.color)+'</div>';
   TEAMS.forEach(t=>{
     h+='<div class="teamcard" style="border-left-color:'+t.hex+'"><div class="th"><span class="tdot" style="background:'+t.hex+'"></span>'+
-       '<span class="tn">'+esc(t.name)+'</span><span class="ta">'+esc(t.animal)+' · '+esc(t.color)+'</span></div>'+
+       '<span class="tn">'+esc(t.name)+'</span><span class="ta">'+esc(t.animal)+' · '+esc(t.color)+'</span><span class="cpts">'+ptsOf(t)+'</span></div>'+
        '<div class="tlds"><b>Leaders:</b> '+t.leaders.map(esc).join(" · ")+'</div></div>';
   });
   main.innerHTML=h;
@@ -1134,7 +1158,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId:"902781678522",
   appId:"1:902781678522:web:c4e24146b54ac452382383"
 };
-let chatDb=null, chatInit=false, chatData={}, chatUnread={}, chatSubbed={}, chatLoaded={};
+let chatDb=null, chatInit=false, chatData={}, chatUnread={}, chatSubbed={}, chatLoaded={}, chatScores={};
 /* ---- which channels does the current person belong to? (derived from their name pick) ---- */
 const CHAT_PINK="#ff5d8f";
 function textOn(hex){const c=hex.replace('#','');const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return (0.299*r+0.587*g+0.114*b)>150?'#101418':'#ffffff';}
@@ -1153,6 +1177,7 @@ function initChat(){
     chatDb=firebase.database();
     chatInit=true;
     subscribeChannels();
+    chatDb.ref("scores").on("value",s=>{ chatScores=s.val()||{}; if(state.tab==="teams") renderTeams(); });
     if(state.tab==="chat") render();
   }catch(e){ chatDb=null; }
 }
@@ -1362,7 +1387,7 @@ function openAdmin(){
   const sheet=document.getElementById("sheet");
   let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
   h+='<div class="banner">Assign leaders to churches, and add GPS pins so more spots show on the Map. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
-  h+='<div class="seg"><div class="s active" data-a="people">People → Church</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
+  h+='<div class="seg"><div class="s active" data-a="people">People</div><div class="s" data-a="scores">Scores</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
   h+='<div id="aPane"></div></div>';
   sheet.innerHTML=h;
   sheet.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{sheet.querySelectorAll(".seg .s").forEach(x=>x.classList.remove("active"));s.classList.add("active");adminPane(s.dataset.a);});
@@ -1374,6 +1399,18 @@ function adminPane(which){
   if(which==="people"){
     pane.innerHTML='<input class="search" id="aSearch" placeholder="Search a name…"><div id="aList"></div>';
     document.getElementById("aSearch").oninput=renderAdminList; renderAdminList();
+  }else if(which==="scores"){
+    let h='<div class="banner">Set each team’s total points (0–9999). Saves live to everyone instantly — needs internet.</div>';
+    if(!chatDb){ h+='<div class="empty">Connect to the internet to edit scores.</div>'; pane.innerHTML=h; return; }
+    h+='<div class="scoreedit">';
+    TEAMS.forEach(t=>{ h+='<div class="scrow"><span class="sdot" style="background:'+t.hex+'"></span><span class="scname">'+esc(t.name)+'</span>'+
+      '<input class="scinput" type="number" inputmode="numeric" min="0" max="9999" data-team="'+esc(t.name)+'" value="'+(+(chatScores[t.name])||0)+'"></div>'; });
+    h+='</div>';
+    pane.innerHTML=h;
+    pane.querySelectorAll(".scinput").forEach(inp=>{ inp.onchange=()=>{
+      let v=Math.max(0,Math.min(9999,parseInt(inp.value||"0",10)||0)); inp.value=v;
+      if(chatDb) chatDb.ref("scores/"+inp.dataset.team).set(v);
+    };});
   }else if(which==="pins"){
     let h='<div class="banner">In Google Maps, long-press (phone) or right-click (computer) a spot → tap the "lat, lng" numbers to copy → paste below. Already-loaded spots are shown greyed as examples.</div>';
     h+='<div style="font-size:12px;color:var(--dim);margin:0 2px 8px;">Loaded: '+Object.keys(COORDS).map(esc).join(", ")+'</div>';
