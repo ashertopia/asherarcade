@@ -146,15 +146,10 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .pic{vertical-align:middle;margin-left:5px;}
 .badges{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;}
 .badges .teamchip,.badges .pastortag,.badges .pic{margin-left:0;}
-.poolcard{background:var(--panel);border:1px solid var(--line);border-left:3px solid #58a6ff;border-radius:11px;padding:11px 13px;margin-bottom:12px;}
-.poolcard .ph{font-size:14px;font-weight:800;margin-bottom:6px;}
-.poolcard .ph .grd{color:#8cc3ff;}
-.poolcard .pr{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);}
-.poolcard .pg{font-size:13px;font-weight:700;padding:2px 10px;border-radius:20px;}
-.poolcard .pg.girls{background:rgba(255,93,143,.16);color:#ff8fb0;border:1px solid rgba(255,93,143,.5);}
-.poolcard .pg.boys{background:rgba(88,166,255,.16);color:#8cc3ff;border:1px solid rgba(88,166,255,.5);}
-.poolcard .pt{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
-.poolcard .pn{font-size:11px;color:var(--dim);margin-top:8px;line-height:1.4;}
+.poolline{font-size:12px;color:var(--txt);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);line-height:1.6;}
+.poolline .pgi{font-weight:700;padding:1px 7px;border-radius:20px;font-size:11px;}
+.poolline .pgi.girls{background:rgba(255,93,143,.16);color:#ff8fb0;border:1px solid rgba(255,93,143,.5);}
+.poolline .pgi.boys{background:rgba(88,166,255,.16);color:#8cc3ff;border:1px solid rgba(88,166,255,.5);}
 .chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
 .teamcard{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
@@ -817,13 +812,12 @@ function nowCard(items,curTitle,curLoc,curS,curE,isDuty){
   if(nxt)h+='<div class="next">Up next: <b>'+esc(nxt.t)+'</b> · '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>';
   return h+'</div>';
 }
-// Clear pool rotation card for a given day (grade + girls/boys times), shown to everyone on the schedule
-function poolCardHTML(day){
+// Pool rotation shown inside the Free Time block (grade + girls/boys times)
+function poolLineHTML(day){
   const p=POOL[day]; if(!p) return "";
-  return '<div class="poolcard"><div class="ph">Pool today · <span class="grd">'+esc(p.grade)+'</span></div>'+
-    '<div class="pr"><span class="pg girls">Girls only</span><span class="pt">'+fmtRange(p.girls[0],p.girls[1])+'</span></div>'+
-    '<div class="pr"><span class="pg boys">Boys only</span><span class="pt">'+fmtRange(p.boys[0],p.boys[1])+'</span></div>'+
-    '<div class="pn">Only <b>'+esc(p.grade).replace(/^Completed /,'')+'</b> swims today · girls and boys swim at separate times · lifeguards: '+esc(p.girls[2])+' / '+esc(p.boys[2])+'</div></div>';
+  return '<div class="poolline"><b>Pool · '+esc(p.grade)+'</b><br>'+
+    '<span class="pgi girls">Girls</span> '+fmtRange(p.girls[0],p.girls[1])+
+    ' · <span class="pgi boys">Boys</span> '+fmtRange(p.boys[0],p.boys[1])+'</div>';
 }
 function renderMeSchedule(name){
   const day=state.day, duties=dutiesFor(name,day);
@@ -836,11 +830,10 @@ function renderMeSchedule(name){
   else if(curBase) h+=nowCard(merged,curBase.t,blockLoc(curBase,name),curBase.s,curBase.e,false);
   else{const nxt=merged.find(x=>T(x.s)>state.time);
     h+='<div class="nowcard"><div class="lbl">'+(nxt?'Nothing right now':'Day complete')+'</div>'+(nxt?'<div class="title">'+esc(nxt.t)+'</div><div class="meta">Starts '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>':'<div class="meta">See you tomorrow!</div>')+'</div>';}
-  h+=poolCardHTML(day);
   h+='<div class="sectionlabel">Your day'+(duties.length?' — '+duties.length+' assignment'+(duties.length>1?'s':''):' — follows the camp schedule')+'</div><div class="timeline">';
   merged.forEach(b=>{const isc=state.time>=T(b.s)&&state.time<T(b.e), past=state.time>=T(b.e), L=blockLoc(b,name);
     h+='<div class="tl'+(b.duty?' duty':'')+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
-       '<div class="b"><div class="nm">'+esc(b.t)+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+'</div></div>';});
+       '<div class="b"><div class="nm">'+esc(b.t)+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+((!b.duty&&b.t==="Free Time")?poolLineHTML(day):'')+'</div></div>';});
   const msh=shiftOf(name);
   h+='</div><div class="banner">'+(msh?'You’re on <b>Meal Shift '+msh+'</b> — the times above are yours.':'Your church eats on <b>both meal shifts</b> by congregation — check with your leader for your times.')+'</div>';
   return h+mapToolsHTML(true);
@@ -857,11 +850,10 @@ function renderCampGeneric(){
     h+='<div class="nowcard"><div class="lbl">'+(nxt?'Nothing scheduled right now':'Day complete')+'</div>'+
        (nxt?'<div class="title">'+esc(nxt.t)+'</div><div class="meta">Starts '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>':'<div class="meta">See you tomorrow!</div>')+'</div>';
   }
-  h+=poolCardHTML(state.day);
   h+='<div class="sectionlabel">Full day</div><div class="timeline">';
   blocks.forEach(b=>{const isc=cur&&b.s===cur.s&&b.t===cur.t, past=state.time>=T(b.e), L=blockLoc(b,null);
     h+='<div class="tl'+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
-       '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+'</div></div>';});
+       '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+(b.t==="Free Time"?poolLineHTML(state.day):'')+'</div></div>';});
   h+='</div>';
   h+='<div class="banner"><b>Meal shifts</b> · Shift 1 ('+SHIFT_CHURCHES[1]+') · Shift 2 ('+SHIFT_CHURCHES[2]+')</div>';
   return h+mapToolsHTML(true);
