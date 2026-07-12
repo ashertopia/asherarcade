@@ -820,7 +820,7 @@ function nowCard(items,curTitle,curLoc,curS,curE,isDuty){
 // Clear pool rotation card for a given day (grade + girls/boys times), shown to everyone on the schedule
 function poolCardHTML(day){
   const p=POOL[day]; if(!p) return "";
-  return '<div class="poolcard"><div class="ph">🏊 Pool today · <span class="grd">'+esc(p.grade)+'</span></div>'+
+  return '<div class="poolcard"><div class="ph">Pool today · <span class="grd">'+esc(p.grade)+'</span></div>'+
     '<div class="pr"><span class="pg girls">Girls only</span><span class="pt">'+fmtRange(p.girls[0],p.girls[1])+'</span></div>'+
     '<div class="pr"><span class="pg boys">Boys only</span><span class="pt">'+fmtRange(p.boys[0],p.boys[1])+'</span></div>'+
     '<div class="pn">Only <b>'+esc(p.grade).replace(/^Completed /,'')+'</b> swims today · girls and boys swim at separate times · lifeguards: '+esc(p.girls[2])+' / '+esc(p.boys[2])+'</div></div>';
