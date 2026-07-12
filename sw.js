@@ -1,14 +1,14 @@
 /* Pursuit Camp 2026 — service worker (offline support)
    Only handles the Pursuit app assets; every other request on the site
    falls through to normal network behavior. */
-const VERSION = 'pursuit-v3';
+const VERSION = 'pursuit-v4';
 const SHELL = 'pursuit-shell-' + VERSION;
 const TILES = 'pursuit-tiles';
 const LEAFLET_JS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
 const LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
 const PRECACHE = [
   './pursuit.html',
-  './manifest.webmanifest',
+  './manifest.webmanifest?v=2',
   './pursuit-icon-180.png',
   './pursuit-icon-192.png',
   './pursuit-icon-512.png'
