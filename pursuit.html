@@ -183,6 +183,14 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .scrow .scinput{flex:0 0 74px;width:74px;padding:8px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:16px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
 .scrow .scok{flex:0 0 auto;font-size:11px;font-weight:800;color:var(--green);opacity:0;transition:opacity .15s;}
 .scrow .scok.show{opacity:1;}
+.segwrap{flex-wrap:wrap;}
+.admadd{display:flex;gap:8px;margin-bottom:10px;}
+.admadd .search{margin-bottom:0;}
+.admlist{display:flex;flex-direction:column;gap:6px;}
+.admrow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:9px;background:var(--panel);border:1px solid var(--line);}
+.admrow .admn{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.admrow .admbase{flex:0 0 auto;font-size:10px;color:var(--dim);font-weight:800;text-transform:uppercase;letter-spacing:.6px;}
+.admrow .admx{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:#ff8f8f;font-size:12px;font-weight:700;padding:5px 11px;border-radius:12px;cursor:pointer;}
 .teamcard .tlds b{color:var(--dim);font-weight:600;}
 .installbar{position:fixed;left:0;right:0;bottom:52px;z-index:40;background:#161b22;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
 .installbar.show{display:flex;}
@@ -649,6 +657,12 @@ store.customDuties = store.customDuties || {};
 store.coords = store.coords || {};      // location name -> "lat,lng"
 store.me = store.me || "";              // "this is me" — remembered on this phone
 store.adminOK = store.adminOK || false; // Admin chat unlocked on this device (passcode verified by Firebase)
+store.extraAdmins = store.extraAdmins || [];   // extra admins added in-app (synced via Firebase, cached here for offline)
+store.guidesCache = store.guidesCache || {};   // discussion-question content (synced via Firebase, cached here for offline)
+// Is this person an admin (base 3 + any added in-app)?
+function isAdmin(name){ return !!name && (ADMIN_TOOLS.includes(name) || (store.extraAdmins||[]).includes(name)); }
+// Turn pasted text (bullets, 1/2/3, or plain lines) into a clean question list
+function parseQuestions(t){ return String(t||"").split(/\r?\n/).map(l=>l.replace(/^\s*(?:[-*•·▪]|\d+[.):])\s*/,"").trim()).filter(Boolean); }
 // Apply the authoritative roster once (version bump re-applies for returning users)
 if(store.rosterV!==5){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
@@ -858,13 +872,15 @@ function poolLineHTML(day){
    Fill GUIDES[day].smallGroup / .cabin = {theme, scripture, questions:[...]} when content arrives.
    Empty for now → links show grayed and open a "coming soon" sheet (proof of concept). ---- */
 const GUIDES = { Monday:{}, Tuesday:{}, Wednesday:{}, Thursday:{}, Friday:{}, Saturday:{} };
-function hasGuide(day,slot){ const g=(GUIDES[day]||{})[slot]; return !!(g && g.questions && g.questions.length); }
+// Effective guide = admin-entered content (Firebase, cached offline) OR the bundled default
+function guideFor(day,slot){ return ((store.guidesCache||{})[day]||{})[slot] || (GUIDES[day]||{})[slot] || null; }
+function hasGuide(day,slot){ const g=guideFor(day,slot); return !!(g && g.questions && g.questions.length); }
 function guideLinkHTML(day,slot,label){
   const active=hasGuide(day,slot);
   return '<div class="guidelink'+(active?'':' empty')+'" data-gday="'+esc(day)+'" data-gslot="'+esc(slot)+'" data-glabel="'+esc(label)+'">💬 '+esc(label)+(active?'':' · coming soon')+'</div>';
 }
 function openGuide(day,slot,label){
-  const g=(GUIDES[day]||{})[slot]; let b='';
+  const g=guideFor(day,slot); let b='';
   if(g && g.questions && g.questions.length){
     if(g.theme) b+='<div class="sectionlabel">'+esc(g.theme)+'</div>';
     if(g.scripture) b+='<div class="banner">📖 '+esc(g.scripture)+'</div>';
@@ -1169,7 +1185,7 @@ function myChannels(){
   const list=[{id:"all",label:"All Leaders",color:CHAT_PINK,fill:false}];
   const ch=churchOf(store.me);
   if(ch && CHURCHES.includes(ch)) list.push({id:chanSlug(ch),label:ch,color:CHURCH_COLOR[ch]||"#8b949e",fill:true});
-  if(store.me && CHAT_ADMINS.includes(store.me)) list.push({id:"admin",label:"Admin · Leadership",color:CHAT_PINK,fill:true});
+  if(store.me && (CHAT_ADMINS.includes(store.me) || (store.extraAdmins||[]).includes(store.me))) list.push({id:"admin",label:"Admin · Leadership",color:CHAT_PINK,fill:true});
   return list;
 }
 function initChat(){
@@ -1180,6 +1196,8 @@ function initChat(){
     chatInit=true;
     subscribeChannels();
     chatDb.ref("scores").on("value",s=>{ chatScores=s.val()||{}; if(state.tab==="teams") renderTeams(); });
+    chatDb.ref("admins").on("value",s=>{ store.extraAdmins=(s.val()||[]).filter(Boolean); saveStore(); subscribeChannels(); render(); });
+    chatDb.ref("guides").on("value",s=>{ store.guidesCache=s.val()||{}; saveStore(); if(state.tab==="camp") renderCamp(); });
     if(state.tab==="chat") render();
   }catch(e){ chatDb=null; }
 }
@@ -1385,11 +1403,11 @@ function closeModal(){document.getElementById("modal").classList.remove("open");
 
 /* ---- admin sheet ---- */
 function openAdmin(){
-  if(!ADMIN_TOOLS.includes(store.me) || !store.adminOK) return;   // gated: 3 admins + verified passcode
+  if(!isAdmin(store.me) || !store.adminOK) return;   // gated: admins + verified passcode
   const sheet=document.getElementById("sheet");
   let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
   h+='<div class="banner">Assign leaders to churches, and add GPS pins so more spots show on the Map. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
-  h+='<div class="seg"><div class="s active" data-a="scores">Scores</div><div class="s" data-a="people">People</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
+  h+='<div class="seg segwrap"><div class="s active" data-a="scores">Scores</div><div class="s" data-a="guides">Questions</div><div class="s" data-a="admins">Admins</div><div class="s" data-a="people">People</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
   h+='<div id="aPane"></div></div>';
   sheet.innerHTML=h;
   sheet.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{sheet.querySelectorAll(".seg .s").forEach(x=>x.classList.remove("active"));s.classList.add("active");adminPane(s.dataset.a);});
@@ -1401,6 +1419,54 @@ function adminPane(which){
   if(which==="people"){
     pane.innerHTML='<input class="search" id="aSearch" placeholder="Search a name…"><div id="aList"></div>';
     document.getElementById("aSearch").oninput=renderAdminList; renderAdminList();
+  }else if(which==="admins"){
+    let h='<div class="banner">Add an admin by name — they get Leader tools <b>and</b> the Admin chat once they enter the passcode (you give them the passcode). It syncs to their phone automatically.</div>';
+    if(!chatDb){ h+='<div class="empty">Connect to the internet to manage admins.</div>'; pane.innerHTML=h; return; }
+    h+='<div class="admadd"><input class="search" id="admPick" list="admPeople" placeholder="Type a name…" autocomplete="off"><button class="btn pink" id="admAdd">Add</button></div>';
+    h+='<datalist id="admPeople">'+allPeople().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>';
+    h+='<div class="admlist">';
+    ADMIN_TOOLS.forEach(n=>{ h+='<div class="admrow"><span class="admn">'+esc(n)+'</span><span class="admbase">always</span></div>'; });
+    (store.extraAdmins||[]).forEach(n=>{ h+='<div class="admrow"><span class="admn">'+esc(n)+'</span><button class="admx" data-n="'+esc(n)+'">Remove</button></div>'; });
+    h+='</div>';
+    pane.innerHTML=h;
+    document.getElementById("admAdd").onclick=()=>{
+      const v=(document.getElementById("admPick").value||"").trim();
+      if(!allPeople().includes(v)){ alert("Pick a name from the list."); return; }
+      if(ADMIN_TOOLS.includes(v)||(store.extraAdmins||[]).includes(v)){ alert(v+" is already an admin."); return; }
+      const next=[...(store.extraAdmins||[]),v]; store.extraAdmins=next; saveStore();
+      chatDb.ref("admins").set(next); adminPane("admins");
+    };
+    pane.querySelectorAll(".admx").forEach(bt=>bt.onclick=()=>{
+      const next=(store.extraAdmins||[]).filter(x=>x!==bt.dataset.n); store.extraAdmins=next; saveStore();
+      chatDb.ref("admins").set(next); adminPane("admins");
+    });
+  }else if(which==="guides"){
+    let h='<div class="banner">Paste discussion questions (bullets, 1/2/3, or one per line) and tap <b>Save</b>. It becomes the pop-up on that day’s schedule for everyone — and works offline once their app has loaded it.</div>';
+    if(!chatDb){ h+='<div class="empty">Connect to the internet to edit questions.</div>'; pane.innerHTML=h; return; }
+    const days=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const gd=state._gDay||days[0], gs=state._gSlot||"smallGroup";
+    const cur=((store.guidesCache||{})[gd]||{})[gs]||{};
+    h+='<label class="fld">Day</label><select class="select" id="gDay">'+days.map(d=>'<option'+(d===gd?' selected':'')+'>'+d+'</option>').join('')+'</select>';
+    h+='<div class="seg" style="margin-top:8px;"><div class="s'+(gs==="smallGroup"?" active":"")+'" data-gs="smallGroup">Small group</div><div class="s'+(gs==="cabin"?" active":"")+'" data-gs="cabin">Cabin time</div></div>';
+    h+='<label class="fld">Theme (optional)</label><input class="txt" id="gTheme" value="'+esc(cur.theme||"")+'">';
+    h+='<label class="fld">Scripture (optional)</label><input class="txt" id="gScr" value="'+esc(cur.scripture||"")+'">';
+    h+='<label class="fld">Questions (one per line)</label><textarea class="txt" id="gQ" rows="7">'+esc((cur.questions||[]).join("\n"))+'</textarea>';
+    h+='<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn pink" id="gSave">Save</button><button class="btn" id="gClear">Clear</button></div>';
+    h+='<div id="gPrev"></div>';
+    pane.innerHTML=h;
+    document.getElementById("gDay").onchange=e=>{state._gDay=e.target.value;adminPane("guides");};
+    pane.querySelectorAll("[data-gs]").forEach(el=>el.onclick=()=>{state._gSlot=el.dataset.gs;adminPane("guides");});
+    const prev=()=>{ const qs=parseQuestions(document.getElementById("gQ").value);
+      document.getElementById("gPrev").innerHTML=qs.length?'<div class="sectionlabel">Preview ('+qs.length+')</div><ol class="qlist">'+qs.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ol>':''; };
+    document.getElementById("gQ").oninput=prev; prev();
+    document.getElementById("gSave").onclick=()=>{
+      const theme=document.getElementById("gTheme").value.trim(), scripture=document.getElementById("gScr").value.trim(), questions=parseQuestions(document.getElementById("gQ").value);
+      const payload=questions.length?{theme:theme,scripture:scripture,questions:questions}:null;
+      chatDb.ref("guides/"+gd+"/"+gs).set(payload);
+      store.guidesCache=store.guidesCache||{}; store.guidesCache[gd]=store.guidesCache[gd]||{}; store.guidesCache[gd][gs]=payload; saveStore();
+      const sv=document.getElementById("gSave"); sv.textContent="Saved ✓"; setTimeout(()=>{if(document.getElementById("gSave"))sv.textContent="Save";},1300);
+    };
+    document.getElementById("gClear").onclick=()=>{ ["gQ","gTheme","gScr"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";}); prev(); };
   }else if(which==="scores"){
     let h='<div class="banner">Type over each team’s total (0–9999). Each one <b>saves by itself</b> the moment you tap away — no update button, and everyone’s Standings re-sort instantly. Needs internet.</div>';
     if(!chatDb){ h+='<div class="empty">Connect to the internet to edit scores.</div>'; pane.innerHTML=h; return; }
@@ -1460,7 +1526,7 @@ function render(){
   if(!["camp","find","teams","chat","map"].includes(state.tab)) state.tab="camp";
   renderClock();renderDayBar();updateDtBox();renderMeRow();
   document.getElementById("schedControls").style.display = state.tab==="camp" ? "" : "none";
-  const al=document.getElementById("adminLink"); if(al) al.style.display = ADMIN_TOOLS.includes(store.me) ? "" : "none";
+  const al=document.getElementById("adminLink"); if(al) al.style.display = isAdmin(store.me) ? "" : "none";
   if(state.tab!=="map")destroyMap();
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===state.tab));
   document.querySelectorAll(".bottombar .bb").forEach(b=>b.classList.toggle("active",b.dataset.bb==="map"&&state.tab==="map"));
@@ -1484,7 +1550,7 @@ document.querySelectorAll(".bottombar .bb").forEach(b=>b.onclick=()=>{
   else if(k==="refresh")location.reload();
 });
 document.getElementById("adminLink").onclick=()=>{
-  if(!ADMIN_TOOLS.includes(store.me)){ alert("Leader tools are for camp admin only. Pick your name first if you're Grant, Macey, or Scott."); return; }
+  if(!isAdmin(store.me)){ alert("Leader tools are for camp admin only. Pick your name first if you're an admin."); return; }
   if(store.adminOK){ openAdmin(); return; }                       // already unlocked on this device — no re-typing
   const code=(prompt("Enter the Admin passcode to open Leader tools:")||"").trim();
   if(!code) return;
