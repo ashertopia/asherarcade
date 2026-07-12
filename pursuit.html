@@ -162,13 +162,15 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .poolline .pgi.boys{background:rgba(88,166,255,.16);color:#8cc3ff;border:1px solid rgba(88,166,255,.5);}
 .chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
-.teamcard{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
-.teamcard .th{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-.teamcard .tdot{width:14px;height:14px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
+.teamcard{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
+.teamcard.mine{box-shadow:0 0 0 2px var(--pink);}
+.teamcard .trank{flex:0 0 24px;text-align:center;font-size:15px;font-weight:800;color:var(--dim);}
+.teamcard .tdot{width:16px;height:16px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
+.teamcard .tinfo{flex:1;min-width:0;}
 .teamcard .tn{font-size:16px;font-weight:700;}
-.teamcard .ta{font-size:13px;color:var(--dim);}
-.teamcard .tlds{font-size:13px;margin-top:5px;color:var(--txt);}
-.teamcard .cpts{margin-left:auto;font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt);min-width:46px;text-align:right;}
+.teamcard .tlds{font-size:13px;margin-top:2px;color:var(--txt);}
+.teamcard .tac{font-size:12px;margin-top:2px;color:var(--dim);}
+.teamcard .tpts{flex:0 0 auto;min-width:50px;text-align:right;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt);}
 .standings{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;}
 .standrow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:9px;background:var(--panel);border:1px solid var(--line);}
 .standrow.me{border-color:var(--pink);background:var(--panel2);}
@@ -1149,20 +1151,16 @@ function renderTeams(){
   const ptsOf=t=>+((chatScores||{})[t.name])||0;
   const ranked=[...TEAMS].map(t=>({t,pts:ptsOf(t)})).sort((a,b)=>b.pts-a.pts||a.t.name.localeCompare(b.t.name));
   const anyScore=ranked.some(r=>r.pts>0);
-  let h='<div class="sectionlabel">🏆 Standings'+(anyScore?'':' — updates once scores are posted')+'</div>';
-  h+='<div class="standings">';
+  let h='<div class="sectionlabel">🏆 Team Standings · '+TEAMS.length+' teams'+(anyScore?'':' — updates once scores are posted')+'</div>';
   ranked.forEach((r,i)=>{
-    h+='<div class="standrow'+(myTeam&&myTeam.name===r.t.name?' me':'')+'"><span class="rank">'+(i+1)+'</span>'+
-       '<span class="sdot" style="background:'+r.t.hex+'"></span><span class="sname">'+esc(r.t.name)+'</span>'+
-       '<span class="spts">'+r.pts+'</span></div>';
-  });
-  h+='</div>';
-  h+='<div class="sectionlabel">Teams &amp; leaders</div>';
-  if(myTeam) h+='<div class="banner">Your team: <b style="color:'+myTeam.hex+'">'+esc(myTeam.name)+'</b> · '+esc(myTeam.animal)+' · '+esc(myTeam.color)+'</div>';
-  TEAMS.forEach(t=>{
-    h+='<div class="teamcard" style="border-left-color:'+t.hex+'"><div class="th"><span class="tdot" style="background:'+t.hex+'"></span>'+
-       '<span class="tn">'+esc(t.name)+'</span><span class="ta">'+esc(t.animal)+' · '+esc(t.color)+'</span><span class="cpts">'+ptsOf(t)+'</span></div>'+
-       '<div class="tlds"><b>Leaders:</b> '+t.leaders.map(esc).join(" · ")+'</div></div>';
+    const t=r.t, mine=myTeam&&myTeam.name===t.name;
+    h+='<div class="teamcard'+(mine?' mine':'')+'" style="border-left-color:'+t.hex+'">'+
+       '<span class="trank">'+(i+1)+'</span>'+
+       '<span class="tdot" style="background:'+t.hex+'"></span>'+
+       '<div class="tinfo"><div class="tn">'+esc(t.name)+'</div>'+
+         '<div class="tlds">'+t.leaders.map(esc).join(" · ")+'</div>'+
+         '<div class="tac">'+esc(t.animal)+' · '+esc(t.color)+'</div></div>'+
+       '<span class="tpts">'+r.pts+'</span></div>';
   });
   main.innerHTML=h;
 }
