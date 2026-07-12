@@ -26,6 +26,8 @@
 html,body{background:var(--bg);color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;}
 body{padding-bottom:62px;}
 a{color:var(--green);}
+.ico{width:1.15em;height:1.15em;vertical-align:-0.17em;flex:0 0 auto;}
+.legdot{display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid #0006;vertical-align:-1px;}
 .wrap{max-width:820px;margin:0 auto;padding:14px;}
 header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0d1117 70%,rgba(13,17,23,.85));border-bottom:1px solid var(--line);}
 .top .wrap{padding:12px 14px 10px;}
@@ -262,7 +264,7 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 
 <div class="updatebar" id="updateBar">
-  <span class="t">🔄 A newer version is ready.</span>
+  <span class="t"><svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg> A newer version is ready.</span>
   <button class="btn pink" onclick="location.reload()">Refresh</button>
 </div>
 
@@ -679,6 +681,25 @@ function T(hhmm){const[a,b]=hhmm.split(":").map(Number);return a*60+b;}
 function fmt(min){let h=Math.floor(min/60),m=min%60;const ap=h<12?"a":"p";let hh=h%12;if(hh===0)hh=12;return hh+(m?":"+String(m).padStart(2,"0"):"")+ap;}
 function fmtRange(s,e){return fmt(T(s))+"–"+fmt(T(e));}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+/* ---- Flat, single-color SVG icons (no emoji, no gradients) ---- */
+const ICONS={
+  person:"M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
+  pin:"M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z",
+  clock:"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z",
+  chat:"M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z",
+  book:"M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1zm0 13.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z",
+  lock:"M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm3 11c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z",
+  phone:"M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z",
+  star:"M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z",
+  link:"M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z",
+  globe:"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14a7.96 7.96 0 0 1 0-4h3.38a16.53 16.53 0 0 0 0 4H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.08 16zM8.03 8H5.08a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66a14.7 14.7 0 0 1 0-4h4.68a14.7 14.7 0 0 1 0 4zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14a16.53 16.53 0 0 0 0-4h3.38a7.96 7.96 0 0 1 0 4h-3.38z",
+  mail:"M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z",
+  map:"M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z",
+  bell:"M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z",
+  refresh:"M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z",
+  install:"M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zm-5-1 4-4h-3V8h-2v5H8l4 4z"
+};
+function ico(name,cls){ return '<svg class="ico'+(cls?" "+cls:"")+'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="'+ICONS[name]+'"/></svg>'; }
 
 /* ---- collect everyone ---- */
 function allPeople(){
@@ -837,13 +858,13 @@ function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
 
 function meBarHTML(){
   if(store.me && allPeople().includes(store.me)){
-    return '<div class="mebar"><span class="who">👋 Welcome, '+esc(store.me)+(churchOf(store.me)?' · '+chSpan(churchOf(store.me)):'')+'</span>'+
+    return '<div class="mebar"><span class="who">Welcome, '+esc(store.me)+(churchOf(store.me)?' · '+chSpan(churchOf(store.me)):'')+'</span>'+
            '<button class="btn tiny" id="meChange">Change</button></div>';
   }
-  return '<div class="mebar col"><div class="melabel">👤 First time? Pick your name so the app remembers you and can make this <b>your</b> schedule:</div>'+
+  return '<div class="mebar col"><div class="melabel">'+ico('person')+' First time? Pick your name so the app remembers you and can make this <b>your</b> schedule:</div>'+
          '<input class="search" id="meSearch" list="mePeople" placeholder="Type your name…" autocomplete="off">'+
          '<datalist id="mePeople">'+allPeople().map(n=>'<option value="'+esc(n)+'">').join('')+'</datalist>'+
-         '<button class="btn pink" id="meSet">📌 This is me</button></div>';
+         '<button class="btn pink" id="meSet">'+ico('pin')+' This is me</button></div>';
 }
 function renderMeRow(){
   const row=document.getElementById("meRow");
@@ -860,7 +881,7 @@ function wireMe(){
 function nowCard(items,curTitle,curLoc,curS,curE,isDuty){
   const nxt=items.find(x=>T(x.s)>state.time);
   let h='<div class="nowcard'+(isDuty?' duty':'')+'"><div class="lbl"'+(isDuty?' style="color:var(--green)"':'')+'>'+(isDuty?'Your assignment now':'Now')+'</div>'+
-        '<div class="title">'+esc(curTitle)+'</div><div class="meta">'+(curLoc||'')+'<span>🕑 '+fmtRange(curS,curE)+'</span></div>';
+        '<div class="title">'+esc(curTitle)+'</div><div class="meta">'+(curLoc||'')+'<span>'+ico('clock')+' '+fmtRange(curS,curE)+'</span></div>';
   if(nxt)h+='<div class="next">Up next: <b>'+esc(nxt.t)+'</b> · '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>';
   return h+'</div>';
 }
@@ -880,13 +901,13 @@ function guideFor(day,slot){ return ((store.guidesCache||{})[day]||{})[slot] || 
 function hasGuide(day,slot){ const g=guideFor(day,slot); return !!(g && g.questions && g.questions.length); }
 function guideLinkHTML(day,slot,label){
   const active=hasGuide(day,slot);
-  return '<div class="guidelink'+(active?'':' empty')+'" data-gday="'+esc(day)+'" data-gslot="'+esc(slot)+'" data-glabel="'+esc(label)+'">💬 '+esc(label)+(active?'':' · coming soon')+'</div>';
+  return '<div class="guidelink'+(active?'':' empty')+'" data-gday="'+esc(day)+'" data-gslot="'+esc(slot)+'" data-glabel="'+esc(label)+'">'+ico('chat')+' '+esc(label)+(active?'':' · coming soon')+'</div>';
 }
 function openGuide(day,slot,label){
   const g=guideFor(day,slot); let b='';
   if(g && g.questions && g.questions.length){
     if(g.theme) b+='<div class="sectionlabel">'+esc(g.theme)+'</div>';
-    if(g.scripture) b+='<div class="banner">📖 '+esc(g.scripture)+'</div>';
+    if(g.scripture) b+='<div class="banner">'+ico('book')+' '+esc(g.scripture)+'</div>';
     b+='<ol class="qlist">'+g.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ol>';
   } else {
     b+='<div class="empty">No discussion questions have been added for this time yet.<br><br>Once the team provides them, they’ll appear right here — no signal needed.</div>';
@@ -923,7 +944,7 @@ function renderCampGeneric(){
   h+='<div class="sectionlabel">Happening now · '+state.day+'</div>';
   if(cur){
     h+='<div class="nowcard"><div class="lbl">Now</div><div class="title">'+esc(cur.t)+'</div>'+
-       '<div class="meta">'+blockLoc(cur,null)+'<span>🕑 '+fmtRange(cur.s,cur.e)+'</span></div>';
+       '<div class="meta">'+blockLoc(cur,null)+'<span>'+ico('clock')+' '+fmtRange(cur.s,cur.e)+'</span></div>';
     if(nxt)h+='<div class="next">Up next: <b>'+esc(nxt.t)+'</b> · '+fmt(T(nxt.s))+(nxt.l?' · '+esc(nxt.l):'')+'</div>';
     h+='</div>';
   }else{
@@ -1036,9 +1057,9 @@ function destroyMap(){
 function renderMap(){
   destroyMap();
   let h='<div class="sectionlabel">Camp map</div><div id="mapdiv"></div>';
-  h+='<div class="maptools"><button class="btn pink" id="meBtn">📍 Find me (live)</button>'+
+  h+='<div class="maptools"><button class="btn pink" id="meBtn">'+ico('pin')+' Find me (live)</button>'+
      '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Get to camp</a></div>';
-  h+='<div class="banner" id="mapNote">Boxes = Free Time <b>Zones 1–3</b>. 🟡 Activities · 🔵 boys cabins (<b>B</b>) · 🩷 girls cabins (<b>G</b>). Tap a cabin to see its churches. “Find me” shows your live location as you move.</div>';
+  h+='<div class="banner" id="mapNote">Boxes = Free Time <b>Zones 1–3</b>. <span class="legdot" style="background:#e3b341"></span> Activities · <span class="legdot" style="background:#58a6ff"></span> boys cabins (<b>B</b>) · <span class="legdot" style="background:#ff5d8f"></span> girls cabins (<b>G</b>). Tap a cabin to see its churches. “Find me” shows your live location as you move.</div>';
   main.innerHTML=h;
   if(!window.L){
     document.getElementById("mapdiv").innerHTML='<div class="empty">The live map needs an internet connection.<br>Reconnect to see the camp map, or use “Get to camp” above.</div>';
@@ -1115,8 +1136,8 @@ const LEADERS = [
 function contactsHTML(){
   let h='<div class="sectionlabel">Camp & team leaders</div><div class="linkgrid">';
   LEADERS.forEach(t=>{
-    if(t.tel) h+='<a class="linkrow lead" href="tel:'+t.tel.replace(/[^0-9]/g,"")+'"><span class="ic">📞</span><span class="lx"><span class="a">'+esc(t.n)+'</span><span class="b">'+esc(t.r)+' · '+esc(t.tel)+'</span></span><span class="go">›</span></a>';
-    else h+='<div class="linkrow lead"><span class="ic">⭐</span><span class="lx"><span class="a">'+esc(t.n)+'</span><span class="b">'+esc(t.r)+'</span></span></div>';
+    if(t.tel) h+='<a class="linkrow lead" href="tel:'+t.tel.replace(/[^0-9]/g,"")+'"><span class="ic">'+ico('phone')+'</span><span class="lx"><span class="a">'+esc(t.n)+'</span><span class="b">'+esc(t.r)+' · '+esc(t.tel)+'</span></span><span class="go">›</span></a>';
+    else h+='<div class="linkrow lead"><span class="ic">'+ico('star')+'</span><span class="lx"><span class="a">'+esc(t.n)+'</span><span class="b">'+esc(t.r)+'</span></span></div>';
   });
   h+='</div>';
   h+='<div class="sectionlabel">Church pastors</div><div class="linkgrid">';
@@ -1129,15 +1150,15 @@ function openContacts(){openSheet("Important contacts",contactsHTML());}
 // Important pages / links — rulebook, info hub, website, getting there
 function linksHTML(){
   let h='<div class="sectionlabel">Important pages</div><div class="linkgrid">';
-  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">🔗</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">rulebook, forms &amp; all links</span></span><span class="go">›</span></a>';
-  if(LINKS.rulebook) h+='<a class="linkrow" href="'+LINKS.rulebook+'" target="_blank" rel="noopener"><span class="ic">📖</span><span class="lx"><span class="a">Rule book</span><span class="b">'+esc(LINKS.rulebook)+'</span></span><span class="go">›</span></a>';
-  if(LINKS.website) h+='<a class="linkrow" href="'+LINKS.website+'" target="_blank" rel="noopener"><span class="ic">🌐</span><span class="lx"><span class="a">Camp website</span><span class="b">'+esc(LINKS.website)+'</span></span><span class="go">›</span></a>';
-  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">💬</span><span class="lx"><span class="a">Join the GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a>';
-  h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">✉️</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">'+ico('link')+'</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">rulebook, forms &amp; all links</span></span><span class="go">›</span></a>';
+  if(LINKS.rulebook) h+='<a class="linkrow" href="'+LINKS.rulebook+'" target="_blank" rel="noopener"><span class="ic">'+ico('book')+'</span><span class="lx"><span class="a">Rule book</span><span class="b">'+esc(LINKS.rulebook)+'</span></span><span class="go">›</span></a>';
+  if(LINKS.website) h+='<a class="linkrow" href="'+LINKS.website+'" target="_blank" rel="noopener"><span class="ic">'+ico('globe')+'</span><span class="lx"><span class="a">Camp website</span><span class="b">'+esc(LINKS.website)+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">'+ico('chat')+'</span><span class="lx"><span class="a">Join the GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">'+ico('mail')+'</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
   h+='</div>';
   h+='<div class="sectionlabel">Getting to camp</div><div class="linkgrid">';
-  h+='<a class="linkrow" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🗺️</span><span class="lx"><span class="a">Open camp in Google Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
-  h+='<a class="linkrow" href="'+mapsApple(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">🍎</span><span class="lx"><span class="a">Open camp in Apple Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">'+ico('map')+'</span><span class="lx"><span class="a">Open camp in Google Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
+  h+='<a class="linkrow" href="'+mapsApple(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">'+ico('map')+'</span><span class="lx"><span class="a">Open camp in Apple Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
   h+='</div>';
   h+='<div class="banner">Main meeting space: <b>'+esc(CAMP.mainSpace)+'</b> · Leader parking: across from the Dining Hall.</div>';
   return h;
@@ -1308,7 +1329,7 @@ function lockAdmin(){ store.adminOK=false; saveStore(); renderChat(); }
 function renderChat(){
   if(!window.firebase || !chatDb){
     let h='<div class="sectionlabel">Camp Chat</div>';
-    h+='<div class="empty">💬 Chat needs an internet connection.<br>'+(window.firebase?'Connecting…':'Reconnect to load chat.')+'<br><br>Or use the GroupMe:</div>';
+    h+='<div class="empty">'+ico('chat')+' Chat needs an internet connection.<br>'+(window.firebase?'Connecting…':'Reconnect to load chat.')+'<br><br>Or use the GroupMe:</div>';
     h+='<div class="linkgrid"><a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="lx"><span class="a">Open the leaders’ GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a></div>';
     main.innerHTML=h; return;
   }
@@ -1330,7 +1351,7 @@ function renderChat(){
   // Admin room is locked behind the shared passcode until verified on this device.
   if(cur.id==="admin" && !store.adminOK){
     h+='<div class="sectionlabel">'+esc(cur.label)+'</div>';
-    h+='<div class="banner">🔒 This room is for pastors + camp admin. Enter the Admin passcode to unlock it on this device.</div>';
+    h+='<div class="banner">'+ico('lock')+' This room is for pastors + camp admin. Enter the Admin passcode to unlock it on this device.</div>';
     h+='<div class="chatname"><input id="adminCode" type="password" placeholder="Admin passcode…" autocomplete="off"><button id="adminUnlock">Unlock</button></div>';
     h+='<div id="adminErr" style="color:#ff6b6b;font-size:12.5px;margin:8px 2px 0;"></div>';
     main.innerHTML=h;
@@ -1342,10 +1363,10 @@ function renderChat(){
     if(ub){ ub.onclick=go; document.getElementById("adminCode").addEventListener("keydown",e=>{if(e.key==="Enter")go();}); }
     return;
   }
-  h+='<div class="sectionlabel">'+esc(cur.label)+(cur.id==="admin"?' <button class="lockbtn" id="adminLock">🔒 Lock</button>':'')+'</div>';
+  h+='<div class="sectionlabel">'+esc(cur.label)+(cur.id==="admin"?' <button class="lockbtn" id="adminLock">'+ico('lock')+' Lock</button>':'')+'</div>';
   h+='<div style="font-size:11px;color:var(--dim);margin:-4px 2px 8px;">Tip: type <b>@FirstName</b> to tag someone.</div>';
   if(store.me && ("Notification" in window) && Notification.permission==="default")
-    h+='<div class="notifbar"><span>🔔 Get a buzz &amp; alert when new messages come in?</span><button id="notifBtn">Turn on</button></div>';
+    h+='<div class="notifbar"><span>'+ico('bell')+' Get a buzz &amp; alert when new messages come in?</span><button id="notifBtn">Turn on</button></div>';
   if(!store.me){
     h+='<div class="banner">Pick your name to join the chat:</div>';
     h+='<div class="chatname"><input id="chatNameInput" list="chatPeople" placeholder="Type your name…" autocomplete="off"><button onclick="joinChatName()">Join</button></div>';
@@ -1585,7 +1606,7 @@ function installSteps(){
   const sheet=document.getElementById("sheet");
   const iosHtml='<b>iPhone / iPad (use Safari):</b><br>1. Tap the <b>Share</b> button (□ with ↑)<br>2. Scroll down → <b>Add to Home Screen</b><br>3. Tap <b>Add</b>, then open it from the FULL icon';
   const andHtml='<b>Android (use Chrome):</b><br>1. Tap the <b>⋮</b> menu (top-right)<br>2. Tap <b>Add to Home screen</b> / <b>Install app</b><br>3. Tap <b>Install</b>, then open it from the FULL icon';
-  sheet.innerHTML='<div class="shead"><div style="font-size:17px;font-weight:700;">📲 Install on your phone</div><button class="x" onclick="closeModal()">×</button></div>'+
+  sheet.innerHTML='<div class="shead"><div style="font-size:17px;font-weight:700;">'+ico('install')+' Install on your phone</div><button class="x" onclick="closeModal()">×</button></div>'+
     '<div class="sbody"><div class="banner">Installing saves the app to your phone so it <b>opens with no signal</b> at camp. Do this once on wifi/data first.</div>'+
     '<div style="background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px;font-size:14px;line-height:1.7;margin-bottom:10px;">'+(ios?iosHtml:andHtml)+'</div>'+
     '<div style="background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px;font-size:14px;line-height:1.7;color:var(--dim);">'+(ios?andHtml:iosHtml)+'</div>'+
