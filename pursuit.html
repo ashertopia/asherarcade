@@ -1459,11 +1459,11 @@ function adminPane(which){
       if(!allPeople().includes(v)){ alert("Pick a name from the list."); return; }
       if(ADMIN_TOOLS.includes(v)||(store.extraAdmins||[]).includes(v)){ alert(v+" is already an admin."); return; }
       const next=[...(store.extraAdmins||[]),v]; store.extraAdmins=next; saveStore();
-      chatDb.ref("admins").set(next); adminPane("admins");
+      chatDb.ref("admins").set(next).catch(()=>alert("Couldn’t save the admin list. Check your internet — and that your Firebase rules include the \"admins\" section.")); adminPane("admins");
     };
     pane.querySelectorAll(".admx").forEach(bt=>bt.onclick=()=>{
       const next=(store.extraAdmins||[]).filter(x=>x!==bt.dataset.n); store.extraAdmins=next; saveStore();
-      chatDb.ref("admins").set(next); adminPane("admins");
+      chatDb.ref("admins").set(next).catch(()=>alert("Couldn’t update the admin list. Check your internet — and that your Firebase rules include the \"admins\" section.")); adminPane("admins");
     });
   }else if(which==="guides"){
     let h='<div class="banner">Paste discussion questions (bullets, 1/2/3, or one per line) and tap <b>Save</b>. It becomes the pop-up on that day’s schedule for everyone — and works offline once their app has loaded it.</div>';
@@ -1487,9 +1487,11 @@ function adminPane(which){
     document.getElementById("gSave").onclick=()=>{
       const theme=document.getElementById("gTheme").value.trim(), scripture=document.getElementById("gScr").value.trim(), questions=parseQuestions(document.getElementById("gQ").value);
       const payload=questions.length?{theme:theme,scripture:scripture,questions:questions}:null;
-      chatDb.ref("guides/"+gd+"/"+gs).set(payload);
+      const sv=document.getElementById("gSave");
+      chatDb.ref("guides/"+gd+"/"+gs).set(payload)
+        .then(()=>{ if(sv){sv.textContent="Saved ✓"; setTimeout(()=>{if(document.getElementById("gSave"))sv.textContent="Save";},1300);} })
+        .catch(()=>alert("Couldn’t save the questions. Check your internet — and that your Firebase rules include the \"guides\" section."));
       store.guidesCache=store.guidesCache||{}; store.guidesCache[gd]=store.guidesCache[gd]||{}; store.guidesCache[gd][gs]=payload; saveStore();
-      const sv=document.getElementById("gSave"); sv.textContent="Saved ✓"; setTimeout(()=>{if(document.getElementById("gSave"))sv.textContent="Save";},1300);
     };
     document.getElementById("gClear").onclick=()=>{ ["gQ","gTheme","gScr"].forEach(id=>{const e=document.getElementById(id);if(e)e.value="";}); prev(); };
   }else if(which==="scores"){
@@ -1503,8 +1505,9 @@ function adminPane(which){
     pane.innerHTML=h;
     pane.querySelectorAll(".scinput").forEach(inp=>{ inp.onchange=()=>{
       let v=Math.max(0,Math.min(9999,parseInt(inp.value||"0",10)||0)); inp.value=v;
-      if(chatDb){ chatDb.ref("scores/"+inp.dataset.team).set(v);
-        const ok=document.getElementById("ok_"+inp.dataset.team); if(ok){ ok.classList.add("show"); setTimeout(()=>ok.classList.remove("show"),1200); } }
+      if(chatDb){ chatDb.ref("scores/"+inp.dataset.team).set(v)
+        .then(()=>{ const ok=document.getElementById("ok_"+inp.dataset.team); if(ok){ ok.classList.add("show"); setTimeout(()=>ok.classList.remove("show"),1200); } })
+        .catch(()=>alert("Couldn’t save that score. Check your internet — and that your Firebase rules include the \"scores\" section.")); }
     };});
   }else if(which==="pins"){
     let h='<div class="banner">In Google Maps, long-press (phone) or right-click (computer) a spot → tap the "lat, lng" numbers to copy → paste below. Already-loaded spots are shown greyed as examples.</div>';
