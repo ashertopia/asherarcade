@@ -398,7 +398,8 @@ const BASE = {
     {s:"22:00",e:"22:30",t:"Cabin Time",l:"Cabins"},
     {s:"23:00",e:"23:30",t:"Lights Out",l:"Cabins"}
   ],
-  Tuesday:WEEKDAY, Wednesday:WEEKDAY, Thursday:WEEKDAY,
+  Tuesday:WEEKDAY.map((b,i)=>i===4?{s:"11:00",e:"11:30",t:"Team Time",l:"With your team"}:b),
+  Wednesday:WEEKDAY, Thursday:WEEKDAY,
   Friday:[
     ...WEEKDAY.slice(0,12),
     {s:"21:00",e:"22:15",t:"Surprise Night Game (NO Snack Shack)",l:"TBD"},
@@ -542,13 +543,13 @@ const KNOWN_CHURCH = {
   "New Song Nashville":["Grant Ebright","Macey Duncan","Austin Duncan","Kaitlyn Rupert","Chelsey Smith","John Hagan","Melody Hagan","Dana Lathrop","Julia B Morris","Joy Clapp","Alex R Hart","Mark Schamel","Stuart Fritz","Mabel O'Neal","Luca Zapata","Chas Tippett","Jamie Waters","Zachariah McGahey","Pomaikai Chiara Romano","Caeden Rosen","Al Pearson","Judah Siegand","Stewart Fleming","Victoria Phillips","Nathan Cress","Kameryn King","Cameron King","Isabella Gautsche","Brent Lathrop","Allie Wilson","Martha Pearson","Kirk Roncskevitz","Grace Geeslin","Wesley Garrett","Victoria Joy Lanford","Micah Elliott","Ezra Siegand","Ruben Rivera III","Israel Schamel","Manny Schamel","Bryan Hagan","Crystal Schamel","Joel Evrist","Kayla Fritz","Chris Martin","Matthew Peels","Tyler Beiden","Nancy Ochiel","Peter Ochiel"],
   "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock","Scott Asher"],
   "Southview":["Nevaeh Rampulla","Kahanah Chuor","Amy Myers","Jon Myers","Lily Owens","Sean Baxter","Jim Tannahill","Sheryl Tannahill","Ethan Rain Myers","Marlee Rampulla","Elijah Hoaglan","Seth Mehta","Jaic So'osemea","Tina So'osemea","Madison Reid","Luke Reid","Aadyn Rampulla","Ryan Chew"],
-  "Gateway":["Daniel Burchfield","Paige Hardy","Ella Hufalar","Molly Roberts","Hailey Fields","Brennan Harper","Lisa Powell","Trent Tatum","Pierson Nelson","Christian Wylder"],
+  "Gateway":["Daniel Burchfield","Paige Hardy","Ella Hufalar","Molly Roberts","Hailey Fields","Brennan Harper","Lisa Powell","Emily Vickers","Trent Tatum","Pierson Nelson","Christian Wylder"],
   "Nashville Life":["Grant Argent","Dr. Dorothy Gunn","Talesha Kenyetta Simpson","Khadijah Faison","David Veney","Kendale Lark Burch","Noah Lutche","Kayden Alford","Jeremiah Davis","Lydia Akin","Bobby Rhodes","Lily Huseby","Joel Isaacson","Chloe Perrin","Fanchon Tindal","Rosita Williams","Kirby Shepherd","Tyra Harris"],
   "Belmont Church":["Michelle Thomas","Alfred De Leon"],
   "Christ Church":["David Peery","Jacob Sharp","Abby Myers","Dave Saunders","Erin Ide","David Eli Carney","Greyson Chumley","Kara Lemonis","Martin Ikenna Ogbunugafor"],
   "Restoration House":["Austyn Neal Roberts","Jared Wheeler","Deanna Crow"],
   "Sweetwater":["Chance Fielder","Khrysten Fielder","Mallori Hann","Joshua Hann"],
-  "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","Rc Tidwell"]
+  "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","Rc Tidwell","Rebekah Evans","Daniel Johnson","Cardaja Harkins","Xavier Keegan","Tamya Spikes","Naomi Bageant","Chase Garrison","Aryn Harvey","Israel Fayne","Papa Hayford","Serinah Ruiz","Enoc Moma","Anabell Irizarry"]
 };
 
 /* ---- Service areas (filter dimension) + their service leaders ---- */
@@ -617,11 +618,11 @@ store.coords = store.coords || {};      // location name -> "lat,lng"
 store.me = store.me || "";              // "this is me" — remembered on this phone
 store.adminOK = store.adminOK || false; // Admin chat unlocked on this device (passcode verified by Firebase)
 // Apply the authoritative roster once (version bump re-applies for returning users)
-if(store.rosterV!==4){
+if(store.rosterV!==5){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
   // Make sure each pastor is placed in their own church (so they can pick themselves + get their church chat)
   Object.entries(CHURCH_PASTOR).forEach(([ch,n])=>{ if(!store.churchOf[n]) store.churchOf[n]=ch; });
-  store.rosterV=4;
+  store.rosterV=5;
 }
 saveStore();
 
