@@ -152,6 +152,10 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .badges .teamchip,.badges .pastortag,.badges .pic{margin-left:0;}
 .shifttag{display:inline-block;font-size:10px;font-weight:800;background:#f4d000;color:#101418;padding:1px 8px;border-radius:20px;margin-left:7px;vertical-align:middle;letter-spacing:.3px;}
 .shifttag.both{background:transparent;color:#f4d000;border:1px solid #f4d000;}
+.guidelink{display:inline-block;margin-top:8px;font-size:12px;font-weight:700;color:#f4d000;background:rgba(244,208,0,.12);border:1px solid rgba(244,208,0,.45);border-radius:14px;padding:4px 11px;cursor:pointer;}
+.guidelink.empty{color:var(--dim);background:transparent;border:1px dashed var(--line);font-weight:600;}
+.qlist{margin:8px 4px 4px;padding-left:22px;}
+.qlist li{margin:9px 0;font-size:14.5px;line-height:1.45;}
 .poolline{font-size:12px;color:var(--txt);margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);line-height:1.6;}
 .poolline .pgi{font-weight:700;padding:1px 7px;border-radius:20px;font-size:11px;}
 .poolline .pgi.girls{background:rgba(255,93,143,.16);color:#ff8fb0;border:1px solid rgba(255,93,143,.5);}
@@ -835,6 +839,26 @@ function poolLineHTML(day){
     '<span class="pgi girls">Girls</span> '+fmtRange(p.girls[0],p.girls[1])+
     ' · <span class="pgi boys">Boys</span> '+fmtRange(p.boys[0],p.boys[1])+'</div>';
 }
+/* ---- Small-group / cabin-time discussion guides (static, offline).
+   Fill GUIDES[day].smallGroup / .cabin = {theme, scripture, questions:[...]} when content arrives.
+   Empty for now → links show grayed and open a "coming soon" sheet (proof of concept). ---- */
+const GUIDES = { Monday:{}, Tuesday:{}, Wednesday:{}, Thursday:{}, Friday:{}, Saturday:{} };
+function hasGuide(day,slot){ const g=(GUIDES[day]||{})[slot]; return !!(g && g.questions && g.questions.length); }
+function guideLinkHTML(day,slot,label){
+  const active=hasGuide(day,slot);
+  return '<div class="guidelink'+(active?'':' empty')+'" data-gday="'+esc(day)+'" data-gslot="'+esc(slot)+'" data-glabel="'+esc(label)+'">💬 '+esc(label)+(active?'':' · coming soon')+'</div>';
+}
+function openGuide(day,slot,label){
+  const g=(GUIDES[day]||{})[slot]; let b='';
+  if(g && g.questions && g.questions.length){
+    if(g.theme) b+='<div class="sectionlabel">'+esc(g.theme)+'</div>';
+    if(g.scripture) b+='<div class="banner">📖 '+esc(g.scripture)+'</div>';
+    b+='<ol class="qlist">'+g.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ol>';
+  } else {
+    b+='<div class="empty">No discussion questions have been added for this time yet.<br><br>Once the team provides them, they’ll appear right here — no signal needed.</div>';
+  }
+  openSheet(day+' · '+label, b);
+}
 function renderMeSchedule(name){
   const day=state.day, duties=dutiesFor(name,day);
   const merged=[...BASE[day].map(b=>({s:b.s,e:b.e,t:b.t,l:b.l,meal:b.meal,duty:false})),
@@ -856,7 +880,7 @@ function renderMeSchedule(name){
     }
     const isc=state.time>=T(s)&&state.time<T(e), past=state.time>=T(e), L=blockLoc(b,name);
     h+='<div class="tl'+(b.duty?' duty':'')+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(s,e)+'</div>'+
-       '<div class="b"><div class="nm">'+esc(b.t)+shiftTag+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+((!b.duty&&b.t==="Free Time")?poolLineHTML(day):'')+'</div></div>';});
+       '<div class="b"><div class="nm">'+esc(b.t)+shiftTag+(b.duty?'<span class="tag">'+esc(b.tag)+'</span>':'')+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+((!b.duty&&b.t==="Free Time")?poolLineHTML(day):'')+((!b.duty&&b.t==="Small Group")?guideLinkHTML(day,'smallGroup','Small-group discussion questions'):'')+((!b.duty&&b.t==="Cabin Time")?guideLinkHTML(day,'cabin','Cabin-time questions'):'')+'</div></div>';});
   h+='</div>';
   return h+mapToolsHTML(true);
 }
@@ -875,13 +899,14 @@ function renderCampGeneric(){
   h+='<div class="sectionlabel">Full day</div><div class="timeline">';
   blocks.forEach(b=>{const isc=cur&&b.s===cur.s&&b.t===cur.t, past=state.time>=T(b.e), L=blockLoc(b,null);
     h+='<div class="tl'+(isc?' cur':'')+(past&&!isc?' past':'')+'"><div class="t">'+fmtRange(b.s,b.e)+'</div>'+
-       '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+(b.t==="Free Time"?poolLineHTML(state.day):'')+'</div></div>';});
+       '<div class="b"><div class="nm">'+esc(b.t)+'</div>'+(L?'<div class="lc">'+L+'</div>':'')+(b.t==="Free Time"?poolLineHTML(state.day):'')+(b.t==="Small Group"?guideLinkHTML(state.day,'smallGroup','Small-group discussion questions'):'')+(b.t==="Cabin Time"?guideLinkHTML(state.day,'cabin','Cabin-time questions'):'')+'</div></div>';});
   h+='</div>';
   h+='<div class="banner"><b>Meal shifts</b> · Shift 1 ('+SHIFT_CHURCHES[1]+') · Shift 2 ('+SHIFT_CHURCHES[2]+')</div>';
   return h+mapToolsHTML(true);
 }
 function renderCamp(){
   main.innerHTML = (store.me && allPeople().includes(store.me)) ? renderMeSchedule(store.me) : renderCampGeneric();
+  main.querySelectorAll(".guidelink").forEach(el=>el.onclick=()=>openGuide(el.dataset.gday,el.dataset.gslot,el.dataset.glabel));
 }
 function whereNow(name){
   const ds=dutiesFor(name,state.day).filter(d=>state.time>=T(d.s)&&state.time<T(d.e));
