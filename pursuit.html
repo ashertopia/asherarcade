@@ -181,6 +181,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .scrow .sdot{flex:0 0 auto;width:13px;height:13px;border-radius:50%;border:1px solid #0006;}
 .scrow .scname{flex:1;min-width:0;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .scrow .scinput{flex:0 0 74px;width:74px;padding:8px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:16px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums;}
+.scrow .scok{flex:0 0 auto;font-size:11px;font-weight:800;color:var(--green);opacity:0;transition:opacity .15s;}
+.scrow .scok.show{opacity:1;}
 .teamcard .tlds b{color:var(--dim);font-weight:600;}
 .installbar{position:fixed;left:0;right:0;bottom:52px;z-index:40;background:#161b22;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 14px;display:none;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.4);}
 .installbar.show{display:flex;}
@@ -1387,11 +1389,11 @@ function openAdmin(){
   const sheet=document.getElementById("sheet");
   let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
   h+='<div class="banner">Assign leaders to churches, and add GPS pins so more spots show on the Map. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
-  h+='<div class="seg"><div class="s active" data-a="people">People</div><div class="s" data-a="scores">Scores</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
+  h+='<div class="seg"><div class="s active" data-a="scores">Scores</div><div class="s" data-a="people">People</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
   h+='<div id="aPane"></div></div>';
   sheet.innerHTML=h;
   sheet.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{sheet.querySelectorAll(".seg .s").forEach(x=>x.classList.remove("active"));s.classList.add("active");adminPane(s.dataset.a);});
-  adminPane("people");
+  adminPane("scores");
   document.getElementById("modal").classList.add("open");
 }
 function adminPane(which){
@@ -1400,16 +1402,18 @@ function adminPane(which){
     pane.innerHTML='<input class="search" id="aSearch" placeholder="Search a name…"><div id="aList"></div>';
     document.getElementById("aSearch").oninput=renderAdminList; renderAdminList();
   }else if(which==="scores"){
-    let h='<div class="banner">Set each team’s total points (0–9999). Saves live to everyone instantly — needs internet.</div>';
+    let h='<div class="banner">Type over each team’s total (0–9999). Each one <b>saves by itself</b> the moment you tap away — no update button, and everyone’s Standings re-sort instantly. Needs internet.</div>';
     if(!chatDb){ h+='<div class="empty">Connect to the internet to edit scores.</div>'; pane.innerHTML=h; return; }
     h+='<div class="scoreedit">';
     TEAMS.forEach(t=>{ h+='<div class="scrow"><span class="sdot" style="background:'+t.hex+'"></span><span class="scname">'+esc(t.name)+'</span>'+
+      '<span class="scok" id="ok_'+esc(t.name)+'">✓ saved</span>'+
       '<input class="scinput" type="number" inputmode="numeric" min="0" max="9999" data-team="'+esc(t.name)+'" value="'+(+(chatScores[t.name])||0)+'"></div>'; });
     h+='</div>';
     pane.innerHTML=h;
     pane.querySelectorAll(".scinput").forEach(inp=>{ inp.onchange=()=>{
       let v=Math.max(0,Math.min(9999,parseInt(inp.value||"0",10)||0)); inp.value=v;
-      if(chatDb) chatDb.ref("scores/"+inp.dataset.team).set(v);
+      if(chatDb){ chatDb.ref("scores/"+inp.dataset.team).set(v);
+        const ok=document.getElementById("ok_"+inp.dataset.team); if(ok){ ok.classList.add("show"); setTimeout(()=>ok.classList.remove("show"),1200); } }
     };});
   }else if(which==="pins"){
     let h='<div class="banner">In Google Maps, long-press (phone) or right-click (computer) a spot → tap the "lat, lng" numbers to copy → paste below. Already-loaded spots are shown greyed as examples.</div>';
