@@ -162,7 +162,7 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .poolline .pgi.boys{background:rgba(88,166,255,.16);color:#8cc3ff;border:1px solid rgba(88,166,255,.5);}
 .chatname input{flex:1;padding:11px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .chatname button{flex:0 0 auto;padding:0 14px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;cursor:pointer;}
-.teamcard{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
+.teamcard{display:flex;align-items:center;gap:11px;background:var(--panel);border:1px solid var(--line);border-left-width:7px;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
 .teamcard.mine{box-shadow:0 0 0 2px var(--pink);}
 .teamcard .trank{flex:0 0 24px;text-align:center;font-size:15px;font-weight:800;color:var(--dim);}
 .teamcard .tdot{width:16px;height:16px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
@@ -1156,7 +1156,6 @@ function renderTeams(){
     const t=r.t, mine=myTeam&&myTeam.name===t.name;
     h+='<div class="teamcard'+(mine?' mine':'')+'" style="border-left-color:'+t.hex+'">'+
        '<span class="trank">'+(i+1)+'</span>'+
-       '<span class="tdot" style="background:'+t.hex+'"></span>'+
        '<div class="tinfo"><div class="tn">'+esc(t.name)+'</div>'+
          '<div class="tlds">'+t.leaders.map(esc).join(" · ")+'</div>'+
          '<div class="tac">'+esc(t.animal)+' · '+esc(t.color)+'</div></div>'+
@@ -1404,8 +1403,8 @@ function openAdmin(){
   if(!isAdmin(store.me) || !store.adminOK) return;   // gated: admins + verified passcode
   const sheet=document.getElementById("sheet");
   let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
-  h+='<div class="banner">Assign leaders to churches, and add GPS pins so more spots show on the Map. Changes save on this device. Use <b>Export</b> to send back to Asher so everyone gets them.</div>';
-  h+='<div class="seg segwrap"><div class="s active" data-a="scores">Scores</div><div class="s" data-a="guides">Questions</div><div class="s" data-a="admins">Admins</div><div class="s" data-a="people">People</div><div class="s" data-a="pins">Map pins</div><div class="s" data-a="data">Export</div></div>';
+  h+='<div class="banner">Update team <b>Scores</b>, post small-group <b>Questions</b>, and add <b>Admins</b> — changes sync to everyone. <b>People</b> assigns leaders to churches on this device.</div>';
+  h+='<div class="seg segwrap"><div class="s active" data-a="scores">Scores</div><div class="s" data-a="guides">Questions</div><div class="s" data-a="admins">Admins</div><div class="s" data-a="people">People</div><div class="s" data-a="data">Export</div></div>';
   h+='<div id="aPane"></div></div>';
   sheet.innerHTML=h;
   sheet.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{sheet.querySelectorAll(".seg .s").forEach(x=>x.classList.remove("active"));s.classList.add("active");adminPane(s.dataset.a);});
