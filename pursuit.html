@@ -1157,7 +1157,7 @@ function renderTeams(){
   const ptsOf=t=>+((chatScores||{})[t.name])||0;
   const ranked=[...TEAMS].map(t=>({t,pts:ptsOf(t)})).sort((a,b)=>b.pts-a.pts||a.t.name.localeCompare(b.t.name));
   const anyScore=ranked.some(r=>r.pts>0);
-  let h='<div class="sectionlabel">🏆 Team Standings · '+TEAMS.length+' teams'+(anyScore?'':' — updates once scores are posted')+'</div>';
+  let h='<div class="sectionlabel">Team Competition</div>';
   ranked.forEach((r,i)=>{
     const t=r.t, mine=myTeam&&myTeam.name===t.name;
     const rankHTML=(i<3 && r.pts>0) ? trophySVG(MEDALS[i]) : (i+1);
