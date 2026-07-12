@@ -863,7 +863,9 @@ function renderFind(){
   if(state.findMode==="church"){
     h+='<select class="select" id="pick"><option value="">— Select your church —</option>';
     CHURCHES.forEach(c=>h+='<option value="'+esc(c)+'"'+(c===state.pickChurch?' selected':'')+'>'+esc(c)+'</option>');
-    h+='<option value="__un"'+(state.pickChurch==="__un"?' selected':'')+'>Unassigned (no church listed)</option></select>';
+    if(allPeople().some(n=>!churchOf(n)))
+      h+='<option value="__un"'+(state.pickChurch==="__un"?' selected':'')+'>Unassigned (no church listed)</option>';
+    h+='</select>';
   }else{
     h+='<select class="select" id="pick"><option value="">— Select a service area —</option>';
     AREAS.forEach(a=>h+='<option value="'+esc(a.key)+'"'+(a.key===state.pickArea?' selected':'')+'>'+esc(a.key)+'</option>');
