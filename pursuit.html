@@ -63,8 +63,6 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .day{flex:0 0 auto;font-size:13px;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer;white-space:nowrap;}
 .day.active{background:var(--pink);color:#101418;border-color:var(--pink);font-weight:700;}
 .day.today{border-color:var(--now);}
-.timerow{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12px;color:var(--dim);}
-.timerow input[type=range]{flex:1;accent-color:var(--pink);}
 .btn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);padding:6px 11px;border-radius:8px;font-size:12px;cursor:pointer;}
 .btn:active{transform:scale(.97);}
 .btn.pink{background:var(--pink);color:#101418;border-color:var(--pink);font-weight:600;}
@@ -244,11 +242,6 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
       <span id="clockTxt">—</span>
     </div>
     <div class="days" id="dayBar"></div>
-    <div class="timerow">
-      <span id="tLabel" style="flex:0 0 auto;">Time</span>
-      <input type="range" id="timeSlider" min="360" max="1439" step="5">
-      <button class="btn" id="nowBtn">Now</button>
-    </div>
     </div>
     <div class="tabs">
       <div class="tab active" data-tab="camp">Schedule</div>
@@ -852,7 +845,7 @@ function renderDayBar(){
   const bar=document.getElementById("dayBar");bar.innerHTML="";const tn=todayName();
   CAMP.days.forEach(d=>{const el=document.createElement("div");
     el.className="day"+(d===state.day?" active":"")+(d===tn?" today":"");el.textContent=d.slice(0,3);
-    el.onclick=()=>{state.day=d;render();};bar.appendChild(el);});
+    el.onclick=()=>{state.day=d; state.follow=(d===todayName()); if(state.follow)state.time=nowMinutes(); render();};bar.appendChild(el);});
 }
 function currentBlock(b){return b.find(x=>state.time>=T(x.s)&&state.time<T(x.e));}
 function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
@@ -1564,12 +1557,9 @@ function render(){
   else if(state.tab==="teams")renderTeams();
   else if(state.tab==="map")renderMap();
   else renderChat();
-  document.getElementById("timeSlider").value=state.time;
   saveUI();
 }
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{state.tab=t.dataset.tab;render();});
-document.getElementById("timeSlider").oninput=e=>{state.time=+e.target.value;state.follow=false;render();};
-document.getElementById("nowBtn").onclick=()=>{state.time=nowMinutes();state.follow=true;const tn=todayName();if(tn)state.day=tn;render();};
 document.querySelectorAll(".bottombar .bb").forEach(b=>b.onclick=()=>{
   const k=b.dataset.bb;
   if(k==="map"){state.tab="map";render();}
