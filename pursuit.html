@@ -1018,7 +1018,7 @@ function renderFind(){
     }else{const w=whereNow(n);wText=w.text;wSub=w.sub;wDuty=w.duty;}
     let sub2Html;
     if(SPECIAL_TITLES[n]) sub2Html=esc(SPECIAL_TITLES[n]);
-    else if(state.findMode==="church"){ const st=serviceTeamOf(n); const parts=(st?[st]:[]).concat(rolesOf(n)); sub2Html=esc(parts.join(" · ")||"Follows camp schedule"); }
+    else if(state.findMode==="church"){ const st=serviceTeamOf(n); const isP=CHURCH_PASTOR[state.pickChurch]===n; const parts=(isP?["Pastor"]:[]).concat(st?[st]:[]).concat(rolesOf(n)); sub2Html=esc(parts.join(" · ")||"Follows camp schedule"); }
     else sub2Html=churchOf(n)?chSpan(churchOf(n)):"No church set";
     const isPastor = state.findMode==="church" && CHURCH_PASTOR[state.pickChurch]===n;
     const badges = (isPastor?'<span class="pastortag" style="background:'+col+'">Pastor</span>':'')
@@ -1386,8 +1386,8 @@ function renderChat(){
 /* ---- person sheet ---- */
 function openPerson(name){
   const sheet=document.getElementById("sheet"), col=CHURCH_COLOR[churchOf(name)]||"#8b949e";
-  const tm=teamOf(name), st=serviceTeamOf(name);
-  const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(st?' · '+esc(st):'')+(tm?' · Team'+teamChipHTML(name)+' <span style="color:var(--dim)">('+esc(tm.animal)+')</span>':'');
+  const tm=teamOf(name), st=serviceTeamOf(name), isP=CHURCH_PASTOR[churchOf(name)]===name;
+  const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(isP?' · Pastor':'')+(st?' · '+esc(st):'')+(tm?' · Team'+teamChipHTML(name)+' <span style="color:var(--dim)">('+esc(tm.animal)+')</span>':'');
   let h='<div class="shead"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
         '<div><div style="font-size:17px;font-weight:700;">'+esc(name)+(PERSON_ICON[name]||"")+'</div>'+
         '<div style="font-size:12px;color:var(--dim);">'+subline+'</div></div>'+
