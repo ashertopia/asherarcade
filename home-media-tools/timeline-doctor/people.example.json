@@ -1,0 +1,9 @@
+{
+  "_comment": "List the people you've named in Immich, with the year (and month if known) they were born. birth_month is optional. Names must match the names you gave them in Immich.",
+  "people": [
+    { "name": "Maggie", "birth_year": 2008, "birth_month": 4 },
+    { "name": "Sam",    "birth_year": 2011 },
+    { "name": "Mom",    "birth_year": 1979 },
+    { "name": "Dad",    "birth_year": 1977 }
+  ]
+}
