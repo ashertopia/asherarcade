@@ -854,7 +854,11 @@ function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
 
 function meBarHTML(){
   if(store.me && allPeople().includes(store.me)){
-    return '<div class="mebar"><span class="who">Welcome, '+esc(store.me)+(churchOf(store.me)?' · '+chSpan(churchOf(store.me)):'')+'</span>'+
+    const HEART='<svg class="ico" viewBox="0 0 24 24" fill="#e5342b" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+    const who = store.me==="Alice Asher"
+      ? 'I '+HEART+' you, '+esc(store.me)
+      : 'Welcome, '+esc(store.me)+(churchOf(store.me)?' · '+chSpan(churchOf(store.me)):'');
+    return '<div class="mebar"><span class="who">'+who+'</span>'+
            '<button class="btn tiny" id="meChange">Change</button></div>';
   }
   return '<div class="mebar col"><div class="melabel">'+ico('person')+' First time? Pick your name so the app remembers you and can make this <b>your</b> schedule:</div>'+
