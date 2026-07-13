@@ -625,6 +625,8 @@ const TEAMS = [
   {name:"Tlameha",animal:"Bat",color:"TBD",hex:"#8b949e",leaders:["Xavier Keegan","Molly Roberts"]}
 ];
 function teamOf(name){return TEAMS.find(t=>t.leaders.includes(name))||null;}
+// Which service team (Worship / Medical / Safety / Visual / Activities) a person serves on
+function serviceTeamOf(name){for(const k in SERVICE_TEAMS){if(SERVICE_TEAMS[k].includes(name))return k;}return null;}
 // Team badge — a solid pill filled with the team's official color, text auto-contrasted so every color is readable
 function teamChipHTML(name){
   const t=teamOf(name); if(!t) return "";
@@ -1016,7 +1018,7 @@ function renderFind(){
     }else{const w=whereNow(n);wText=w.text;wSub=w.sub;wDuty=w.duty;}
     let sub2Html;
     if(SPECIAL_TITLES[n]) sub2Html=esc(SPECIAL_TITLES[n]);
-    else if(state.findMode==="church") sub2Html=esc(rolesOf(n).join(" · ")||"Follows camp schedule");
+    else if(state.findMode==="church"){ const st=serviceTeamOf(n); const parts=(st?[st]:[]).concat(rolesOf(n)); sub2Html=esc(parts.join(" · ")||"Follows camp schedule"); }
     else sub2Html=churchOf(n)?chSpan(churchOf(n)):"No church set";
     const isPastor = state.findMode==="church" && CHURCH_PASTOR[state.pickChurch]===n;
     const badges = (isPastor?'<span class="pastortag" style="background:'+col+'">Pastor</span>':'')
@@ -1384,8 +1386,8 @@ function renderChat(){
 /* ---- person sheet ---- */
 function openPerson(name){
   const sheet=document.getElementById("sheet"), col=CHURCH_COLOR[churchOf(name)]||"#8b949e";
-  const tm=teamOf(name);
-  const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(tm?' · Team'+teamChipHTML(name)+' <span style="color:var(--dim)">('+esc(tm.animal)+')</span>':'');
+  const tm=teamOf(name), st=serviceTeamOf(name);
+  const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(st?' · '+esc(st):'')+(tm?' · Team'+teamChipHTML(name)+' <span style="color:var(--dim)">('+esc(tm.animal)+')</span>':'');
   let h='<div class="shead"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
         '<div><div style="font-size:17px;font-weight:700;">'+esc(name)+(PERSON_ICON[name]||"")+'</div>'+
         '<div style="font-size:12px;color:var(--dim);">'+subline+'</div></div>'+
