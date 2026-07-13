@@ -57,8 +57,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .tabbadge{display:inline-block;min-width:16px;height:16px;line-height:16px;text-align:center;font-size:10px;font-weight:800;color:#101418;background:var(--now);border-radius:9px;padding:0 4px;margin-left:5px;vertical-align:middle;}
 .mention{color:#f7c948;font-weight:700;}
 .msg.mentionsme{border-color:#f7c948;box-shadow:0 0 0 1px rgba(247,201,72,.35);}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--now);box-shadow:0 0 0 0 rgba(255,255,255,.6);animation:pulse 2s infinite;}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.5);}70%{box-shadow:0 0 0 8px rgba(255,255,255,0);}100%{box-shadow:0 0 0 0 rgba(255,255,255,0);}}
+.dot{width:8px;height:8px;border-radius:50%;background:#ff3b30;box-shadow:0 0 0 0 rgba(255,59,48,.6);animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,59,48,.55);}70%{box-shadow:0 0 0 8px rgba(255,59,48,0);}100%{box-shadow:0 0 0 0 rgba(255,59,48,0);}}
 .days{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
 .day{flex:0 0 auto;font-size:13px;padding:7px 12px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--dim);cursor:pointer;white-space:nowrap;}
 .day.active{background:var(--pink);color:#101418;border-color:var(--pink);font-weight:700;}
@@ -748,6 +748,7 @@ function membersOf(church){return allPeople().filter(n=>churchOf(n)===church);}
    ============================================================ */
 let state=Object.assign({tab:"camp",day:defaultDay(),findMode:"church",pickChurch:"",pickArea:"",chatChan:"all"}, store.ui||{});
 state.time=nowMinutes(); state.follow=true;   // always start on live time
+{ const _tn=todayName(); if(_tn){ state.day=_tn; state.follow=true; } }  // camp week: lock onto today's live time (ignore any saved preview day)
 function saveUI(){store.ui={tab:state.tab,day:state.day,findMode:state.findMode,pickChurch:state.pickChurch,pickArea:state.pickArea};saveStore();}
 function nowMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes();}
 function todayName(){const iso=new Date().toISOString().slice(0,10);return CAMP.days.find(d=>CAMP.dates[d]===iso)||null;}
@@ -1630,7 +1631,7 @@ maybeShowInstall();
 setInterval(()=>{
   updateDtBox();
   if(document.hidden||!state.follow||!todayName())return;
-  state.time=nowMinutes();
+  state.time=nowMinutes(); const _tn=todayName(); if(_tn) state.day=_tn;  // stay on today's live time across the week
   if(state.tab==="camp")render(); else renderClock();
 },30000);
 setInterval(updateDtBox,20000);
