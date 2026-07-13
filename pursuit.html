@@ -135,6 +135,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .msg.mine{align-self:flex-end;background:#20303f;border-color:#2f4658;}
 .msg .mname{font-size:11px;color:var(--dim);margin-bottom:2px;font-weight:600;}
 .msg .mtext{font-size:14.5px;line-height:1.35;word-wrap:break-word;}
+.daydiv{align-self:center;text-align:center;margin:12px 0 6px;}
+.daydiv span{display:inline-block;background:var(--panel2);color:var(--dim);font-size:11px;font-weight:600;padding:3px 11px;border-radius:999px;}
 .composer{position:fixed;left:0;right:0;bottom:62px;z-index:36;display:flex;gap:8px;padding:8px 14px;background:var(--bg);border-top:1px solid var(--line);max-width:820px;margin:0 auto;box-sizing:border-box;}
 .composer input{flex:1;padding:12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .composer button{flex:0 0 auto;padding:0 16px;border-radius:10px;background:var(--pink);color:#101418;border:none;font-weight:700;font-size:14px;cursor:pointer;}
@@ -1289,6 +1291,10 @@ function mentionsMe(text){
   return text.toLowerCase().indexOf("@"+f)!==-1;
 }
 function fmtClock(ts){ if(!ts)return""; const d=new Date(ts); let h=d.getHours(),m=d.getMinutes(); const ap=h<12?"a":"p"; h=h%12||12; return h+":"+String(m).padStart(2,"0")+ap; }
+// Chat date dividers — group messages by calendar day
+function dayKey(ts){ if(!ts)return""; const d=new Date(ts); return d.getFullYear()+"-"+d.getMonth()+"-"+d.getDate(); }
+function dayLabel(ts){ if(!ts)return""; const d=new Date(ts), now=Date.now(); if(dayKey(ts)===dayKey(now))return"Today"; if(dayKey(ts)===dayKey(now-86400000))return"Yesterday"; return d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"}); }
+function dayDivHTML(ts){ return '<div class="daydiv"><span>'+esc(dayLabel(ts))+'</span></div>'; }
 function chatMsgHTML(m){
   const mine=m.name&&m.name===store.me, t=fmtClock(m.ts);
   const text=esc(m.text||"").replace(/@([A-Za-z][\w'’.\-]*)/g,'<span class="mention">@$1</span>');
@@ -1297,6 +1303,9 @@ function chatMsgHTML(m){
 }
 function appendChatMsg(m){
   const list=document.getElementById("chatlist"); if(!list)return;
+  const emp=list.querySelector(".empty"); if(emp) emp.remove();
+  const k=dayKey(m.ts);
+  if(k && k!==(list.dataset.lastday||"")){ list.insertAdjacentHTML("beforeend",dayDivHTML(m.ts)); list.dataset.lastday=k; }
   list.insertAdjacentHTML("beforeend",chatMsgHTML(m));
   list.scrollTop=list.scrollHeight;
 }
@@ -1377,7 +1386,9 @@ function renderChat(){
   main.innerHTML=h;
   main.querySelectorAll(".chan").forEach(b=>b.onclick=()=>{state.chatChan=b.dataset.chan;renderChat();});
   const list=document.getElementById("chatlist");
-  list.innerHTML=(chatData[cur.id]||[]).map(chatMsgHTML).join("")||'<div class="empty">No messages yet — say hi!</div>';
+  const msgs=chatData[cur.id]||[];
+  if(!msgs.length){ list.innerHTML='<div class="empty">No messages yet — say hi!</div>'; list.dataset.lastday=""; }
+  else{ let hh="",prev=""; msgs.forEach(m=>{ const k=dayKey(m.ts); if(k&&k!==prev){ hh+=dayDivHTML(m.ts); prev=k; } hh+=chatMsgHTML(m); }); list.innerHTML=hh; list.dataset.lastday=prev; }
   list.scrollTop=list.scrollHeight;
   const send=document.getElementById("chatSend");
   if(send){send.onclick=sendChat;
