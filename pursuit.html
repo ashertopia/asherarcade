@@ -178,6 +178,8 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .teamcard .tppl:active{transform:scale(.94);}
 .teamcard .tppl .ico{width:18px;height:18px;}
 .tdotbig{width:26px;height:26px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
+.shead .x.back{font-size:26px;line-height:1;font-weight:400;}
+.ldrtag{margin-left:7px;font-size:10px;font-weight:700;color:var(--pink);border:1px solid var(--pink);border-radius:6px;padding:1px 5px;vertical-align:1px;}
 .standings{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;}
 .standrow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:9px;background:var(--panel);border:1px solid var(--line);}
 .standrow.me{border-color:var(--pink);background:var(--panel2);}
@@ -584,7 +586,7 @@ const KNOWN_CHURCH = {
   "Christ Church":["David Peery","Jacob Sharp","Abby Myers","Dave Saunders","Erin Ide","David Eli Carney","Greyson Chumley","Kara Lemonis","Martin Ikenna Ogbunugafor"],
   "Restoration House":["Austyn Neal Roberts","Jared Wheeler","Deanna Crow"],
   "Sweetwater":["Chance Fielder","Khrysten Fielder","Mallori Hann","Joshua Hann"],
-  "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","Rc Tidwell","Rebekah Evans","Daniel Johnson","Cardaja Harkins","Xavier Keegan","Tamya Spikes","Naomi Bageant","Chase Garrison","Aryn Harvey","Israel Fayne","Papa Hayford","Serinah Ruiz","Enoc Moma","Anabell Irizarry"]
+  "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","RC Tidwell","Rebekah Evans","Daniel Johnson","Cardaja Harkins","Xavier Keegan","Tamya Spikes","Naomi Bageant","Chase Garrison","Aryn Harvey","Israel Fayne","Papa Hayford","Serinah Ruiz","Enoc Moma","Anabell Irizarry"]
 };
 
 /* ---- Service areas (filter dimension) + their service leaders ---- */
@@ -628,8 +630,42 @@ const TEAMS = [
   {name:"Tsisidu",animal:"Rabbit",color:"Light Purple",hex:"#b58bff",leaders:["Kara Lemonis","Israel Fayne"]},
   {name:"Julasgi",animal:"Alligator",color:"Pastel Pink",hex:"#ffb0cf",leaders:["Titus Shelton","Serinah Ruiz"]},
   {name:"Tsiya",animal:"Otter",color:"Mint",hex:"#7fe0bf",leaders:["Madison Reid","Kendale Lark Burch"]},
-  {name:"Tlameha",animal:"Bat",color:"TBD",hex:"#8b949e",leaders:["Xavier Keegan","Molly Roberts"]}
+  {name:"Tlameha",animal:"Bat",color:"Burn orange",hex:"#cc5500",leaders:["Xavier Keegan","Molly Roberts"]}
 ];
+/* ---- Full team rosters (campers) by team → church. Kept SEPARATE from KNOWN_CHURCH/allPeople
+   on purpose: these camper names appear ONLY in the team roster popup, nowhere else in the app.
+   Stored as "; "-separated strings per church code to keep names with quotes/apostrophes clean. ---- */
+const ROSTER_CH = {NSN:"New Song Nashville",CC:"Christ Church",GW:"Gateway",SW:"Sweetwater",BEL:"Belmont Church",SV:"Southview",NL:"Nashville Life",RH:"Restoration House",SD:"Seeds",BTH:"Bethel"};
+const ROSTER_CH_ORDER = ["NSN","CC","GW","SW","BEL","SV","NL","RH","SD","BTH"];
+const TEAM_ROSTER = {
+  "Awi":{NSN:`Eli Murray; Zander Thomas; Elijah Powell; Levi Testerman; Mary Emmaline Pe; Emmaline Madole`,CC:`Savannah Bell; Avery Finnegan`,GW:`Lily Pinho; Sydney Lawrence; Levi Baldwin`,SV:`Jobe del Villar; Gabriel Johnson`,NL:`Amazinggrace Cyri; Camden Russell; Jacob Jones`,SD:`Anika Hanson`,BTH:`Lorenzo Reed; Gabrielle Lucas; Harvest Coats; Jedidiah Ojetola; Elías Gil Freitez`},
+  "Kamama":{NSN:`Elijah Stemper; Jeremiah Pearson; Eli Adams; Gloria Clinger; Ellie Owen; Noelle Hart`,CC:`Preston Spittler`,GW:`Kitty (Saoirse) Parada; Sloane Freeburg; Brice Kuhl`,BEL:`Jannat Gurbanzade`,SV:`Preston Player; Judah Bagley`,NL:`Carmen Dirl; Kaniya Neely`,RH:`Dalton Wheeler`,SD:`Solomon Cole`,BTH:`Beaudy Strickland; Tessa Almaguer; Paris White; Jimmie Hudson III; Joshue Ordóñez`},
+  "Kanunu":{NSN:`Isaac Mozingo; Jordan Beasley; Josiah Martinez; Eliana Martínez; Hope Sevits`,CC:`Gavin Ide; Kate Stinson`,GW:`Emma Julian; Elizabeth Tisdale; Aiden Harper`,SW:`Jonah Burns`,SV:`Nathan Certa`,NL:`Analee Mendez; Alexander Holmes`,RH:`Noah Roberts`,SD:`Truth Jansen`,BTH:`Timmy Pingitore; Elle Ratliff; Tatum Williams; Okiki Afuape; Paolo Santiago; Caroline DeLemos`},
+  "Ogana":{NSN:`Eli Martinez; Levi Stemper; Andrew Luthe; Emma Murray; Savannah Garrett; Zoey Wright`,CC:`Sadie Terry; Anyelin Ramirez`,GW:`Carlie Hubbell; Magnolia Priefer; Bennett Boutwell`,SV:`Caleb Whelan`,NL:`Amari Bargas; Makiyah; Marrico Mccall Jr`,SD:`Zoie Benitez`,BTH:`Duval Freites; Cate Rodriguez; Gabriela Watts; Jude Andrews; Silas Parker; Abigail DeLemos`},
+  "Soquili":{NSN:`Davontrey Hauskins; Eli Hart; Elijah Martinez; Eleanor O'Neal; Beth Codington`,CC:`Leah Taulbee; Corina Cherrico`,GW:`Caroline Elzinga; Taylor McKenzie; Rider Kuhl`,BEL:`Kyler Ostrander`,SV:`Wade Shetler`,NL:`Liliana Riley; Noah Mayfield`,RH:`Avey Roberts`,SD:`Emma Bragg`,BTH:`Gabriel Benitez; Carrie "Sue" Ruark; June Rodriguez; Josiah Aman.; JD Conrey; Emily DeLemos`},
+  "Tlvdatsi":{NSN:`Alfonso Martinez; Briggs Davis; Evelyn Testerman; Annabelle Powell; Taylor Styblo; Sophia Jackson`,CC:`Marcus Ateib; Faith Musgrove`,GW:`Carson Dilliard; Novella Glassner; Jonathan Williams`,SW:`Harper Leebron`,SV:`Santiago Saracual`,NL:`Aariyah (Aari) Caldwell; Shelby Scott`,RH:`Landyn Underhill`,SD:`Malina Hickey`,BTH:`Immanuel Hammers; Shaelyn Jade Andrews; Noa Grace Andrews; Elijah Britten; Berlyn Gamlin`},
+  "Tsula":{NSN:`Leo Hoskins; Judson Smith; Isabella Thomas; Audrey Watson`,CC:`Landon Campbell; Sarah Roberson`,GW:`Emma Rees; Lucy Emley; Lawson Tucker`,SW:`Bethany Anson`,SV:`Isaiah Hoaglan`,NL:`Danise Smith; Zionna (Xye) Taylor`,RH:`Ross Gilkey`,SD:`Elijah Asher; Elisabeth Hanson`,BTH:`Ronnie Fox; Samantha (Mufreesboro); Sophia Almaguer; Christopher Wright III; Bentley Knoll`},
+  "Ulano":{NSN:`Garrett Elliott; David Crouch; Teddy O'Neal; Addison Rosen; Hannah G Dodd; Ember Barnum`,CC:`August Cash Billington; Kate Bradford`,GW:`Adelynn McDow; Natalee Pope; David Brooks`,SV:`Caden Jones; Destiny Rampulla`,NL:`Erin Hernandez; Isabella Hogan; Brenden Goode`,RH:`Elisabeth Hanson`,SD:`Sera Holding`,BTH:`Brian Gyamsi; Ava Turney; Annmarie Berzonsky; Colston Laws; Felix Barrios`},
+  "Uwaholi":{NSN:`Blake Berman; Jac Dupree; Rinah Clinger; Rebecca T Dodd; Anastasia Zapata`,CC:`Bretford Bell; Eliana Rivera`,GW:`Haiden Shedd; Ali Johnson; Brooks McDow`,SW:`Delana Lindsey`,SV:`Joshua Myers; Eliana Watson`,NL:`Kamron Pittman; Jagger Springfield`,RH:`Machaira Dixon`,SD:`Michael Mullen; Eliza Jenkins`,BTH:`Jeremiah Hammers; Alyssa Hofacker; Claire Ward; Sam Guice; Mikey Medcalf`},
+  "Wahuhi":{NSN:`Jett Hart; Keenan Mattson; Caitlin Blankenship; Ellie Hewitt; Avis Smith`,CC:`Elizabeth Morrow; Hilary Lopez`,GW:`Khloe Church; Harper Smiley`,BEL:`Nik Chernov`,SV:`Roberto Alexander Lopez II; Nina Ray`,NL:`Iyana Payne; Isabella Hogan; Teriona Majors`,RH:`Colton Wheeler`,SD:`Gabriel Cole`,BTH:`Dawson Ward; Julianne Cunningham; Sophia Bartlett; Max Evans; Kamden Sutton`},
+  "Yansa":{NSN:`Worth Blankenship; Kannon Zimmerman; Amaris Hewitt; Zoe Evrist; Lillah Racki`,CC:`Daniel Mangrum; Lauren Taulbee`,GW:`Emma Reginelli; Abigail Snow; Chase Gleaton`,SW:`Jonathan "Clyde" Lindsey`,SV:`Evan Aviles; Kinsley Simpson`,NL:`Carmello Davis; Marcus Berry`,RH:`Madison Barber`,SD:`Camden Cole; Elsie Steele`,BTH:`Johnny Ratliff; Kamin Smith; Caesyn Richerson; Lucas Reifschneider; Major Robinson III`},
+  "Yona":{NSN:`Abe Cartee; Gabe Edmonson; Emery Smith; Ella Willits; Tess Murray`,CC:`Brooklyn Bennett; Jael Kwakye`,GW:`Bailey Allan; Morgan Lawrence`,BEL:`Deven Wothke`,SV:`Cole Ray; Mia Jones`,NL:`Genevieve Bays; Noah Gaines`,RH:`Izabel King`,SD:`Noah Jansen; Lilliana Rushing`,BTH:`Dallas Siaosi; Karis Smith; Tatum Rodriguez; Jayeln Smith; Fabian Padron`},
+  "Utsonati":{NSN:`Hunter Tarkington; Reuben Doyle; Brooklyn Edmonson; Emory Hillenbrand; Christina Atalyn Martinez`,CC:`Gerson Sanchez; Avery Billington`,GW:`Lucy Freel; Mika Salasin`,SV:`Kypton Brock; Angelina Aviles`,NL:`Jasmine Blanford; Azlan Savage; Jerron Barnes`,RH:`Felix McElfresh`,SD:`AnnMarie Hebden`,BTH:`James Watts III; Foisagaasina Siaosi; Zarian Williams; Benjamin Goudeaux; Abel Barrios`},
+  "Wahya":{NSN:`Jaiden Johnson; Jax Richey; Integrity Schamel; Wren Morris; Arianna Lathrop`,CC:`Zuriel Sanchez; Sophie Hall`,GW:`Adia Berry; Preston Ford Tucker`,BEL:`Isaac Beard`,SV:`Josiah Bagley; Reagan Brunette`,NL:`Zahonnie's Cashwell; Tiffany Nelson`,RH:`John Dixon`,SD:`Cadence Sprouse`,BTH:`Lance Rodriguez; Lakelan So'osemea; Zellaree Williams; Alijah Tucker; Alexandrio Cifuentes`},
+  "Wadaduga":{NSN:`David (Ansel) Hillenbrand; Ezekiel "Zeke" McGregor; Kenna Mozingo; Lexis Zaniewski; Clara Owen`,CC:`Verdley M. Jacques; Michelle Mangrum`,GW:`Tavie Stinson; Sawyer Berry`,SW:`Layla Davis`,NL:`Koi Williams; Tadiwa Vhumisai`,RH:`Chloe Peck`,SD:`Brantley Cole`,BTH:`Omolemo; Anastasia Tweedy; Madison Buntyon; Brandon Lamin-Bangura; Jalen Thompson`},
+  "Squaduli":{NSN:`Joshua Ochiel; Ike Cartee; Averi Zimmerman; Catey Murray; Adelaide Adams`,CC:`Reagan Thompson; Hannah Morrow`,GW:`Irabelle Redmon; Judah Baldwin`,SV:`Judah Johnson; Eliora Bagley`,NL:`Khloe; Gary Mugabi; James Price`,BTH:`Emanuel Gil Freitez; Emmybelle Gyamfi; Maleyah Henry; Kemari Riley; Caleb Lamin-Bangura; Sharlot Rivas`},
+  "Inoli":{NSN:`Noah Phillips; Caleb Ochiel; Danika Yoder; Iris Pearson; Hannah Clinger`,CC:`David Sanchez; Abigail Jones`,GW:`Addison Baldwin; Davis Kuhl`,BEL:`Genesis De Leon`,SV:`Elijah Terry; Makyla Chuor`,NL:`Genevieve Bays; Dominick Alford`,RH:`Savannah Dixon`,SD:`Luke Mullen`,BTH:`Felipe Centeno; Maame Hayford; Hannah Caraway; Travis Riley Jr; Tyson Williams`},
+  "Wdulisi":{NSN:`Zade Oakerson; Judah Ingles; James Daniel; Eden Munden; Maria Rosen`,CC:`Devine Johnson; Juliet Jones`,GW:`Abigail Dodd; Eli Butcher`,SV:`Cephas del Villar; Payton Rampulla`,NL:`Amaris Osagiele; Olivia Terrell`,RH:`Logan`,SD:`Johnny Bratcher; Mattie Jenkins`,BTH:`Elias Huntley; Jesi Reed; Jemimah Ojetola; Jayden Hodges; Pietro Resende Fioravanti`},
+  "Tsisidu":{NSN:`Matthew Dodd; Isaiah Daniels; Abigail Rosen; Chloe Waters; Luma Cavassana`,CC:`Caleb Moore; Dresden Ide`,GW:`Viviana Salasin; Andrew Zerbe`,SW:`Conner Schatz`,SV:`Aiden Clendenen; Kalia Patterson`,NL:`Hannah Gitimu; Isaiah Mayfield`,RH:`Bailey Dixon`,SD:`Gianni Giacomelli`,BTH:`William Pingitore; Alesha Suniula; Isabella Almaguer; King-Elias Morgan; Matt Almaguer`},
+  "Julasgi":{NSN:`Cooper Garrett; James McGregor; Nay Nay Tassaw; Hattie O'Neal; Bella Lathrop`,CC:`Luke Anderson; Grace Foutch`,GW:`Felicity Salasin; Max Gallion`,SV:`Owen Wertz; Piper Whisnant`,NL:`Berklee Timmons; Brinley Rich`,RH:`Gage Lancaster`,SD:`Logan Harper; Selah Cole`,BTH:`Gianni Rodriquez; Alana Williams; Gabriella Robertson; Kadence Riley; Josiah Metoyer`},
+  "Tsiya":{NSN:`Cooke Peterson; Cyrus Munden; Shiloh Verni; Glory Sevits; Myra Davis`,CC:`Maikel Garcia; Hannah Ogbunugafor`,GW:`Elizabeth Cordero; Luke Brown`,SV:`Caleb Watson; Kiana Starr`,NL:`Karmen Hogan; Jaida Norman`,RH:`Reese Franklin`,SD:`Abigail Geerts`,BTH:`Jesiah Sutton; Ariana McClain; Legacy Schroeder; Jeremiah Robertson; Karter Yarbrough; Maci Dodson`},
+  "Tlameha":{NSN:`Ethan Kellums; Caleb Waters; Julia Daniel; Ana Daniels; Camilla Jones`,CC:`Bryant Jackson; CieL Carney`,GW:`Addyson Posusney; Brynner Boutwell`,SV:`Noah Reginelli; Leilani Starr`,NL:`Gabrielle Hall; Keenan Bishop`,RH:`Emma Crow`,SD:`Joscelin Swilley`,BTH:`Kreid Smith; Jakyra Hodges; Laila Gardner; Lincoln Howse; Justice Mallery; Ella Dodson`}
+};
+function teamRoster(tname){
+  const g=TEAM_ROSTER[tname]; const out=[]; if(!g) return out;
+  ROSTER_CH_ORDER.forEach(code=>{ if(g[code]) g[code].split(";").map(s=>s.trim()).filter(Boolean).forEach(n=>out.push({n:n,c:ROSTER_CH[code]})); });
+  return out;
+}
 function teamOf(name){return TEAMS.find(t=>t.leaders.includes(name))||null;}
 // Which service team (Worship / Medical / Safety / Visual / Activities) a person serves on
 function serviceTeamOf(name){for(const k in SERVICE_TEAMS){if(SERVICE_TEAMS[k].includes(name))return k;}return null;}
@@ -1232,27 +1268,38 @@ function renderTeams(){
   main.innerHTML=h;
   main.querySelectorAll(".tppl").forEach(el=>el.onclick=()=>openTeam(el.dataset.t));
 }
-/* Tap the person icon on a team → who's on that team */
+/* Tap the person icon on a team → the whole team roster (leaders + every camper, each with their church).
+   Camper names live only here (TEAM_ROSTER), never in the People tab / pickers / chat. */
+function rosterRowHTML(name,church,leader){
+  const col=CHURCH_COLOR[church]||"#8b949e";
+  return '<div class="member"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
+    '<div class="info"><div class="n">'+esc(name)+(leader?'<span class="ldrtag">Leader</span>':'')+'</div>'+
+    '<div class="r">'+(church?chSpan(church):'<span style="color:var(--dim)">—</span>')+'</div></div></div>';
+}
+let _teamBack=false;
+function teamBack(){ if(_teamBack) history.back(); else { document.getElementById("modal").classList.remove("open"); render(); } }
 function openTeam(tname){
   const t=TEAMS.find(x=>x.name===tname); if(!t)return;
   const sheet=document.getElementById("sheet");
-  const roster=(t.members&&t.members.length)?t.members:t.leaders;   // full roster if we have one, else the captains
-  const label=(t.members&&t.members.length)?"Team":"Team captains";
-  let h='<div class="shead"><span class="tdotbig" style="background:'+t.hex+'"></span>'+
-        '<div><div style="font-size:17px;font-weight:700;color:'+litColor(t.hex)+'">'+esc(t.name)+'</div>'+
-        '<div style="font-size:12px;color:var(--dim);">'+esc(t.animal)+' · '+esc(t.color)+'</div></div>'+
-        '<button class="x" onclick="closeModal()">×</button></div><div class="sbody">'+
-        '<div class="sectionlabel">'+label+' · '+roster.length+'</div>';
-  roster.forEach(n=>{
-    const known=allPeople().includes(n), col=CHURCH_COLOR[churchOf(n)]||"#8b949e";
-    h+='<div class="member"'+(known?' data-p="'+esc(n)+'"':'')+'><div class="avatar" style="background:'+col+'">'+initials(n)+'</div>'+
-       '<div class="info"><div class="n">'+esc(n)+'</div>'+(churchOf(n)?'<div class="r">'+chSpan(churchOf(n))+'</div>':'')+'</div></div>';
-  });
+  const campers=teamRoster(tname);
+  const total=t.leaders.length+campers.length;
+  let h='<div class="shead">'+
+        '<button class="x back" onclick="teamBack()" aria-label="Back" title="Back">‹</button>'+
+        '<span class="tdotbig" style="background:'+t.hex+'"></span>'+
+        '<div style="flex:1;min-width:0;"><div style="font-size:17px;font-weight:700;color:'+litColor(t.hex)+'">'+esc(t.name)+'</div>'+
+        '<div style="font-size:12px;color:var(--dim);">'+esc(t.animal)+' · '+esc(t.color)+' · '+total+' people</div></div>'+
+        '<button class="x" onclick="teamBack()" aria-label="Close">×</button></div><div class="sbody">';
+  h+='<div class="sectionlabel">Team leaders</div>';
+  t.leaders.forEach(n=>{ h+=rosterRowHTML(n,churchOf(n),true); });
+  h+='<div class="sectionlabel">Team roster · '+campers.length+'</div>';
+  if(campers.length) campers.forEach(p=>{ h+=rosterRowHTML(p.n,p.c,false); });
+  else h+='<div class="empty">No campers listed for this team yet.</div>';
   h+='</div>';
   sheet.innerHTML=h;
-  sheet.querySelectorAll(".member[data-p]").forEach(el=>el.onclick=()=>openPerson(el.dataset.p));
+  _teamBack=true; try{ history.pushState({pcTeam:1},""); }catch(e){ _teamBack=false; }
   document.getElementById("modal").classList.add("open");
 }
+if(!window._pcTeamPop){ window._pcTeamPop=1; window.addEventListener("popstate",()=>{ if(_teamBack){ _teamBack=false; const m=document.getElementById("modal"); if(m&&m.classList.contains("open")){ m.classList.remove("open"); render(); } } }); }
 /* ---- Camp chat (Firebase Realtime Database) ---- */
 const FIREBASE_CONFIG = {
   apiKey:"AIzaSyDLcVluB0qfrK0p63I1IzEY8aIOu7SAz2c",
@@ -1495,7 +1542,7 @@ function personDay(name,day){
   if(!duties.length) h+='<div class="banner">'+esc(name)+' has no role duties on '+day+' — follows the normal camp schedule above.</div>';
   h+='</div>'; return h;
 }
-function closeModal(){document.getElementById("modal").classList.remove("open");render();}
+function closeModal(){_teamBack=false;document.getElementById("modal").classList.remove("open");render();}
 
 /* ---- admin sheet ---- */
 function openAdmin(){
