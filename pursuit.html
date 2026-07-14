@@ -748,7 +748,7 @@ state.time=nowMinutes(); state.follow=true;   // always start on live time
 { const _tn=todayName(); if(_tn){ state.day=_tn; state.follow=true; } }  // camp week: lock onto today's live time (ignore any saved preview day)
 function saveUI(){store.ui={tab:state.tab,day:state.day,findMode:state.findMode,pickChurch:state.pickChurch,pickArea:state.pickArea};saveStore();}
 function nowMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes();}
-function todayName(){const iso=new Date().toISOString().slice(0,10);return CAMP.days.find(d=>CAMP.dates[d]===iso)||null;}
+function todayName(){const d=new Date();const iso=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");return CAMP.days.find(x=>CAMP.dates[x]===iso)||null;}  // LOCAL date (not UTC — toISOString rolled to tomorrow after ~7pm Central)
 function defaultDay(){return todayName()||"Monday";}
 function isLive(){return todayName()===state.day && state.follow;}
 
