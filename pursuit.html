@@ -174,6 +174,10 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .teamcard .tlds{font-size:13px;margin-top:2px;color:var(--txt);}
 .teamcard .tac{font-size:12px;margin-top:2px;color:var(--dim);}
 .teamcard .tpts{flex:0 0 auto;min-width:66px;text-align:right;font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--txt);padding-left:4px;}
+.teamcard .tppl{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);color:var(--dim);width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+.teamcard .tppl:active{transform:scale(.94);}
+.teamcard .tppl .ico{width:18px;height:18px;}
+.tdotbig{width:26px;height:26px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
 .standings{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;}
 .standrow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:9px;background:var(--panel);border:1px solid var(--line);}
 .standrow.me{border-color:var(--pink);background:var(--panel2);}
@@ -617,7 +621,7 @@ const TEAMS = [
   {name:"Yona",animal:"Bear",color:"Red",hex:"#e5342b",leaders:["James Lowe II","Mallori Hann"]},
   {name:"Utsonati",animal:"Rattlesnake",color:"Pink",hex:"#ff5fa2",leaders:["Luke Reid","Anabell Irizarry"]},
   {name:"Wahya",animal:"Wolf",color:"Teal",hex:"#159a9a",leaders:["Pierson Nelson","Cardaja Harkins"]},
-  {name:"Utsisdalugi",animal:"Firefly",color:"Cream",hex:"#efe3bf",leaders:["Jackie Bragg","Chase Garrison"]},
+  {name:"Wadaduga",animal:"Firefly",color:"Cream",hex:"#efe3bf",leaders:["Jackie Bragg","Chase Garrison"]},
   {name:"Squaduli",animal:"Hornet",color:"Black",hex:"#2a2f37",leaders:["Daniel Burchfield","Enoc Moma"]},
   {name:"Inoli",animal:"Badger",color:"Light Brown",hex:"#bd8a5a",leaders:["Ella Hufalar","Papa Hayford"]},
   {name:"Wdulisi",animal:"Bee",color:"Magenta",hex:"#e0189a",leaders:["David Eli Carney","Maceline Green"]},
@@ -1187,11 +1191,33 @@ function renderTeams(){
     h+='<div class="teamcard'+(mine?' mine':'')+'" style="border-left-color:'+t.hex+'">'+
        '<span class="trank">'+rankHTML+'</span>'+
        '<div class="tinfo"><div class="tn" style="color:'+litColor(t.hex)+'">'+esc(t.name)+'</div>'+
-         '<div class="tlds">'+t.leaders.map(esc).join(" · ")+'</div>'+
          '<div class="tac">'+esc(t.animal)+' · '+esc(t.color)+'</div></div>'+
+       '<button class="tppl" data-t="'+esc(t.name)+'" title="See who\'s on this team" aria-label="See who\'s on '+esc(t.name)+'">'+ico('person')+'</button>'+
        '<span class="tpts">'+r.pts+'</span></div>';
   });
   main.innerHTML=h;
+  main.querySelectorAll(".tppl").forEach(el=>el.onclick=()=>openTeam(el.dataset.t));
+}
+/* Tap the person icon on a team → who's on that team */
+function openTeam(tname){
+  const t=TEAMS.find(x=>x.name===tname); if(!t)return;
+  const sheet=document.getElementById("sheet");
+  const roster=(t.members&&t.members.length)?t.members:t.leaders;   // full roster if we have one, else the captains
+  const label=(t.members&&t.members.length)?"Team":"Team captains";
+  let h='<div class="shead"><span class="tdotbig" style="background:'+t.hex+'"></span>'+
+        '<div><div style="font-size:17px;font-weight:700;color:'+litColor(t.hex)+'">'+esc(t.name)+'</div>'+
+        '<div style="font-size:12px;color:var(--dim);">'+esc(t.animal)+' · '+esc(t.color)+'</div></div>'+
+        '<button class="x" onclick="closeModal()">×</button></div><div class="sbody">'+
+        '<div class="sectionlabel">'+label+' · '+roster.length+'</div>';
+  roster.forEach(n=>{
+    const known=allPeople().includes(n), col=CHURCH_COLOR[churchOf(n)]||"#8b949e";
+    h+='<div class="member"'+(known?' data-p="'+esc(n)+'"':'')+'><div class="avatar" style="background:'+col+'">'+initials(n)+'</div>'+
+       '<div class="info"><div class="n">'+esc(n)+'</div>'+(churchOf(n)?'<div class="r">'+chSpan(churchOf(n))+'</div>':'')+'</div></div>';
+  });
+  h+='</div>';
+  sheet.innerHTML=h;
+  sheet.querySelectorAll(".member[data-p]").forEach(el=>el.onclick=()=>openPerson(el.dataset.p));
+  document.getElementById("modal").classList.add("open");
 }
 /* ---- Camp chat (Firebase Realtime Database) ---- */
 const FIREBASE_CONFIG = {
