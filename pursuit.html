@@ -901,7 +901,41 @@ function poolLineHTML(day){
 /* ---- Small-group / cabin-time discussion guides (static, offline).
    Fill GUIDES[day].smallGroup / .cabin = {theme, scripture, questions:[...]} when content arrives.
    Empty for now → links show grayed and open a "coming soon" sheet (proof of concept). ---- */
-const GUIDES = { Monday:{}, Tuesday:{}, Wednesday:{}, Thursday:{}, Friday:{}, Saturday:{} };
+const GUIDES = {
+  Monday:{},
+  Tuesday:{ smallGroup:{ questions:[
+    `Why do you think the Israelites were in danger of forgetting God in abundance, why is it so easy for us to do the same?`,
+    `Why can prosperity sometimes be more spiritually dangerous than hardship?`,
+    `What does it look like when we are trusting God's blessings more than God Himself?`,
+    `What does it look like to seek His face always and keep him first in everything, especially seasons of abundance?`,
+    `How often do you just thank God for the gifts He has given you?`,
+    `In what ways has God blessed you that could be used to bless others?`,
+    `How might giving away what God has given you create more room for Him in your life?`
+  ] } },
+  Wednesday:{ smallGroup:{ questions:[
+    `What are some of the valleys that you have been through in your life and how have you seen God in the middle of it?`,
+    `What does it look like to remember God before the valley?`,
+    `How can you not shy away from hard things in your life? How can the hard things in life reveal more about who God is?`,
+    `How can community support you in the darkest valley?`,
+    `In what ways have you seen yourself be formed in the darkest valley?`
+  ] } },
+  Thursday:{ smallGroup:{ questions:[
+    `When you hear the word "enemy," what comes to mind first?`,
+    `What stands out to you about God preparing a table while enemies are still present?`,
+    `Why do you think God sometimes fills us in the middle of the battle instead of removing the battle right away?`,
+    `What are some things people can say or do that make students feel attacked, rejected, embarrassed, or like someone is against them?`,
+    `What does it mean that our fight is not against flesh and blood and why is it dangerous to see people as our ultimate enemy?`,
+    `How does knowing the real enemy change the way we respond to people who hurt us?`,
+    `Take a quiet moment and ask God: "Jesus, who have I been carrying that You are asking me to release?" Then pray: "Jesus, help me forgive. Heal what has been wounded. Fill what has been emptied. Teach me to stay full even in the presence of my enemies."`
+  ] } },
+  Friday:{ smallGroup:{ questions:[
+    `As you ponder this week's topics and your own life, how can you see "God's goodness and unfailing love pursuing you all the days of your life?"`,
+    `In your pursuit of God, what are some things you can "throw off" so that you can run after God better? (See Hebrews 12:1-2)`,
+    `How does the thought of you being, "in God's house" change how you view your relationship with God?`,
+    `What are the "brushing your teeth" things you can start doing or do better daily that will help you love God "all the days of your life"?`
+  ] } },
+  Saturday:{}
+};
 // Effective guide = admin-entered content (Firebase, cached offline) OR the bundled default
 function guideFor(day,slot){ return ((store.guidesCache||{})[day]||{})[slot] || (GUIDES[day]||{})[slot] || null; }
 function hasGuide(day,slot){ const g=guideFor(day,slot); return !!(g && g.questions && g.questions.length); }
