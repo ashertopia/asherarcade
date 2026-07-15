@@ -130,6 +130,9 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .bottombar .bb{flex:1;text-align:center;padding:9px 3px;border-radius:9px;background:var(--panel);border:1px solid var(--line);color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
 .bottombar .bb:active{transform:scale(.98);}
 .bottombar .bb.active{background:var(--panel2);border-color:var(--pink);color:var(--txt);}
+.bottombar .bbicon{flex:0 0 50px;max-width:50px;display:flex;align-items:center;justify-content:center;color:var(--txt);padding:9px 0;}
+.bottombar .bbicon .ico{width:20px;height:20px;}
+.bottombar .bbicon.need{color:var(--pink);border-color:var(--pink);animation:pulse 2s infinite;}
 .chatlist{height:58vh;min-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:6px 2px;-webkit-overflow-scrolling:touch;}
 .msg{max-width:82%;align-self:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 11px;}
 .msg.mine{align-self:flex-end;background:#20303f;border-color:#2f4658;}
@@ -180,6 +183,17 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .tdotbig{width:26px;height:26px;border-radius:50%;border:1px solid #0006;flex:0 0 auto;}
 .shead .x.back{font-size:26px;line-height:1;font-weight:400;}
 .ldrtag{margin-left:7px;font-size:10px;font-weight:700;color:var(--pink);border:1px solid var(--pink);border-radius:6px;padding:1px 5px;vertical-align:1px;}
+.taskprog{font-size:12px;font-weight:700;color:var(--dim);margin:10px 0 4px;}
+.taskgroup{margin-bottom:12px;}
+.taskglabel{font-size:13px;font-weight:700;color:var(--txt);margin:8px 0 5px;}
+.taskgcount{font-size:11px;font-weight:600;color:var(--dim);margin-left:4px;}
+.taskrow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:6px;cursor:pointer;}
+.taskrow:active{transform:scale(.995);}
+.taskrow .taskbox{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;color:#101418;}
+.taskrow .taskbox .ico{width:16px;height:16px;}
+.taskrow.on .taskbox{background:var(--green,#3fb950);border-color:var(--green,#3fb950);}
+.taskrow.on .tasklbl{color:var(--dim);text-decoration:line-through;}
+.taskrow .tasklbl{font-size:14px;}
 .standings{display:flex;flex-direction:column;gap:3px;margin-bottom:14px;}
 .standrow{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:9px;background:var(--panel);border:1px solid var(--line);}
 .standrow.me{border-color:var(--pink);background:var(--panel2);}
@@ -277,16 +291,15 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
 </div>
 
 <div class="foot">
-  Pursuit Camp • July 13–18, 2026 • Camp Garner Creek, Dickson TN<br>
-  <a id="adminLink" style="opacity:.45;font-size:10px;">admin</a>
+  Pursuit Camp • July 13–18, 2026 • Camp Garner Creek, Dickson TN
 </div>
 
 <div class="bottombar"><div class="inner">
   <button class="bb" data-bb="map">Map</button>
-  <button class="bb" data-bb="contacts">Contacts</button>
   <button class="bb" data-bb="links">Links</button>
-  <button class="bb help" data-bb="help">Help</button>
-  <button class="bb" data-bb="refresh" title="Refresh to latest">↻ Refresh</button>
+  <button class="bb" data-bb="admin">Admin</button>
+  <button class="bb" data-bb="tbd">TBD</button>
+  <button class="bb bbicon" id="refreshBtn" data-bb="refresh" title="Refresh to latest" aria-label="Refresh"><svg class="ico" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></button>
 </div></div>
 
 <script>
@@ -703,8 +716,34 @@ store.me = store.me || "";              // "this is me" — remembered on this p
 store.adminOK = store.adminOK || false; // Admin chat unlocked on this device (passcode verified by Firebase)
 store.extraAdmins = store.extraAdmins || [];   // extra admins added in-app (synced via Firebase, cached here for offline)
 store.guidesCache = store.guidesCache || {};   // discussion-question content (synced via Firebase, cached here for offline)
-// Is this person an admin (base 3 + any added in-app)?
+store.tasksCache = store.tasksCache || {};     // per-church checklist completion state (synced via Firebase, cached for offline)
+store.taskDefs = store.taskDefs || {};         // custom tasks added by admins (synced via Firebase, cached for offline)
+// Is this person a full camp admin (base 3 + any added in-app)? — gets ALL Leader tools
 function isAdmin(name){ return !!name && (ADMIN_TOOLS.includes(name) || (store.extraAdmins||[]).includes(name)); }
+// Is this person leadership (a church pastor OR a full admin)? — gets the Admin Tasks checklist
+function isLeadership(name){ return !!name && (isAdmin(name) || CHAT_ADMINS.includes(name)); }
+// Firebase-safe key for a church name
+function churchKey(ch){ return String(ch||"").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/(^_|_$)/g,""); }
+/* ---- Admin Tasks: per-church checklist. Macey (admin) assigns; pastors + admins tick boxes.
+   Completion state lives in Firebase (taskState/{church}/{itemId}); custom tasks in taskDefs/{church}. ---- */
+const TASK_TEMPLATE = [
+  {id:"payments", label:"Payments", items:[{id:"deposit",label:"Deposit paid"},{id:"final",label:"Final payment paid"}]},
+  {id:"training", label:"Leader training & volunteer forms", perLeader:true},
+  {id:"forms", label:"Camper forms & waivers", items:[{id:"medical",label:"Medical forms collected"},{id:"consent",label:"Consent / liability waivers"},{id:"photo",label:"Photo release"}]},
+  {id:"logistics", label:"Logistics", items:[{id:"cabins",label:"Cabin assignments submitted"},{id:"headcount",label:"Final headcount confirmed"},{id:"roster",label:"Team roster confirmed"}]}
+];
+// Build the checklist groups for a church (template + custom, with per-leader items expanded)
+function taskGroupsFor(ch){
+  const groups=TASK_TEMPLATE.map(g=>{
+    if(g.perLeader){ const items=(KNOWN_CHURCH[ch]||[]).map(n=>({id:"lead_"+churchKey(n),label:n})); return {id:g.id,label:g.label,items:items}; }
+    return {id:g.id,label:g.label,items:g.items};
+  });
+  const custom=(store.taskDefs&&store.taskDefs[churchKey(ch)])||{};
+  const cItems=Object.keys(custom).map(id=>({id:id,label:custom[id]})).filter(x=>x.label);
+  if(cItems.length) groups.push({id:"custom",label:"Other tasks",items:cItems});
+  return groups;
+}
+function taskDone(ch,gid,iid){ return !!(((store.tasksCache||{})[churchKey(ch)]||{})[gid+"__"+iid]); }
 // Turn pasted text (bullets, 1/2/3, or plain lines) into a clean question list
 function parseQuestions(t){ return String(t||"").split(/\r?\n/).map(l=>l.replace(/^\s*(?:[-*•·▪]|\d+[.):])\s*/,"").trim()).filter(Boolean); }
 // Apply the authoritative roster once (version bump re-applies for returning users)
@@ -736,7 +775,8 @@ const ICONS={
   map:"M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z",
   bell:"M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z",
   refresh:"M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z",
-  install:"M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zm-5-1 4-4h-3V8h-2v5H8l4 4z"
+  install:"M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zm-5-1 4-4h-3V8h-2v5H8l4 4z",
+  check:"M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
 };
 function ico(name,cls){ return '<svg class="ico'+(cls?" "+cls:"")+'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="'+ICONS[name]+'"/></svg>'; }
 
@@ -1247,7 +1287,12 @@ function linksHTML(){
   h+='<div class="banner">Main meeting space: <b>'+esc(CAMP.mainSpace)+'</b> · Leader parking: across from the Dining Hall.</div>';
   return h;
 }
-function openLinks(){openSheet("Important pages & links",linksHTML());}
+function openLinks(){
+  let h=linksHTML();
+  h+=contactsHTML();   // Contacts now live on the Links page
+  if(HELP_PHONE) h+='<div class="sectionlabel">Need help?</div><div class="linkgrid"><div class="linkrow" onclick="helpAction()" style="cursor:pointer;"><span class="ic">'+ico('phone')+'</span><span class="lx"><span class="a">Text the Help line</span><span class="b">a question or concern — tap to text</span></span><span class="go">›</span></div></div>';
+  openSheet("Links, contacts & help", h);
+}
 function helpAction(){
   if(HELP_PHONE) location.href="sms:"+HELP_PHONE.replace(/[^0-9]/g,"")+"?&body="+encodeURIComponent("Pursuit Camp — I have a question/concern: ");
   else alert("The Help text line isn’t set up yet.");
@@ -1340,6 +1385,8 @@ function initChat(){
     chatDb.ref("scores").on("value",s=>{ chatScores=s.val()||{}; if(state.tab==="teams") renderTeams(); });
     chatDb.ref("admins").on("value",s=>{ store.extraAdmins=(s.val()||[]).filter(Boolean); saveStore(); subscribeChannels(); render(); });
     chatDb.ref("guides").on("value",s=>{ store.guidesCache=s.val()||{}; saveStore(); if(state.tab==="camp") renderCamp(); });
+    chatDb.ref("taskState").on("value",s=>{ store.tasksCache=s.val()||{}; saveStore(); if(document.getElementById("taskWrap")) adminPane("tasks"); });
+    chatDb.ref("taskDefs").on("value",s=>{ store.taskDefs=s.val()||{}; saveStore(); if(document.getElementById("taskWrap")) adminPane("tasks"); });
     if(state.tab==="chat") render();
   }catch(e){ chatDb=null; }
 }
@@ -1554,19 +1601,56 @@ function closeModal(){_teamBack=false;document.getElementById("modal").classList
 
 /* ---- admin sheet ---- */
 function openAdmin(){
-  if(!isAdmin(store.me) || !store.adminOK) return;   // gated: admins + verified passcode
+  if(!isLeadership(store.me) || !store.adminOK) return;   // gated: pastors/admins + verified passcode
+  const full=isAdmin(store.me);
   const sheet=document.getElementById("sheet");
-  let h='<div class="shead"><div style="font-size:17px;font-weight:700;">Leader / Admin tools</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
-  h+='<div class="banner">Update team <b>Scores</b>, post small-group <b>Questions</b>, and add <b>Admins</b> — changes sync to everyone. <b>People</b> assigns leaders to churches on this device.</div>';
-  h+='<div class="seg segwrap"><div class="s active" data-a="scores">Scores</div><div class="s" data-a="guides">Questions</div><div class="s" data-a="admins">Admins</div><div class="s" data-a="people">People</div><div class="s" data-a="data">Export</div></div>';
+  let h='<div class="shead"><div style="font-size:17px;font-weight:700;">'+(full?"Leader / Admin tools":"Admin")+'</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
+  h+='<div class="seg segwrap"><div class="s active" data-a="tasks">Tasks</div>'+
+     (full?'<div class="s" data-a="scores">Scores</div><div class="s" data-a="guides">Questions</div><div class="s" data-a="admins">Admins</div><div class="s" data-a="people">People</div><div class="s" data-a="data">Export</div>':'')+
+     '</div>';
   h+='<div id="aPane"></div></div>';
   sheet.innerHTML=h;
   sheet.querySelectorAll(".seg .s").forEach(s=>s.onclick=()=>{sheet.querySelectorAll(".seg .s").forEach(x=>x.classList.remove("active"));s.classList.add("active");adminPane(s.dataset.a);});
-  adminPane("scores");
+  adminPane("tasks");
   document.getElementById("modal").classList.add("open");
+}
+function toggleTask(ch,gid,iid){
+  if(!chatDb){ alert("Connect to the internet to update tasks."); return; }
+  const ck=churchKey(ch), key=gid+"__"+iid, cur=taskDone(ch,gid,iid);
+  store.tasksCache[ck]=store.tasksCache[ck]||{}; if(cur) delete store.tasksCache[ck][key]; else store.tasksCache[ck][key]=true; saveStore();
+  chatDb.ref("taskState/"+ck+"/"+key).set(cur?null:true).catch(()=>alert("Couldn’t save. Check your internet — and that your Firebase rules include the \"taskState\" section."));
+  adminPane("tasks");
 }
 function adminPane(which){
   const pane=document.getElementById("aPane");
+  if(which==="tasks"){
+    const full=isAdmin(store.me);
+    let ch;
+    if(full){ ch=state._taskChurch||(CHURCHES.includes(churchOf(store.me))?churchOf(store.me):CHURCHES[0]); state._taskChurch=ch; }
+    else ch=churchOf(store.me);
+    let h='<div class="banner">'+(full?'Pick a church, then tap a box as each item is completed. Add tasks below — they sync to that church’s pastor.':'Tap a box as your church completes each item. Assignments are set by Macey.')+'</div>';
+    if(full) h+='<label class="fld">Church</label><select class="select" id="taskChurch">'+CHURCHES.map(c=>'<option'+(c===ch?' selected':'')+'>'+esc(c)+'</option>').join('')+'</select>';
+    else if(!ch){ pane.innerHTML='<div id="taskWrap"><div class="empty">No church is set for your name, so there’s no checklist yet.</div></div>'; return; }
+    else h+='<div class="sectionlabel">'+chSpan(ch)+'</div>';
+    if(!chatDb) h+='<div class="empty" style="margin:8px 0;">Offline — showing the last saved state. Reconnect to tick boxes.</div>';
+    const groups=taskGroupsFor(ch); let doneN=0,totN=0;
+    groups.forEach(g=>g.items.forEach(it=>{ totN++; if(taskDone(ch,g.id,it.id))doneN++; }));
+    h+='<div class="taskprog">'+doneN+' / '+totN+' done</div>';
+    groups.forEach(g=>{
+      const gd=g.items.filter(it=>taskDone(ch,g.id,it.id)).length;
+      h+='<div class="taskgroup"><div class="taskglabel">'+esc(g.label)+' <span class="taskgcount">'+gd+'/'+g.items.length+'</span></div>';
+      if(!g.items.length) h+='<div class="taskrow" style="opacity:.5;cursor:default;"><span class="tasklbl">No items.</span></div>';
+      g.items.forEach(it=>{ const on=taskDone(ch,g.id,it.id);
+        h+='<div class="taskrow'+(on?' on':'')+'" data-g="'+esc(g.id)+'" data-i="'+esc(it.id)+'"><span class="taskbox">'+(on?ico('check'):'')+'</span><span class="tasklbl">'+esc(it.label)+'</span></div>'; });
+      h+='</div>';
+    });
+    if(full) h+='<div class="admadd" style="margin-top:10px;"><input class="search" id="taskNew" placeholder="Add a task for '+esc(ch)+'…"><button class="btn pink" id="taskAddBtn">Add</button></div>';
+    pane.innerHTML='<div id="taskWrap">'+h+'</div>';
+    const sel=document.getElementById("taskChurch"); if(sel) sel.onchange=()=>{ state._taskChurch=sel.value; adminPane("tasks"); };
+    pane.querySelectorAll(".taskrow[data-g]").forEach(r=>r.onclick=()=>toggleTask(ch,r.dataset.g,r.dataset.i));
+    const ab=document.getElementById("taskAddBtn"); if(ab) ab.onclick=()=>{ const v=(document.getElementById("taskNew").value||"").trim(); if(!v)return; if(!chatDb){alert("Connect to the internet to add tasks.");return;} const id="t_"+Date.now(), ck=churchKey(ch); store.taskDefs[ck]=store.taskDefs[ck]||{}; store.taskDefs[ck][id]=v; saveStore(); chatDb.ref("taskDefs/"+ck+"/"+id).set(v).catch(()=>alert("Couldn’t save the task. Check your internet — and that your Firebase rules include the \"taskDefs\" section.")); adminPane("tasks"); };
+    return;
+  }
   if(which==="people"){
     pane.innerHTML='<input class="search" id="aSearch" placeholder="Search a name…"><div id="aList"></div>';
     document.getElementById("aSearch").oninput=renderAdminList; renderAdminList();
@@ -1695,18 +1779,19 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{state.tab=t.dataset.
 document.querySelectorAll(".bottombar .bb").forEach(b=>b.onclick=()=>{
   const k=b.dataset.bb;
   if(k==="map"){state.tab="map";render();}
-  else if(k==="contacts")openContacts();
   else if(k==="links")openLinks();
-  else if(k==="help")helpAction();
+  else if(k==="admin")adminButton();
+  else if(k==="tbd")alert("Coming soon.");
   else if(k==="refresh")location.reload();
 });
-document.getElementById("adminLink").onclick=()=>{
-  if(!isAdmin(store.me)){ alert("Leader tools are for camp admin only. Pick your name first if you're an admin."); return; }
+// Admin button (bottom bar): open Leader/Admin tools for pastors + admins (same shared passcode)
+function adminButton(){
+  if(!isLeadership(store.me)){ alert("Admin is for church pastors and camp admins. Pick your name first if that's you."); return; }
   if(store.adminOK){ openAdmin(); return; }                       // already unlocked on this device — no re-typing
-  const code=(prompt("Enter the Admin passcode to open Leader tools:")||"").trim();
+  const code=(prompt("Enter the Admin passcode:")||"").trim();
   if(!code) return;
-  unlockAdmin(code, ()=>openAdmin(), (msg)=>alert(msg));           // same passcode as Admin chat; unlock sticks everywhere
-};
+  unlockAdmin(code, ()=>openAdmin(), (msg)=>alert(msg));          // same passcode as Admin chat; unlock sticks everywhere
+}
 document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")closeModal();});
 /* ---- PWA: offline service worker + install hint ---- */
 if('serviceWorker' in navigator){
@@ -1720,7 +1805,7 @@ async function checkForUpdate(){
   const now=Date.now(); if(now-lastUpdCheck<45000) return; lastUpdCheck=now;
   try{ const t=await fetchSelf();
     if(selfSnap===null) selfSnap=t;
-    else if(t!==selfSnap) document.getElementById("updateBar").classList.add("show");
+    else if(t!==selfSnap){ document.getElementById("updateBar").classList.add("show"); const rb=document.getElementById("refreshBtn"); if(rb) rb.classList.add("need"); }
   }catch(e){}
 }
 window.addEventListener('load',()=>{ fetchSelf().then(t=>selfSnap=t).catch(()=>{}); });
