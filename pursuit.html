@@ -308,7 +308,8 @@ const LINKS = {
   infoHub:"https://linktr.ee/thepursuitcamp",
   email:"thepursuitcamp@gmail.com",
   rulebook:"",   // add a direct rulebook URL if you have one
-  website:""     // add the camp website URL if you have one
+  website:"",    // add the camp website URL if you have one
+  pastorVisit:"https://pc26pastorvisitform.paperform.co/"   // pastor visitation form
 };
 const HELP_PHONE = "6155170726";  // Help button texts this number
 // GPS coordinates for camp locations [lat,lng] (add more in Admin › Map pins).
@@ -638,7 +639,7 @@ const TEAMS = [
 const ROSTER_CH = {NSN:"New Song Nashville",CC:"Christ Church",GW:"Gateway",SW:"Sweetwater",BEL:"Belmont Church",SV:"Southview",NL:"Nashville Life",RH:"Restoration House",SD:"Seeds",BTH:"Bethel"};
 const ROSTER_CH_ORDER = ["NSN","CC","GW","SW","BEL","SV","NL","RH","SD","BTH"];
 const TEAM_ROSTER = {
-  "Awi":{NSN:`Eli Murray; Zander Thomas; Elijah Powell; Levi Testerman; Mary Emmaline Pe; Emmaline Madole`,CC:`Savannah Bell; Avery Finnegan`,GW:`Lily Pinho; Sydney Lawrence; Levi Baldwin`,SV:`Jobe del Villar; Gabriel Johnson`,NL:`Amazinggrace Cyri; Camden Russell; Jacob Jones`,SD:`Anika Hanson`,BTH:`Lorenzo Reed; Gabrielle Lucas; Harvest Coats; Jedidiah Ojetola; Elías Gil Freitez`},
+  "Awi":{NSN:`Eli Murray; Zander Thomas; Elijah Powell; Levi Testerman; Mary Emmaline; Emmaline Madole`,CC:`Savannah Bell; Avery Finnegan`,GW:`Lily Pinho; Sydney Lawrence; Levi Baldwin`,SV:`Jobe del Villar; Gabriel Johnson`,NL:`Amazinggrace; Camden Russell; Jacob Jones`,SD:`Anika Hanson`,BTH:`Lorenzo Reed; Gabrielle Lucas; Harvest Coats; Jedidiah Ojetola; Elías Gil Freitez`},
   "Kamama":{NSN:`Elijah Stemper; Jeremiah Pearson; Eli Adams; Gloria Clinger; Ellie Owen; Noelle Hart`,CC:`Preston Spittler`,GW:`Kitty (Saoirse) Parada; Sloane Freeburg; Brice Kuhl`,BEL:`Jannat Gurbanzade`,SV:`Preston Player; Judah Bagley`,NL:`Carmen Dirl; Kaniya Neely`,RH:`Dalton Wheeler`,SD:`Solomon Cole`,BTH:`Beaudy Strickland; Tessa Almaguer; Paris White; Jimmie Hudson III; Joshue Ordóñez`},
   "Kanunu":{NSN:`Isaac Mozingo; Jordan Beasley; Josiah Martinez; Eliana Martínez; Hope Sevits`,CC:`Gavin Ide; Kate Stinson`,GW:`Emma Julian; Elizabeth Tisdale; Aiden Harper`,SW:`Jonah Burns`,SV:`Nathan Certa`,NL:`Analee Mendez; Alexander Holmes`,RH:`Noah Roberts`,SD:`Truth Jansen`,BTH:`Timmy Pingitore; Elle Ratliff; Tatum Williams; Okiki Afuape; Paolo Santiago; Caroline DeLemos`},
   "Ogana":{NSN:`Eli Martinez; Levi Stemper; Andrew Luthe; Emma Murray; Savannah Garrett; Zoey Wright`,CC:`Sadie Terry; Anyelin Ramirez`,GW:`Carlie Hubbell; Magnolia Priefer; Bennett Boutwell`,SV:`Caleb Whelan`,NL:`Amari Bargas; Makiyah; Marrico Mccall Jr`,SD:`Zoie Benitez`,BTH:`Duval Freites; Cate Rodriguez; Gabriela Watts; Jude Andrews; Silas Parker; Abigail DeLemos`},
@@ -1229,6 +1230,7 @@ function linksHTML(){
   h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">'+ico('link')+'</span><span class="lx"><span class="a">Pursuit Camp Info Hub</span><span class="b">rulebook, forms &amp; all links</span></span><span class="go">›</span></a>';
   if(LINKS.rulebook) h+='<a class="linkrow" href="'+LINKS.rulebook+'" target="_blank" rel="noopener"><span class="ic">'+ico('book')+'</span><span class="lx"><span class="a">Rule book</span><span class="b">'+esc(LINKS.rulebook)+'</span></span><span class="go">›</span></a>';
   if(LINKS.website) h+='<a class="linkrow" href="'+LINKS.website+'" target="_blank" rel="noopener"><span class="ic">'+ico('globe')+'</span><span class="lx"><span class="a">Camp website</span><span class="b">'+esc(LINKS.website)+'</span></span><span class="go">›</span></a>';
+  if(LINKS.pastorVisit) h+='<a class="linkrow" href="'+LINKS.pastorVisit+'" target="_blank" rel="noopener"><span class="ic">'+ico('book')+'</span><span class="lx"><span class="a">Pastor visitation form</span><span class="b">for pastors — tap to open</span></span><span class="go">›</span></a>';
   h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">'+ico('chat')+'</span><span class="lx"><span class="a">Join the GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a>';
   h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">'+ico('mail')+'</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
   h+='</div>';
