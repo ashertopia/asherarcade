@@ -311,6 +311,7 @@ const LINKS = {
   website:"",    // add the camp website URL if you have one
   pastorVisit:"https://pc26pastorvisitform.paperform.co/"   // pastor visitation form
 };
+const WIFI_PASS = "Camp4Fun$99";   // camp Wi-Fi password (shown on the Links page)
 const HELP_PHONE = "6155170726";  // Help button texts this number
 // GPS coordinates for camp locations [lat,lng] (add more in Admin › Map pins).
 // Keys for activity spots match the Free Time schedule zone names so the
@@ -1192,6 +1193,10 @@ function churchLegendHTML(){
   h+='<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--dim);"><span style="width:12px;height:12px;border-radius:50%;background:#e3b341;border:1px solid #0006;"></span>Activity spot</span></div>';
   return h;
 }
+function copyWifi(){
+  try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(WIFI_PASS); }catch(e){}
+  alert("Wi-Fi password copied:\n"+WIFI_PASS);
+}
 function openSheet(title,body){
   const sheet=document.getElementById("sheet");
   sheet.innerHTML='<div class="shead"><div style="font-size:17px;font-weight:700;">'+esc(title)+'</div><button class="x" onclick="closeModal()">×</button></div><div class="sbody">'+body+'</div>';
@@ -1233,6 +1238,7 @@ function linksHTML(){
   if(LINKS.pastorVisit) h+='<a class="linkrow" href="'+LINKS.pastorVisit+'" target="_blank" rel="noopener"><span class="ic">'+ico('book')+'</span><span class="lx"><span class="a">Pastor visitation form</span><span class="b">for pastors — tap to open</span></span><span class="go">›</span></a>';
   h+='<a class="linkrow" href="'+LINKS.infoHub+'" target="_blank" rel="noopener"><span class="ic">'+ico('chat')+'</span><span class="lx"><span class="a">Join the GroupMe</span><span class="b">via the Info Hub</span></span><span class="go">›</span></a>';
   h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">'+ico('mail')+'</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
+  if(WIFI_PASS) h+='<div class="linkrow" onclick="copyWifi()" style="cursor:pointer;"><span class="ic">'+ico('globe')+'</span><span class="lx"><span class="a">Camp Wi-Fi password</span><span class="b">'+esc(WIFI_PASS)+' · tap to copy</span></span><span class="go">'+ico('link')+'</span></div>';
   h+='</div>';
   h+='<div class="sectionlabel">Getting to camp</div><div class="linkgrid">';
   h+='<a class="linkrow" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">'+ico('map')+'</span><span class="lx"><span class="a">Open camp in Google Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
