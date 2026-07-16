@@ -510,7 +510,7 @@ const SHIFT_CHURCHES = {
 };
 function shiftOf(name){return CHURCH_SHIFT[churchOf(name)]||0;}
 // Custom titles for people with no camp duties (shown in People list & profile)
-const SPECIAL_TITLES = {"Scott Asher":"Jedi Master · App Support"};
+const SPECIAL_TITLES = {"Scott Asher":"Jedi Master · App Support","Melodie Dimmock":"TB & Grahams Mom","Mel Dimmock":"TB & Grahams Mom"};
 
 /* ---- Admin / Welcome Table ---- */
 const ADMIN_TABLE = {
@@ -617,7 +617,7 @@ const POOL = {
 /* ---- Full leader rosters by church (from the PC26 Leader roster) ---- */
 const KNOWN_CHURCH = {
   "New Song Nashville":["Grant Ebright","Macey Duncan","Austin Duncan","Kaitlyn Rupert","Chelsey Smith","John Hagan","Melody Hagan","Dana Lathrop","Julia B Morris","Joy Clapp","Alex R Hart","Mark Schamel","Stuart Fritz","Mabel O'Neal","Luca Zapata","Chas Tippett","Jamie Waters","Zachariah McGahey","Pomaikai Chiara Romano","Caeden Rosen","Al Pearson","Judah Siegand","Stewart Fleming","Victoria Phillips","Nathan Cress","Kameryn King","Cameron King","Isabella Gautsche","Brent Lathrop","Allie Wilson","Martha Pearson","Kirk Roncskevitz","Grace Geeslin","Wesley Garrett","Victoria Joy Lanford","Micah Elliott","Ezra Siegand","Ruben Rivera III","Israel Schamel","Manny Schamel","Bryan Hagan","Crystal Schamel","Joel Evrist","Kayla Fritz","Chris Martin","Matthew Peels","Tyler Beiden","Nancy Ochiel","Peter Ochiel"],
-  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock","Scott Asher","JD Swilley","Jamé Swilley"],
+  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock","Scott Asher","JD Swilley","Jamé Swilley","Melodie Dimmock","Mel Dimmock"],
   "Southview":["Nevaeh Rampulla","Kahanah Chuor","Amy Myers","Jon Myers","Lily Owens","Sean Baxter","Jim Tannahill","Sheryl Tannahill","Ethan Rain Myers","Marlee Rampulla","Elijah Hoaglan","Seth Mehta","Jaic So'osemea","Tina So'osemea","Madison Reid","Luke Reid","Aadyn Rampulla","Ryan Chew"],
   "Gateway":["Daniel Burchfield","Paige Hardy","Ella Hufalar","Molly Roberts","Hailey Fields","Brennan Harper","Lisa Powell","Emily Vickers","Trent Tatum","Pierson Nelson","Christian Wylder"],
   "Nashville Life":["Grant Argent","Dr. Dorothy Gunn","Talesha Kenyetta Simpson","Khadijah Faison","David Veney","Kendale Lark Burch","Noah Lutche","Kayden Alford","Jeremiah Davis","Lydia Akin","Bobby Rhodes","Lily Huseby","Joel Isaacson","Chloe Perrin","Fanchon Tindal","Rosita Williams","Kirby Shepherd","Tyra Harris"],
@@ -771,11 +771,11 @@ function taskDone(ch,gid,iid){ return !!(((store.tasksCache||{})[churchKey(ch)]|
 // Turn pasted text (bullets, 1/2/3, or plain lines) into a clean question list
 function parseQuestions(t){ return String(t||"").split(/\r?\n/).map(l=>l.replace(/^\s*(?:[-*•·▪]|\d+[.):])\s*/,"").trim()).filter(Boolean); }
 // Apply the authoritative roster once (version bump re-applies for returning users)
-if(store.rosterV!==5){
+if(store.rosterV!==6){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
   // Make sure each pastor is placed in their own church (so they can pick themselves + get their church chat)
   Object.entries(CHURCH_PASTOR).forEach(([ch,n])=>{ if(!store.churchOf[n]) store.churchOf[n]=ch; });
-  store.rosterV=5;
+  store.rosterV=6;
 }
 saveStore();
 
