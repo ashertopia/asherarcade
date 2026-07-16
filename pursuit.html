@@ -94,7 +94,12 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .select{width:100%;padding:12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);color:var(--txt);font-size:15px;}
 .member{display:flex;align-items:center;gap:12px;padding:12px;border-radius:11px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px;cursor:pointer;}
 .member:active{background:var(--panel2);}
-.avatar{flex:0 0 40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#101418;}
+.avatar{flex:0 0 40px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#101418;position:relative;}
+.avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+.avatar.big{flex-basis:56px;width:56px;height:56px;font-size:20px;}
+.avatar.editable{cursor:pointer;}
+.avatar .camov{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--pink);border:2px solid var(--panel);display:flex;align-items:center;justify-content:center;color:#fff;}
+.avatar .camov .ico{width:11px;height:11px;}
 .member .info{flex:1;min-width:0;}
 .member .info .n{font-size:15px;font-weight:600;}
 .member .info .r{font-size:12px;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -794,7 +799,8 @@ const ICONS={
   bell:"M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z",
   refresh:"M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.75 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z",
   install:"M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14zm-5-1 4-4h-3V8h-2v5H8l4 4z",
-  check:"M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+  check:"M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z",
+  camera:"M9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"
 };
 function ico(name,cls){ return '<svg class="ico'+(cls?" "+cls:"")+'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="'+ICONS[name]+'"/></svg>'; }
 
@@ -909,6 +915,41 @@ function mapToolsHTML(withCal){
    ============================================================ */
 const main=document.getElementById("main");
 function initials(n){return n.split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();}
+/* ---- Profile photos: small thumbnails synced via Firebase (photos/{key}); shown in place of the initials dot ---- */
+function photoKey(name){ return String(name||"").replace(/[.#$\[\]\/]/g,"_"); }
+function canEditPhoto(name){ return !!name && (name===store.me || isLeadership(store.me)); }   // your own, or a pastor/admin editing anyone
+function hasPhoto(name){ return !!photosCache[photoKey(name)]; }
+function avatarHTML(name,color,cls){
+  const ph=photosCache[photoKey(name)], c="avatar"+(cls?" "+cls:"");
+  return ph ? '<div class="'+c+'"><img src="'+ph+'" alt=""></div>'
+            : '<div class="'+c+'" style="background:'+color+'">'+initials(name)+'</div>';
+}
+// Shrink a chosen photo to a small square thumbnail (keeps Firebase tiny + fast)
+function compressPhoto(file,cb){
+  const img=new Image(), url=URL.createObjectURL(file);
+  img.onload=()=>{ const S=128, cv=document.createElement("canvas"); cv.width=S; cv.height=S; const cx=cv.getContext("2d");
+    const sc=Math.max(S/img.width,S/img.height), w=img.width*sc, h=img.height*sc; cx.drawImage(img,(S-w)/2,(S-h)/2,w,h);
+    URL.revokeObjectURL(url); cb(cv.toDataURL("image/jpeg",0.62)); };
+  img.onerror=()=>{ URL.revokeObjectURL(url); alert("Couldn’t read that image — try another one."); };
+  img.src=url;
+}
+function setPhoto(name,dataURL){
+  const key=photoKey(name); photosCache[key]=dataURL;
+  if(chatDb) chatDb.ref("photos/"+key).set(dataURL).catch(()=>alert("Couldn’t save the photo. Check your internet — and that your Firebase rules include the \"photos\" section."));
+  else alert("Connect to the internet to save the photo (it stays as initials for now).");
+  render(); openPerson(name);
+}
+function removePhoto(name){
+  const key=photoKey(name); delete photosCache[key];
+  if(chatDb) chatDb.ref("photos/"+key).set(null);
+  render(); openPerson(name);
+}
+function pickPhoto(name){
+  let fi=document.getElementById("photoFileInput");
+  if(!fi){ fi=document.createElement("input"); fi.type="file"; fi.accept="image/*"; fi.id="photoFileInput"; fi.style.display="none"; document.body.appendChild(fi); }
+  fi.onchange=()=>{ const f=fi.files&&fi.files[0]; fi.value=""; if(f) compressPhoto(f,d=>setPhoto(name,d)); };
+  fi.click();
+}
 // Locations are plain text (not links). Navigation lives in the Maps tab —
 // a Google Maps pin at the camp entrance isn't useful for cabins/fields/small groups.
 function locLink(l){ if(!l) return ""; return esc(l); }
@@ -1165,7 +1206,7 @@ function renderFind(){
                  + (PERSON_ICON[n]||"") + teamChipHTML(n);
     const nameHtml = '<div class="n"'+(isPastor?' style="color:'+col+'"':'')+'>'+esc(n)+'</div>'
                  + (badges?'<div class="badges">'+badges+'</div>':'');
-    h+='<div class="member" data-p="'+esc(n)+'"><div class="avatar" style="background:'+col+'">'+initials(n)+'</div>'+
+    h+='<div class="member" data-p="'+esc(n)+'">'+avatarHTML(n,col)+
        '<div class="info">'+nameHtml+'<div class="r">'+sub2Html+'</div></div>'+
        '<div class="wherenow"><div class="w'+(wDuty?' duty':'')+'">'+esc(wText)+'</div><div class="sub">'+esc(wSub)+'</div></div></div>';
   });
@@ -1352,7 +1393,7 @@ function renderTeams(){
    Camper names live only here (TEAM_ROSTER), never in the People tab / pickers / chat. */
 function rosterRowHTML(name,church,leader){
   const col=CHURCH_COLOR[church]||"#8b949e";
-  return '<div class="member"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
+  return '<div class="member">'+avatarHTML(name,col)+
     '<div class="info"><div class="n">'+esc(name)+(leader?'<span class="ldrtag">Leader</span>':'')+'</div>'+
     '<div class="r">'+(church?chSpan(church):'<span style="color:var(--dim)">—</span>')+'</div></div></div>';
 }
@@ -1390,7 +1431,7 @@ const FIREBASE_CONFIG = {
   messagingSenderId:"902781678522",
   appId:"1:902781678522:web:c4e24146b54ac452382383"
 };
-let chatDb=null, chatInit=false, chatData={}, chatUnread={}, chatSubbed={}, chatLoaded={}, chatScores={}, scoresMeta={};
+let chatDb=null, chatInit=false, chatData={}, chatUnread={}, chatSubbed={}, chatLoaded={}, chatScores={}, scoresMeta={}, photosCache={};
 /* ---- which channels does the current person belong to? (derived from their name pick) ---- */
 const CHAT_PINK="#ff5d8f";
 function textOn(hex){const c=hex.replace('#','');const r=parseInt(c.slice(0,2),16),g=parseInt(c.slice(2,4),16),b=parseInt(c.slice(4,6),16);return (0.299*r+0.587*g+0.114*b)>150?'#101418':'#ffffff';}
@@ -1411,6 +1452,7 @@ function initChat(){
     subscribeChannels();
     chatDb.ref("scores").on("value",s=>{ chatScores=s.val()||{}; if(state.tab==="teams") renderTeams(); });
     chatDb.ref("scoresMeta").on("value",s=>{ scoresMeta=s.val()||{}; if(state.tab==="teams") renderTeams(); });
+    chatDb.ref("photos").on("value",s=>{ photosCache=s.val()||{}; render(); });
     chatDb.ref("admins").on("value",s=>{ store.extraAdmins=(s.val()||[]).filter(Boolean); saveStore(); subscribeChannels(); render(); });
     chatDb.ref("guides").on("value",s=>{ store.guidesCache=s.val()||{}; saveStore(); if(state.tab==="camp") renderCamp(); });
     chatDb.ref("taskState").on("value",s=>{ store.tasksCache=s.val()||{}; saveStore(); if(document.getElementById("taskWrap")) adminPane("tasks"); });
@@ -1593,9 +1635,13 @@ function openPerson(name){
   const sheet=document.getElementById("sheet"), col=CHURCH_COLOR[churchOf(name)]||"#8b949e";
   const tm=teamOf(name), st=serviceTeamOf(name), isP=CHURCH_PASTOR[churchOf(name)]===name;
   const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(isP?' · Pastor':'')+(st?' · '+esc(st):'')+(tm?' · Team'+teamChipHTML(name)+' <span style="color:var(--dim)">('+esc(tm.animal)+')</span>':'');
-  let h='<div class="shead"><div class="avatar" style="background:'+col+'">'+initials(name)+'</div>'+
+  const editable=canEditPhoto(name), ph=photosCache[photoKey(name)];
+  const av='<div class="avatar big'+(editable?' editable':'')+'" id="pAvatar"'+(ph?'':' style="background:'+col+'"')+'>'+
+           (ph?'<img src="'+ph+'" alt="">':esc(initials(name)))+(editable?'<span class="camov">'+ico('camera')+'</span>':'')+'</div>';
+  let h='<div class="shead">'+av+
         '<div><div style="font-size:17px;font-weight:700;">'+esc(name)+(PERSON_ICON[name]||"")+'</div>'+
-        '<div style="font-size:12px;color:var(--dim);">'+subline+'</div></div>'+
+        '<div style="font-size:12px;color:var(--dim);">'+subline+'</div>'+
+        (editable?'<div style="font-size:11px;color:var(--pink);font-weight:600;margin-top:2px;cursor:pointer;" id="pPhotoEdit">'+(ph?'Change / remove photo':'Add a photo')+'</div>':'')+'</div>'+
         '<button class="x" onclick="closeModal()">×</button></div><div class="sbody">';
   h+='<div class="days" style="margin-bottom:12px;">';
   CAMP.days.forEach(d=>h+='<div class="day'+(d===state.day?' active':'')+'" data-d="'+d+'">'+d.slice(0,3)+'</div>');
@@ -1603,6 +1649,13 @@ function openPerson(name){
      '<div class="maptools"><button class="btn pink" onclick="addPersonCalendar(\''+esc(name).replace(/'/g,"\\'")+'\')">Add '+esc(name.split(" ")[0])+'’s shifts to Calendar</button>'+
      '<a class="btn" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener">Open camp map</a></div></div>';
   sheet.innerHTML=h;
+  if(editable){
+    const av2=document.getElementById("pAvatar"); if(av2) av2.onclick=()=>pickPhoto(name);
+    const ed=document.getElementById("pPhotoEdit"); if(ed) ed.onclick=()=>{
+      if(ph){ if(confirm("Remove this photo? (Tap Cancel to choose a new one instead.)")) removePhoto(name); else pickPhoto(name); }
+      else pickPhoto(name);
+    };
+  }
   sheet.querySelectorAll(".day").forEach(el=>el.onclick=()=>{
     state.day=el.dataset.d;
     sheet.querySelectorAll(".day").forEach(x=>x.classList.toggle("active",x.dataset.d===state.day));
