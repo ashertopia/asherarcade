@@ -1298,7 +1298,11 @@ function linksHTML(){
   h+='<a class="linkrow" href="mailto:'+LINKS.email+'"><span class="ic">'+ico('mail')+'</span><span class="lx"><span class="a">Email the camp</span><span class="b">'+LINKS.email+'</span></span><span class="go">›</span></a>';
   if(WIFI_PASS) h+='<div class="linkrow" onclick="copyWifi()" style="cursor:pointer;"><span class="ic">'+ico('globe')+'</span><span class="lx"><span class="a">Camp Wi-Fi password</span><span class="b">'+esc(WIFI_PASS)+' · tap to copy</span></span><span class="go">'+ico('link')+'</span></div>';
   h+='</div>';
-  h+='<div class="sectionlabel">Getting to camp</div><div class="linkgrid">';
+  return h;
+}
+// "Getting to camp" — moved to the very bottom of the Links page
+function gettingToCampHTML(){
+  let h='<div class="sectionlabel">Getting to camp</div><div class="linkgrid">';
   h+='<a class="linkrow" href="'+mapsGoogle(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">'+ico('map')+'</span><span class="lx"><span class="a">Open camp in Google Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
   h+='<a class="linkrow" href="'+mapsApple(CAMP.address)+'" target="_blank" rel="noopener"><span class="ic">'+ico('map')+'</span><span class="lx"><span class="a">Open camp in Apple Maps</span><span class="b">'+esc(CAMP.address)+'</span></span><span class="go">›</span></a>';
   h+='</div>';
@@ -1309,6 +1313,7 @@ function openLinks(){
   let h=linksHTML();
   h+=contactsHTML();   // Contacts now live on the Links page
   if(HELP_PHONE) h+='<div class="sectionlabel">Need help?</div><div class="linkgrid"><div class="linkrow" onclick="helpAction()" style="cursor:pointer;"><span class="ic">'+ico('phone')+'</span><span class="lx"><span class="a">Text the Help line</span><span class="b">a question or concern — tap to text</span></span><span class="go">›</span></div></div>';
+  h+=gettingToCampHTML();   // at the very bottom
   openSheet("Links, contacts & help", h);
 }
 function helpAction(){
