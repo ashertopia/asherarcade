@@ -1787,9 +1787,37 @@ function adminPane(which){
        '<button class="btn pink" style="margin-top:8px;" onclick="addPin()">Add pin</button>';
     pane.innerHTML=h; renderPinList();
   }else{
-    pane.innerHTML='<label class="fld">Export (copy &amp; send to Asher)</label><textarea class="txt" id="aExport" readonly></textarea>'+
-      '<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn pink" onclick="copyExport()">Copy</button><button class="btn" onclick="importPrompt()">Import…</button></div>';
-    document.getElementById("aExport").value=JSON.stringify({churchOf:store.churchOf,customDuties:store.customDuties,coords:store.coords},null,2);
+    let h='<div class="banner">Download camp data as a spreadsheet (<b>CSV</b>) — the file opens in Excel or Google Sheets.</div>';
+    h+='<div class="linkgrid">';
+    h+='<div class="linkrow" onclick="exportCSV(\'people\')" style="cursor:pointer;"><span class="ic">'+ico('person')+'</span><span class="lx"><span class="a">People &amp; churches</span><span class="b">every leader and their church</span></span><span class="go">'+ico('install')+'</span></div>';
+    h+='<div class="linkrow" onclick="exportCSV(\'scores\')" style="cursor:pointer;"><span class="ic">'+ico('star')+'</span><span class="lx"><span class="a">Team scores</span><span class="b">points · last updated · by whom</span></span><span class="go">'+ico('install')+'</span></div>';
+    h+='<div class="linkrow" onclick="exportCSV(\'tasks\')" style="cursor:pointer;"><span class="ic">'+ico('book')+'</span><span class="lx"><span class="a">Task status (all churches)</span><span class="b">every checklist item · Done / Not done</span></span><span class="go">'+ico('install')+'</span></div>';
+    h+='</div>';
+    h+='<div style="margin-top:12px;"><button class="btn" onclick="importPrompt()">Restore config…</button></div>';
+    pane.innerHTML=h;
+  }
+}
+// Download an array of rows as a real .csv file (BOM so Excel reads UTF-8)
+function downloadCSV(filename, rows){
+  const cell=v=>{ v=String(v==null?"":v); return /[",\n\r]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+  const csv=rows.map(r=>r.map(cell).join(",")).join("\r\n");
+  const blob=new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function exportCSV(which){
+  if(which==="people"){
+    const rows=[["Name","Church"]]; allPeople().forEach(n=>rows.push([n, churchOf(n)||""]));
+    downloadCSV("pursuit-people.csv", rows);
+  }else if(which==="scores"){
+    const rows=[["Team","Animal","Color","Points","Last updated","Updated by"]];
+    TEAMS.forEach(t=>{ const m=(scoresMeta||{})[t.name]; rows.push([t.name, t.animal, t.color, (+(chatScores[t.name])||0), (m&&m.ts)?whenStr(m.ts):"", (m&&m.by)?m.by:""]); });
+    downloadCSV("pursuit-scores.csv", rows);
+  }else if(which==="tasks"){
+    const rows=[["Church","Section","Item","Status"]];
+    CHURCHES.forEach(ch=>taskGroupsFor(ch).forEach(g=>g.items.forEach(it=>rows.push([ch, g.label, it.label, taskDone(ch,g.id,it.id)?"Done":"Not done"]))));
+    downloadCSV("pursuit-tasks.csv", rows);
   }
 }
 function renderAdminList(){
