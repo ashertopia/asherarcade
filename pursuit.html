@@ -617,7 +617,7 @@ const POOL = {
 /* ---- Full leader rosters by church (from the PC26 Leader roster) ---- */
 const KNOWN_CHURCH = {
   "New Song Nashville":["Grant Ebright","Macey Duncan","Austin Duncan","Kaitlyn Rupert","Chelsey Smith","John Hagan","Melody Hagan","Dana Lathrop","Julia B Morris","Joy Clapp","Alex R Hart","Mark Schamel","Stuart Fritz","Mabel O'Neal","Luca Zapata","Chas Tippett","Jamie Waters","Zachariah McGahey","Pomaikai Chiara Romano","Caeden Rosen","Al Pearson","Judah Siegand","Stewart Fleming","Victoria Phillips","Nathan Cress","Kameryn King","Cameron King","Isabella Gautsche","Brent Lathrop","Allie Wilson","Martha Pearson","Kirk Roncskevitz","Grace Geeslin","Wesley Garrett","Victoria Joy Lanford","Micah Elliott","Ezra Siegand","Ruben Rivera III","Israel Schamel","Manny Schamel","Bryan Hagan","Crystal Schamel","Joel Evrist","Kayla Fritz","Chris Martin","Matthew Peels","Tyler Beiden","Nancy Ochiel","Peter Ochiel"],
-  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock","Scott Asher","JD Swilley","Jamé Swilley","Melodie Dimmock","Mel Dimmock"],
+  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock","Scott Asher"],
   "Southview":["Nevaeh Rampulla","Kahanah Chuor","Amy Myers","Jon Myers","Lily Owens","Sean Baxter","Jim Tannahill","Sheryl Tannahill","Ethan Rain Myers","Marlee Rampulla","Elijah Hoaglan","Seth Mehta","Jaic So'osemea","Tina So'osemea","Madison Reid","Luke Reid","Aadyn Rampulla","Ryan Chew"],
   "Gateway":["Daniel Burchfield","Paige Hardy","Ella Hufalar","Molly Roberts","Hailey Fields","Brennan Harper","Lisa Powell","Emily Vickers","Trent Tatum","Pierson Nelson","Christian Wylder"],
   "Nashville Life":["Grant Argent","Dr. Dorothy Gunn","Talesha Kenyetta Simpson","Khadijah Faison","David Veney","Kendale Lark Burch","Noah Lutche","Kayden Alford","Jeremiah Davis","Lydia Akin","Bobby Rhodes","Lily Huseby","Joel Isaacson","Chloe Perrin","Fanchon Tindal","Rosita Williams","Kirby Shepherd","Tyra Harris"],
@@ -627,6 +627,14 @@ const KNOWN_CHURCH = {
   "Sweetwater":["Chance Fielder","Khrysten Fielder","Mallori Hann","Joshua Hann"],
   "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","RC Tidwell","Rebekah Evans","Daniel Johnson","Cardaja Harkins","Xavier Keegan","Tamya Spikes","Naomi Bageant","Chase Garrison","Aryn Harvey","Israel Fayne","Papa Hayford","Serinah Ruiz","Enoc Moma","Anabell Irizarry"]
 };
+/* ---- Guest / invited leadership per church. These are PICKABLE (so they can log in) but only
+   SHOW in the church list once they've actually logged in (tracked in Firebase 'present'). ---- */
+const GUEST_CHURCH = {
+  "Seeds":["JD Swilley","Jamé Swilley","Melodie Dimmock","Mel Dimmock"]
+};
+const GUESTS = new Set(Object.values(GUEST_CHURCH).reduce((a,b)=>a.concat(b),[]));
+function isGuest(name){ return GUESTS.has(name); }
+function guestChurchOf(name){ for(const ch in GUEST_CHURCH){ if(GUEST_CHURCH[ch].indexOf(name)!==-1) return ch; } return ""; }
 
 /* ---- Service areas (filter dimension) + their service leaders ---- */
 const AREAS = [
@@ -771,11 +779,12 @@ function taskDone(ch,gid,iid){ return !!(((store.tasksCache||{})[churchKey(ch)]|
 // Turn pasted text (bullets, 1/2/3, or plain lines) into a clean question list
 function parseQuestions(t){ return String(t||"").split(/\r?\n/).map(l=>l.replace(/^\s*(?:[-*•·▪]|\d+[.):])\s*/,"").trim()).filter(Boolean); }
 // Apply the authoritative roster once (version bump re-applies for returning users)
-if(store.rosterV!==6){
+if(store.rosterV!==7){
   Object.entries(KNOWN_CHURCH).forEach(([ch,names])=>names.forEach(n=>{store.churchOf[n]=ch;}));
   // Make sure each pastor is placed in their own church (so they can pick themselves + get their church chat)
   Object.entries(CHURCH_PASTOR).forEach(([ch,n])=>{ if(!store.churchOf[n]) store.churchOf[n]=ch; });
-  store.rosterV=6;
+  GUESTS.forEach(n=>{ delete store.churchOf[n]; });   // guests aren't auto-placed; they appear only once they log in
+  store.rosterV=7;
 }
 saveStore();
 
@@ -817,6 +826,7 @@ function allPeople(){
   Object.values(POOL).forEach(p=>{add(p.girls[2]);add(p.boys[2]);});
   Object.values(KNOWN_CHURCH).forEach(a=>a.forEach(add));
   CHAT_ADMINS.forEach(add);   // pastors + camp admin are always pickable (so they can join their leadership chat)
+  GUESTS.forEach(add);        // guests are pickable (so they can log in) — but only SHOW in a church once present
   Object.keys(store.churchOf).forEach(add); Object.keys(store.customDuties).forEach(add);
   return [...set].sort((a,b)=>a.localeCompare(b));
 }
@@ -844,8 +854,14 @@ function dutiesFor(name,day){
 }
 function rolesOf(name){const t=new Set();CAMP.days.forEach(d=>dutiesFor(name,d).forEach(x=>t.add(x.tag)));return [...t];}
 function hasArea(name,tag){return CAMP.days.some(d=>dutiesFor(name,d).some(x=>x.tag===tag));}
-function churchOf(name){return store.churchOf[name]||"";}
-function membersOf(church){return allPeople().filter(n=>churchOf(n)===church);}
+function churchOf(name){return store.churchOf[name]||guestChurchOf(name)||"";}
+// Presence: who has actually logged in (picked their name). Shared via Firebase so everyone sees the same list.
+let presentCache={};
+function presKey(name){ return String(name||"").replace(/[.#$\[\]\/]/g,"_"); }
+function isPresent(name){ return name===store.me || !!presentCache[presKey(name)]; }
+function markPresent(name){ if(!name)return; presentCache[presKey(name)]=true; if(typeof chatDb!=="undefined"&&chatDb){ try{ chatDb.ref("present/"+presKey(name)).set(true); }catch(e){} } }
+// A church's people: core roster always shows; guests only once they've logged in
+function membersOf(church){return allPeople().filter(n=>churchOf(n)===church && (!isGuest(n)||isPresent(n)));}
 
 /* ============================================================
    State
@@ -1019,7 +1035,7 @@ function renderMeRow(){
 function wireMe(){
   const set=document.getElementById("meSet");
   if(set) set.onclick=()=>{const v=(document.getElementById("meSearch").value||"").trim();
-    if(v){store.me=v;saveStore();if(typeof subscribeChannels==="function")subscribeChannels();render();}   // any name works — not-on-the-list names just get the default schedule
+    if(v){store.me=v;saveStore();markPresent(v);if(typeof subscribeChannels==="function")subscribeChannels();render();}   // any name works — not-on-the-list names just get the default schedule
     else alert("Type your name first.");};
   const ch=document.getElementById("meChange");
   if(ch) ch.onclick=()=>{store.me="";saveStore();render();};
@@ -1457,6 +1473,8 @@ function initChat(){
     chatDb.ref("scores").on("value",s=>{ chatScores=s.val()||{}; if(state.tab==="teams") renderTeams(); });
     chatDb.ref("scoresMeta").on("value",s=>{ scoresMeta=s.val()||{}; if(state.tab==="teams") renderTeams(); });
     chatDb.ref("photos").on("value",s=>{ photosCache=s.val()||{}; render(); });
+    chatDb.ref("present").on("value",s=>{ presentCache=s.val()||{}; render(); });
+    if(store.me) markPresent(store.me);   // record already-logged-in users so they appear for others
     chatDb.ref("admins").on("value",s=>{ store.extraAdmins=(s.val()||[]).filter(Boolean); saveStore(); subscribeChannels(); render(); });
     chatDb.ref("guides").on("value",s=>{ store.guidesCache=s.val()||{}; saveStore(); if(state.tab==="camp") renderCamp(); });
     chatDb.ref("taskState").on("value",s=>{ store.tasksCache=s.val()||{}; saveStore(); if(document.getElementById("taskWrap")) adminPane("tasks"); });
@@ -1555,7 +1573,7 @@ function sendChat(){
 }
 function joinChatName(){
   const v=(document.getElementById("chatNameInput").value||"").trim();
-  if(v){store.me=v;saveStore();subscribeChannels();render();}   // any name works, matching the schedule name picker
+  if(v){store.me=v;saveStore();markPresent(v);subscribeChannels();render();}   // any name works, matching the schedule name picker
   else alert("Type your name first.");
 }
 /* Verify the Admin passcode against Firebase (the code lives only in the database, never in this app).
