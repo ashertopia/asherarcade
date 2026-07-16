@@ -189,6 +189,11 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .taskgroup{margin-bottom:12px;}
 .taskglabel{font-size:13px;font-weight:700;color:var(--txt);margin:8px 0 5px;}
 .taskgcount{font-size:11px;font-weight:600;color:var(--dim);margin-left:4px;}
+.taskglabel.done{color:var(--green,#3fb950);cursor:pointer;}
+.taskcomplete{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--green,#3fb950);margin-left:6px;white-space:nowrap;}
+.taskcomplete .ico{width:13px;height:13px;}
+.taskalldone{display:flex;align-items:center;gap:7px;font-size:14.5px;font-weight:800;color:var(--green,#3fb950);background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.4);border-radius:9px;padding:10px 12px;margin:10px 0 6px;}
+.taskalldone .ico{width:18px;height:18px;}
 .taskrow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin-bottom:6px;cursor:pointer;}
 .taskrow:active{transform:scale(.995);}
 .taskrow .taskbox{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;color:#101418;}
@@ -1642,19 +1647,28 @@ function adminPane(which){
     if(!chatDb) h+='<div class="empty" style="margin:8px 0;">Offline — showing the last saved state. Reconnect to tick boxes.</div>';
     const groups=taskGroupsFor(ch); let doneN=0,totN=0;
     groups.forEach(g=>g.items.forEach(it=>{ totN++; if(taskDone(ch,g.id,it.id))doneN++; }));
-    h+='<div class="taskprog">'+doneN+' / '+totN+' done</div>';
+    const allDone = totN>0 && doneN===totN;
+    h+= allDone ? '<div class="taskalldone">'+ico('check')+' All tasks completed</div>'
+                : '<div class="taskprog">'+doneN+' / '+totN+' done</div>';
+    state._taskOpen=state._taskOpen||{};
     groups.forEach(g=>{
       const gd=g.items.filter(it=>taskDone(ch,g.id,it.id)).length;
-      h+='<div class="taskgroup"><div class="taskglabel">'+esc(g.label)+' <span class="taskgcount">'+gd+'/'+g.items.length+'</span></div>';
-      if(!g.items.length) h+='<div class="taskrow" style="opacity:.5;cursor:default;"><span class="tasklbl">No items.</span></div>';
-      g.items.forEach(it=>{ const on=taskDone(ch,g.id,it.id);
-        h+='<div class="taskrow'+(on?' on':'')+'" data-g="'+esc(g.id)+'" data-i="'+esc(it.id)+'"><span class="taskbox">'+(on?ico('check'):'')+'</span><span class="tasklbl">'+esc(it.label)+'</span></div>'; });
+      const complete = g.items.length>0 && gd===g.items.length;
+      const okey=ch+"::"+g.id, open = !complete || state._taskOpen[okey];
+      h+='<div class="taskgroup"><div class="taskglabel'+(complete?' done':'')+'"'+(complete?' data-gtoggle="'+esc(okey)+'"':'')+'>'+esc(g.label)+' '+
+         (complete?'<span class="taskcomplete">'+ico('check')+' Complete</span>':'<span class="taskgcount">'+gd+'/'+g.items.length+'</span>')+'</div>';
+      if(open){
+        if(!g.items.length) h+='<div class="taskrow" style="opacity:.5;cursor:default;"><span class="tasklbl">No items.</span></div>';
+        g.items.forEach(it=>{ const on=taskDone(ch,g.id,it.id);
+          h+='<div class="taskrow'+(on?' on':'')+'" data-g="'+esc(g.id)+'" data-i="'+esc(it.id)+'"><span class="taskbox">'+(on?ico('check'):'')+'</span><span class="tasklbl">'+esc(it.label)+'</span></div>'; });
+      }
       h+='</div>';
     });
     if(full) h+='<div class="admadd" style="margin-top:10px;"><input class="search" id="taskNew" placeholder="Add a task for '+esc(ch)+'…"><button class="btn pink" id="taskAddBtn">Add</button></div>';
     pane.innerHTML='<div id="taskWrap">'+h+'</div>';
     const sel=document.getElementById("taskChurch"); if(sel) sel.onchange=()=>{ state._taskChurch=sel.value; adminPane("tasks"); };
     pane.querySelectorAll(".taskrow[data-g]").forEach(r=>r.onclick=()=>toggleTask(ch,r.dataset.g,r.dataset.i));
+    pane.querySelectorAll("[data-gtoggle]").forEach(el=>el.onclick=()=>{ const k=el.dataset.gtoggle; state._taskOpen[k]=!state._taskOpen[k]; adminPane("tasks"); });
     const ab=document.getElementById("taskAddBtn"); if(ab) ab.onclick=()=>{ const v=(document.getElementById("taskNew").value||"").trim(); if(!v)return; if(!chatDb){alert("Connect to the internet to add tasks.");return;} const id="t_"+Date.now(), ck=churchKey(ch); store.taskDefs[ck]=store.taskDefs[ck]||{}; store.taskDefs[ck][id]=v; saveStore(); chatDb.ref("taskDefs/"+ck+"/"+id).set(v).catch(()=>alert("Couldn’t save the task. Check your internet — and that your Firebase rules include the \"taskDefs\" section.")); adminPane("tasks"); };
     return;
   }
