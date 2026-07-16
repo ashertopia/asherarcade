@@ -258,9 +258,7 @@ header.top{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0
 .mebar{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:6px;}
 .mebar.col{flex-direction:column;align-items:stretch;gap:8px;}
 .mebar .who{flex:1;font-size:14px;font-weight:600;}
-.mebar .avatar.meav{flex-basis:34px;width:34px;height:34px;font-size:13px;}
-.mebar .avatar.meav .camov{width:16px;height:16px;right:-3px;bottom:-3px;}
-.mebar .avatar.meav .camov .ico{width:9px;height:9px;}
+.mebar .avatar.meav{flex-basis:34px;width:34px;height:34px;font-size:13px;cursor:pointer;}
 .mebar .melabel{font-size:13px;color:var(--dim);}
 .mebar input.search{margin-bottom:0;}
 .pastortag{display:inline-block;font-size:9.5px;text-transform:uppercase;letter-spacing:.6px;padding:1px 6px;border-radius:20px;margin-left:7px;vertical-align:middle;font-weight:800;color:#101418;}
@@ -1006,7 +1004,7 @@ function meBarHTML(){
       ? 'I '+HEART+' you, '+esc(store.me)
       : 'Welcome, '+esc(store.me)+(churchOf(store.me)?' · '+chSpan(churchOf(store.me)):'');
     const mcol=CHURCH_COLOR[churchOf(store.me)]||"#8b949e";
-    return '<div class="mebar">'+avatarHTML(store.me,mcol,"meav editable")+'<span class="who">'+who+'</span>'+
+    return '<div class="mebar">'+avatarHTML(store.me,mcol,"meav")+'<span class="who">'+who+'</span>'+
            '<button class="btn tiny" id="meChange">Change</button></div>';
   }
   return '<div class="mebar col"><div class="melabel">'+ico('person')+' First time? Pick your name so the app remembers you and can make this <b>your</b> schedule:</div>'+
@@ -1643,7 +1641,7 @@ function openPerson(name){
   const subline=(churchOf(name)?chSpan(churchOf(name)):'No church set')+(isP?' · Pastor':'')+(st?' · '+esc(st):'')+(tm?' · Team'+teamChipHTML(name)+' <span style="color:var(--dim)">('+esc(tm.animal)+')</span>':'');
   const editable=canEditPhoto(name), ph=photosCache[photoKey(name)];
   const av='<div class="avatar big'+(editable?' editable':'')+'" id="pAvatar"'+(ph?'':' style="background:'+col+'"')+'>'+
-           (ph?'<img src="'+ph+'" alt="">':esc(initials(name)))+(editable?'<span class="camov">'+ico('camera')+'</span>':'')+'</div>';
+           (ph?'<img src="'+ph+'" alt="">':esc(initials(name)))+'</div>';
   let h='<div class="shead">'+av+
         '<div><div style="font-size:17px;font-weight:700;">'+esc(name)+(PERSON_ICON[name]||"")+'</div>'+
         '<div style="font-size:12px;color:var(--dim);">'+subline+'</div>'+
