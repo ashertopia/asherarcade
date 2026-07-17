@@ -725,7 +725,12 @@ function teamChipHTML(name){
 function chSpan(ch){ const c=CHURCH_COLOR[ch]; return c?'<span style="color:'+c+';font-weight:600">'+esc(ch)+'</span>':esc(ch); }
 // White outline skateboard, tilted up — shown next to Grant's name
 const SKATE_SVG='<svg class="pic" viewBox="0 0 28 20" width="24" height="17" fill="none" stroke="#ffd400" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-16 14 10)"><path d="M5 9 C3 9 2.5 7.4 3 5.8"/><path d="M23 9 C25 9 25.5 7.4 25 5.8"/><line x1="5" y1="9" x2="23" y2="9"/><circle cx="9.5" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></g></svg>';
-const PERSON_ICON = {"Grant Ebright":SKATE_SVG};
+// Mel/Melodie Dimmock — "TB & Grahams Mom": pink baby girl, blue baby boy, light-yellow dog head (flat pastels)
+const MEL_ICONS =
+  '<svg class="pic" width="17" height="17" viewBox="0 0 24 24" fill="#f7a8c4" aria-hidden="true"><circle cx="8" cy="6.5" r="2.3"/><circle cx="16" cy="6.5" r="2.3"/><circle cx="12" cy="7.3" r="1.4"/><circle cx="12" cy="14" r="7"/></svg>'+
+  '<svg class="pic" width="17" height="17" viewBox="0 0 24 24" fill="#8fc4ec" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M9.6 7.4C9.6 4.2 14.4 3.8 14.8 7.2 13.6 5.6 11.4 5.7 9.6 7.4Z"/></svg>'+
+  '<svg class="pic" width="17" height="17" viewBox="0 0 24 24" fill="#f2d873" aria-hidden="true"><ellipse cx="6.5" cy="10" rx="2.6" ry="4.6" transform="rotate(-20 6.5 10)"/><ellipse cx="17.5" cy="10" rx="2.6" ry="4.6" transform="rotate(20 17.5 10)"/><circle cx="12" cy="13" r="6.5"/></svg>';
+const PERSON_ICON = {"Grant Ebright":SKATE_SVG,"Mel Dimmock":MEL_ICONS,"Melodie Dimmock":MEL_ICONS};
 
 /* ---- Free Time zones (drawn as labeled boxes on the map) ---- */
 const ZONES = [
