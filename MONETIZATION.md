@@ -38,12 +38,24 @@ every 6 weeks, or 2 Photo Drop events per month, or any mix below.
 - Broken links (`Special_Announcement_S-A.html`), missing Google Analytics on
   3 of 7 landing pages, phantom sitemap entry. → Fixed.
 
-## Pricing
+## Pricing (updated after market research, July 2026)
+
+Verified market facts that shape this:
+- **Wedibox** charges $49 (photos) / $79 (all-in-one with RSVP + website +
+  seating) — bundling, not a higher photo price, is the proven upsell path.
+- **PixBearer** offers free (100 uploads/10 GB) + $19 one-time unlimited with
+  the same "your own Google Drive" angle — so that alone isn't a moat.
+  Compete on done-for-you service and bundles instead.
+- **Etsy** has 4,000+ listings for QR wedding photo-share *sign templates* at
+  ~$3.50–$15 (mostly under $8) — big buyer pool, but they're just printable
+  signs with no photo service behind them. A listing that includes a
+  *working* QR service stands out in that crowd.
 
 | Product | Price | Notes |
 |---|---|---|
-| Photo Drop event | **$49 flat** | Setup done for them: Drive folder, script, printed-ready QR sign PDF. Undercuts every competitor. |
-| Photo Drop + custom game favor | $99 | Photo Drop plus a reskinned existing game (memory match etc.) |
+| Photo Drop event (site direct) | **$39** | Done-for-you setup: Drive folder, script, printable QR sign PDF |
+| Etsy listing: QR sign + working photo service | **$29–35** | Personalized item; sale completes on Etsy (keeps it policy-safe) |
+| Event bundle | **$79** | Photo Drop + custom quiz + reskinned game favor — mirrors Wedibox's proven all-in-one tier |
 | Custom quiz (from builder lead) | $199 | Existing Memory tier |
 | Full custom game | $79–$299 | Existing tiers, unchanged |
 
@@ -73,6 +85,19 @@ as possible so cards work too.
 - 3 Photo Drop events ($49 × 3) ≈ $150 — the realistic base case.
 - OR 1 custom build ($199+) covers a month with room to spare.
 - Weddings + grads + baby showers + church events means year-round demand.
+
+## Why not an Android app (researched, July 2026)
+
+Verified against Google's own policy pages: a new personal Play developer
+account cannot publish until it runs a closed test with **12 testers opted in
+continuously for 14 days**, then separately applies for production access —
+2–4 weeks before revenue is even possible. The only bypass is an organization
+account requiring business verification (D-U-N-S). On top of that, freemium
+apps convert at roughly 1–10% (medians ~2–3%), so a $5–15 unlock needs
+hundreds of downloads per month to clear $150 — with zero audience and no ad
+budget, that's the slowest possible route. Web-first wins; consider a PWA
+wrapper later only if mobile install friction proves real, and Play Store
+last, if ever.
 
 ## Later (only after first revenue)
 
