@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pursuit Camp 2026 — Leader Schedule</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="./manifest.webmanifest?v=2">
 <meta name="theme-color" content="#0d1117">
 <meta name="mobile-web-app-capable" content="yes">
@@ -270,6 +271,55 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
 </style>
 </head>
 <body>
+
+<!-- ── Leader PIN gate ─────────────────────────────────────────────
+     Keeps the schedule, directory, and Wi-Fi info off the open web.
+     Only the SHA-256 hash of the PIN is stored here. To change the PIN,
+     replace GATE_HASH below with the SHA-256 hex of the new PIN
+     (e.g. run in a browser console:
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode('NEWPIN'))
+        .then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+     ). Leaders enter it once per device; it's remembered after that,
+     including offline. -->
+<div id="pin-gate" style="position:fixed;inset:0;z-index:99999;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;">
+  <div style="font-size:44px;">🏕️</div>
+  <div style="font-family:inherit;font-size:20px;font-weight:800;color:#e6edf3;">Pursuit Camp — Leaders Only</div>
+  <div style="font-size:14px;color:#8b949e;max-width:280px;">Enter the leader PIN to open the schedule. Ask your camp director if you don't have it.</div>
+  <input id="pin-input" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN"
+    style="width:180px;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#161b22;color:#e6edf3;font-size:20px;text-align:center;letter-spacing:0.3em;outline:none;">
+  <button id="pin-btn" style="width:180px;padding:12px;border:none;border-radius:999px;background:#7cc63a;color:#0d1117;font-weight:800;font-size:16px;cursor:pointer;">Unlock</button>
+  <div id="pin-err" style="display:none;color:#ff9d96;font-size:13px;font-weight:700;">That's not it — try again.</div>
+</div>
+<script>
+(function(){
+  var GATE_HASH = 'ccc0c17a6e734fceec67b24f1a6a59f650b638350e37e7e33fd9c277f32f6f78';
+  var KEY = 'pc26_gate_ok';
+  var gate = document.getElementById('pin-gate');
+  function open(){ gate.style.display = 'none'; }
+  try { if (localStorage.getItem(KEY) === GATE_HASH) { open(); } } catch(e){}
+  function sha256hex(str){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(x){ return x.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+  function attempt(){
+    var v = document.getElementById('pin-input').value.trim();
+    if (!v) return;
+    sha256hex(v).then(function(hex){
+      if (hex === GATE_HASH) {
+        try { localStorage.setItem(KEY, hex); } catch(e){}
+        open();
+      } else {
+        document.getElementById('pin-err').style.display = 'block';
+        document.getElementById('pin-input').value = '';
+      }
+    });
+  }
+  document.getElementById('pin-btn').addEventListener('click', attempt);
+  document.getElementById('pin-input').addEventListener('keydown', function(e){ if (e.key === 'Enter') attempt(); });
+})();
+</script>
+
 <header class="top">
   <div class="wrap">
     <div class="brand">
@@ -348,8 +398,8 @@ const LINKS = {
   website:"",    // add the camp website URL if you have one
   pastorVisit:"https://pc26pastorvisitform.paperform.co/"   // pastor visitation form
 };
-const WIFI_PASS = "Camp4Fun99$";   // camp Wi-Fi password (shown on the Links page)
-const HELP_PHONE = "6155170726";  // Help button texts this number
+const WIFI_PASS = "";   // camp Wi-Fi password (shown on the Links page)
+const HELP_PHONE = "6155550100";  // Help button texts this number
 // GPS coordinates for camp locations [lat,lng] (add more in Admin › Map pins).
 // Keys for activity spots match the Free Time schedule zone names so the
 // schedule's location links deep-link to directions.
@@ -394,39 +444,39 @@ const CABINS = {
 };
 // Key contacts (name, role, tel) from the leader handbook
 const CONTACTS = [
-  {n:"Chelsey Smith",r:"Worship Team",tel:"615-967-1816"},
-  {n:"Macey Duncan",r:"Welcome Table / Camp Administrator",tel:"615-686-1993"},
-  {n:"Dana Lathrop",r:"Hospitality Team",tel:"818-384-8080"},
-  {n:"Austin Duncan",r:"Team Leader / Judicial / Set Up",tel:"615-478-1838"},
-  {n:"Alex Hart",r:"Medical / Safety",tel:"615-498-4627"}
+  {n:"Chelsey S.",r:"Worship Team",tel:"615-555-0101"},
+  {n:"Macey D.",r:"Welcome Table / Camp Administrator",tel:"615-555-0102"},
+  {n:"Dana L.",r:"Hospitality Team",tel:"615-555-0103"},
+  {n:"Austin D.",r:"Team Leader / Judicial / Set Up",tel:"615-555-0104"},
+  {n:"Alex H.",r:"Medical / Safety",tel:"615-555-0105"}
 ];
 // Each church's pastor / lead (roster name) — highlighted in the church list
 const CHURCH_PASTOR = {
-  "New Song Nashville":"Grant Ebright","Christ Church":"Jacob Sharp","Bethel":"James Lowe II",
-  "Gateway":"Christian Wylder","Sweetwater":"Chance Fielder","Southview":"Jaic So'osemea",
-  "Seeds":"Zach Dimmock","Belmont Church":"Michelle Thomas","Nashville Life":"Grant Argent",
-  "Restoration House":"Jared Wheeler"
+  "New Song Nashville":"Grant E.","Christ Church":"Jacob S.","Bethel":"James L.",
+  "Gateway":"Christian W.","Sweetwater":"Chance F.","Southview":"Jaic S.",
+  "Seeds":"Zach D.","Belmont Church":"Michelle T.","Nashville Life":"Grant A.",
+  "Restoration House":"Jared W."
 };
 // Admin / Leadership chat roster — the 10 church pastors + camp administrator.
 // Soft-gated: only these names see the Admin channel (same trust model as the rest of the app).
-const CHAT_ADMINS = [...new Set([...Object.values(CHURCH_PASTOR), "Macey Duncan", "Grant Ebright", "Scott Asher"])];
+const CHAT_ADMINS = [...new Set([...Object.values(CHURCH_PASTOR), "Macey D.", "Grant E.", "Scott A."])];
 // Leader / Admin TOOLS (edit rosters, coords, data) — tighter than the chat: only these 3, and the passcode.
-const ADMIN_TOOLS = ["Grant Ebright","Macey Duncan","Scott Asher"];
+const ADMIN_TOOLS = ["Grant E.","Macey D.","Scott A."];
 // Church Key — each church's lead(s) (for the resources page)
 const CHURCH_LEAD = {
-  "New Song Nashville":"Pastor Grant · Macey Duncan","Christ Church":"Jacob Sharp · David Peery",
-  "Bethel":"James Lowe II · Jodie Almaguer","Gateway":"Christian Wylder","Sweetwater":"Chance Fielder",
-  "Southview":"Jaic So'osemea · Amy Myers","Seeds":"Zach Dimmock","Belmont Church":"Michelle Thomas",
-  "Nashville Life":"Grant Argent","Restoration House":"Jared Wheeler"
+  "New Song Nashville":"Pastor Grant · Macey D.","Christ Church":"Jacob S. · David P.",
+  "Bethel":"James L. · Jodie A.","Gateway":"Christian W.","Sweetwater":"Chance F.",
+  "Southview":"Jaic S. · Amy M.","Seeds":"Zach D.","Belmont Church":"Michelle T.",
+  "Nashville Life":"Grant A.","Restoration House":"Jared W."
 };
 // Camp & area leadership (from the leader handbook)
 const CAMP_LEADERS = [
-  ["Grant Ebright","Camp Pastor"],["Macey Duncan","Camp Administrator"],
-  ["Ethan Myers / Liliana So'osemea","Camp Directors"],
-  ["Jaicob So'osemea / Chelsey Smith","Worship Team Directors"],
-  ["Austin Duncan & Christian Wylder","Activities Directors"],
-  ["Stu Fritz","Visual Team Director"],["Alex Hart","Safety Team Director"],
-  ["Mark Schamel","Medical Team Director"],["Joy Clapp","Medical Team Coordinator"]
+  ["Grant E.","Camp Pastor"],["Macey D.","Camp Administrator"],
+  ["Ethan M. / Liliana S.","Camp Directors"],
+  ["Jaicob S. / Chelsey S.","Worship Team Directors"],
+  ["Austin D. & Christian W.","Activities Directors"],
+  ["Stu F.","Visual Team Director"],["Alex H.","Safety Team Director"],
+  ["Mark S.","Medical Team Director"],["Joy C.","Medical Team Coordinator"]
 ];
 
 const CHURCHES = [
@@ -510,127 +560,127 @@ const SHIFT_CHURCHES = {
 };
 function shiftOf(name){return CHURCH_SHIFT[churchOf(name)]||0;}
 // Custom titles for people with no camp duties (shown in People list & profile)
-const SPECIAL_TITLES = {"Scott Asher":"Jedi Master · App Support","Melodie Dimmock":"TB & Grahams Mom","Mel Dimmock":"TB & Grahams Mom"};
+const SPECIAL_TITLES = {"Scott A.":"Jedi Master · App Support","Melodie D.":"TB & Grahams Mom","Mel D.":"TB & Grahams Mom"};
 
 /* ---- Admin / Welcome Table ---- */
 const ADMIN_TABLE = {
-  Monday:[["15:00","16:00","Admin/Welcome Table",["Amy Myers","Ella Ward"]],
-          ["16:45","17:15","Admin/Welcome Table",["Mabel O'Neal"]],
-          ["18:30","19:00","Admin/Welcome Table",["Tina So'osemea","Deanna Crow"]]],
-  Tuesday:[["08:00","11:00","Admin/Welcome Table",["Khrysten Fielder"]],
-          ["12:45","13:15","Admin/Welcome Table",["Victoria Phillips"]],
-          ["15:00","17:00","Admin/Welcome Table",["Ella Ward","Deanna Crow"]],
-          ["18:30","19:00","Admin/Welcome Table",["Greyson Chumley"]]],
-  Wednesday:[["08:00","11:00","Admin/Welcome Table",["Dana Andrews"]],
-          ["12:45","13:15","Admin/Welcome Table",["Abby Myers"]],
-          ["15:00","17:00","Admin/Welcome Table",["Khrysten Fielder"]],
-          ["18:30","19:00","Admin/Welcome Table",["Mabel O'Neal"]]],
-  Thursday:[["08:00","11:00","Admin/Welcome Table",["Khrysten Fielder"]],
-          ["12:45","13:15","Admin/Welcome Table",["Mabel O'Neal"]],
-          ["15:00","17:00","Admin/Welcome Table",["Tina So'osemea"]],
-          ["18:30","19:00","Admin/Welcome Table",["Greyson Chumley"]]],
-  Friday:[["08:00","11:00","Admin/Welcome Table",["Dana Andrews"]],
-          ["12:45","13:15","Admin/Welcome Table",["Greyson Chumley"]],
-          ["15:00","17:00","Admin/Welcome Table",["Khrysten Fielder"]],
-          ["18:30","19:00","Admin/Welcome Table",["Abby Myers"]]],
-  Saturday:[["08:30","09:30","Admin/Welcome Table",["Allie Wilson"]],
-          ["12:00","13:00","Admin — Tech Retrieval",["Victoria Phillips","Khrysten Fielder"]]]
+  Monday:[["15:00","16:00","Admin/Welcome Table",["Amy M.","Ella W."]],
+          ["16:45","17:15","Admin/Welcome Table",["Mabel O."]],
+          ["18:30","19:00","Admin/Welcome Table",["Tina S.","Deanna C."]]],
+  Tuesday:[["08:00","11:00","Admin/Welcome Table",["Khrysten F."]],
+          ["12:45","13:15","Admin/Welcome Table",["Victoria P."]],
+          ["15:00","17:00","Admin/Welcome Table",["Ella W.","Deanna C."]],
+          ["18:30","19:00","Admin/Welcome Table",["Greyson C."]]],
+  Wednesday:[["08:00","11:00","Admin/Welcome Table",["Dana A."]],
+          ["12:45","13:15","Admin/Welcome Table",["Abby M."]],
+          ["15:00","17:00","Admin/Welcome Table",["Khrysten F."]],
+          ["18:30","19:00","Admin/Welcome Table",["Mabel O."]]],
+  Thursday:[["08:00","11:00","Admin/Welcome Table",["Khrysten F."]],
+          ["12:45","13:15","Admin/Welcome Table",["Mabel O."]],
+          ["15:00","17:00","Admin/Welcome Table",["Tina S."]],
+          ["18:30","19:00","Admin/Welcome Table",["Greyson C."]]],
+  Friday:[["08:00","11:00","Admin/Welcome Table",["Dana A."]],
+          ["12:45","13:15","Admin/Welcome Table",["Greyson C."]],
+          ["15:00","17:00","Admin/Welcome Table",["Khrysten F."]],
+          ["18:30","19:00","Admin/Welcome Table",["Abby M."]]],
+  Saturday:[["08:30","09:30","Admin/Welcome Table",["Allie W."]],
+          ["12:00","13:00","Admin — Tech R.",["Victoria P.","Khrysten F."]]]
 };
 
 /* ---- Hospitality (PREP / REFILL / RESET rotation). Room open mornings
    until 8:45a & before evening service; fill water jugs @ Tabernacle. ---- */
 const HOSPITALITY = {
-  Monday:{PREP:["Alice Asher","Peter Ochiel","Amy Myers"],REFILL:["David Peery","Dana Andrews","Nancy Ochiel"],RESET:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"]},
-  Tuesday:{PREP:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],REFILL:["Alice Asher","Peter Ochiel","Amy Myers"],RESET:["David Peery","Dana Andrews","Nancy Ochiel"]},
-  Wednesday:{PREP:["David Peery","Dana Andrews","Nancy Ochiel"],REFILL:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],RESET:["Alice Asher","Peter Ochiel","Amy Myers"]},
-  Thursday:{PREP:["Alice Asher","Peter Ochiel","Amy Myers"],REFILL:["David Peery","Dana Andrews","Nancy Ochiel"],RESET:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"]},
-  Friday:{PREP:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],REFILL:["Alice Asher","Peter Ochiel","Amy Myers"],RESET:["David Peery","Dana Andrews","Nancy Ochiel"]},
-  Saturday:{PREP:["David Peery","Dana Andrews","Nancy Ochiel"],REFILL:["Dave Saunders","Dr. Dorothy Gunn","Jamie Waters"],RESET:["Alice Asher","Peter Ochiel","Amy Myers"]}
+  Monday:{PREP:["Alice A.","Peter O.","Amy M."],REFILL:["David P.","Dana A.","Nancy O."],RESET:["Dave S.","Dr. Dorothy G.","Jamie W."]},
+  Tuesday:{PREP:["Dave S.","Dr. Dorothy G.","Jamie W."],REFILL:["Alice A.","Peter O.","Amy M."],RESET:["David P.","Dana A.","Nancy O."]},
+  Wednesday:{PREP:["David P.","Dana A.","Nancy O."],REFILL:["Dave S.","Dr. Dorothy G.","Jamie W."],RESET:["Alice A.","Peter O.","Amy M."]},
+  Thursday:{PREP:["Alice A.","Peter O.","Amy M."],REFILL:["David P.","Dana A.","Nancy O."],RESET:["Dave S.","Dr. Dorothy G.","Jamie W."]},
+  Friday:{PREP:["Dave S.","Dr. Dorothy G.","Jamie W."],REFILL:["Alice A.","Peter O.","Amy M."],RESET:["David P.","Dana A.","Nancy O."]},
+  Saturday:{PREP:["David P.","Dana A.","Nancy O."],REFILL:["Dave S.","Dr. Dorothy G.","Jamie W."],RESET:["Alice A.","Peter O.","Amy M."]}
 };
 const HOSP_EXTRA = "Austlyn Roberts";
 
 /* ---- Free Time zone assignments (3:15–4:45p) — 11 zones, 2 leaders each ---- */
 const FREE_TIME = {
   Tuesday:{
-    "Gaga Ball":["Tamya Spikes","Israel Fayne"],"Playground":["Naomi Bageant","Papa Hayford"],
-    "Basketball":["Aryn Harvey","Daniel Johnson"],"Volleyball Court":["Serinah Ruiz","Chase Garrison"],
-    "Game Field 2":["Anabell Irizarry","Xavier Keegan"],"Tabernacle":["Cardaja Harkins","Enoc Moma"],
-    "Game Field 1":["Nevaeh Rampulla","Luke Reid"],"Creek / Bridge":["Michelle Thomas","Caeden Rosen"],
-    "Floaters Zone 1":["Paige Hardy","Chance Fielder"],"Floaters Zone 2":["Madison Reid","Al Pearson"],
-    "Floaters Zone 3":["Jackie Bragg","Fanchon Tindal"]},
+    "Gaga Ball":["Tamya S.","Israel F."],"Playground":["Naomi B.","Papa H."],
+    "Basketball":["Aryn H.","Daniel J."],"Volleyball Court":["Serinah R.","Chase G."],
+    "Game Field 2":["Anabell I.","Xavier K."],"Tabernacle":["Cardaja H.","Enoc M."],
+    "Game Field 1":["Nevaeh R.","Luke R."],"Creek / Bridge":["Michelle T.","Caeden R."],
+    "Floaters Zone 1":["Paige H.","Chance F."],"Floaters Zone 2":["Madison R.","Al P."],
+    "Floaters Zone 3":["Jackie B.","Fanchon T."]},
   Wednesday:{
-    "Gaga Ball":["Cardaja Harkins","Papa Hayford"],"Playground":["Nevaeh Rampulla","Israel Fayne"],
-    "Basketball":["Michelle Thomas","Chase Garrison"],"Volleyball Court":["Paige Hardy","Fanchon Tindal"],
-    "Game Field 2":["Madison Reid","Enoc Moma"],"Tabernacle":["Jackie Bragg","Chance Fielder"],
-    "Game Field 1":["Naomi Bageant","Caeden Rosen"],"Creek / Bridge":["Aryn Harvey","Al Pearson"],
-    "Floaters Zone 1":["Serinah Ruiz","Luke Reid"],"Floaters Zone 2":["Anabell Irizarry","Daniel Johnson"],
-    "Floaters Zone 3":["Tamya Spikes","Xavier Keegan"]},
+    "Gaga Ball":["Cardaja H.","Papa H."],"Playground":["Nevaeh R.","Israel F."],
+    "Basketball":["Michelle T.","Chase G."],"Volleyball Court":["Paige H.","Fanchon T."],
+    "Game Field 2":["Madison R.","Enoc M."],"Tabernacle":["Jackie B.","Chance F."],
+    "Game Field 1":["Naomi B.","Caeden R."],"Creek / Bridge":["Aryn H.","Al P."],
+    "Floaters Zone 1":["Serinah R.","Luke R."],"Floaters Zone 2":["Anabell I.","Daniel J."],
+    "Floaters Zone 3":["Tamya S.","Xavier K."]},
   Thursday:{
-    "Gaga Ball":["Jackie Bragg","Luke Reid"],"Playground":["Tamya Spikes","Chance Fielder"],
-    "Basketball":["Madison Reid","Israel Fayne"],"Volleyball Court":["Aryn Harvey","Caeden Rosen"],
-    "Game Field 2":["Serinah Ruiz","Papa Hayford"],"Tabernacle":["Anabell Irizarry","Fanchon Tindal"],
-    "Game Field 1":["Cardaja Harkins","Enoc Moma"],"Creek / Bridge":["Nevaeh Rampulla","Daniel Johnson"],
-    "Floaters Zone 1":["Michelle Thomas","Xavier Keegan"],"Floaters Zone 2":["Paige Hardy","Al Pearson"],
-    "Floaters Zone 3":["Naomi Bageant","Chase Garrison"]},
+    "Gaga Ball":["Jackie B.","Luke R."],"Playground":["Tamya S.","Chance F."],
+    "Basketball":["Madison R.","Israel F."],"Volleyball Court":["Aryn H.","Caeden R."],
+    "Game Field 2":["Serinah R.","Papa H."],"Tabernacle":["Anabell I.","Fanchon T."],
+    "Game Field 1":["Cardaja H.","Enoc M."],"Creek / Bridge":["Nevaeh R.","Daniel J."],
+    "Floaters Zone 1":["Michelle T.","Xavier K."],"Floaters Zone 2":["Paige H.","Al P."],
+    "Floaters Zone 3":["Naomi B.","Chase G."]},
   Friday:{
-    "Gaga Ball":["Michelle Thomas","Caeden Rosen"],"Playground":["Cardaja Harkins","Chase Garrison"],
-    "Basketball":["Paige Hardy","Enoc Moma"],"Volleyball Court":["Nevaeh Rampulla","Israel Fayne"],
-    "Game Field 2":["Jackie Bragg","Chance Fielder"],"Tabernacle":["Madison Reid","Papa Hayford"],
-    "Game Field 1":["Tamya Spikes","Al Pearson"],"Creek / Bridge":["Naomi Bageant","Luke Reid"],
-    "Floaters Zone 1":["Aryn Harvey","Daniel Johnson"],"Floaters Zone 2":["Serinah Ruiz","Fanchon Tindal"],
-    "Floaters Zone 3":["Anabell Irizarry","Xavier Keegan"]}
+    "Gaga Ball":["Michelle T.","Caeden R."],"Playground":["Cardaja H.","Chase G."],
+    "Basketball":["Paige H.","Enoc M."],"Volleyball Court":["Nevaeh R.","Israel F."],
+    "Game Field 2":["Jackie B.","Chance F."],"Tabernacle":["Madison R.","Papa H."],
+    "Game Field 1":["Tamya S.","Al P."],"Creek / Bridge":["Naomi B.","Luke R."],
+    "Floaters Zone 1":["Aryn H.","Daniel J."],"Floaters Zone 2":["Serinah R.","Fanchon T."],
+    "Floaters Zone 3":["Anabell I.","Xavier K."]}
 };
 
 /* ---- Cabin sweeps (during free time) ---- */
 const CABIN_SWEEPS = {
-  Tuesday:["Elijah Hoaglan","Pierson Nelson","Chloe Perrin","Ella Hufalar"],
-  Wednesday:["Titus Shelton","Daniel Burchfield","Kahanah Chuor","Molly Roberts"],
-  Thursday:["Tevin Parker","Trent Tatum","Lisa Powell","Hailey Parker"],
-  Friday:["Cris Contreras","Daniel Burchfield","Chloe Perrin","Jamie Waters"]
+  Tuesday:["Elijah H.","Pierson N.","Chloe P.","Ella H."],
+  Wednesday:["Titus S.","Daniel B.","Kahanah C.","Molly R."],
+  Thursday:["Tevin P.","Trent T.","Lisa P.","Hailey P."],
+  Friday:["Cris C.","Daniel B.","Chloe P.","Jamie W."]
 };
 /* ---- Afternoon Snack Shack (3:00–4:30p) ---- */
 const SNACK_AFTERNOON = {
-  Tuesday:["Noble Swilley","Hailey Parker","Rosita Williams","Pierson Nelson"],
-  Wednesday:["Hailey Parker","Daniel Burchfield","Tevin Parker","Molly Roberts"],
-  Thursday:["Elijah Hoaglan","Chloe Perrin","Pierson Nelson","Ella Hufalar"],
-  Friday:["Daniel Burchfield","Chloe Perrin","Tevin Parker","Molly Roberts"]
+  Tuesday:["Noble S.","Hailey P.","Rosita W.","Pierson N."],
+  Wednesday:["Hailey P.","Daniel B.","Tevin P.","Molly R."],
+  Thursday:["Elijah H.","Chloe P.","Pierson N.","Ella H."],
+  Friday:["Daniel B.","Chloe P.","Tevin P.","Molly R."]
 };
 /* ---- Evening Snack Shack (9–10p). Friday = night game, none ---- */
 const SNACK_EVENING = {
-  Monday:{inside:["Allie Wilson","Nevaeh Rampulla","Madison Reid","Trent Tatum","Anabell Irizarry","Rosita Williams","Mallori Hann"],
-          outside:["Brent Lathrop","Papa Hayford","Serinah Ruiz","Chase Garrison"]},
-  Tuesday:{inside:["Darryl E. Reynolds","Hailey Parker","Greyson Chumley","Aryn Harvey","David Peery","Dr. Dorothy Gunn","Dana Andrews"],
-          outside:["Joshua Hann","Cardaja Harkins","Enoc Moma","Israel Fayne"]},
-  Wednesday:{inside:["Allie Wilson","Nevaeh Rampulla","Madison Reid","Trent Tatum","Anabell Irizarry","Rosita Williams","Mallori Hann"],
-          outside:["Brent Lathrop","Papa Hayford","Serinah Ruiz","Chase Garrison"]},
-  Thursday:{inside:["Darryl E. Reynolds","Tyra Harris","Greyson Chumley","Aryn Harvey","David Peery","Joel Isaacson","Dana Andrews"],
-          outside:["Joshua Hann","Cardaja Harkins","Enoc Moma","Israel Fayne"]}
+  Monday:{inside:["Allie W.","Nevaeh R.","Madison R.","Trent T.","Anabell I.","Rosita W.","Mallori H."],
+          outside:["Brent L.","Papa H.","Serinah R.","Chase G."]},
+  Tuesday:{inside:["Darryl E. R.","Hailey P.","Greyson C.","Aryn H.","David P.","Dr. Dorothy G.","Dana A."],
+          outside:["Joshua H.","Cardaja H.","Enoc M.","Israel F."]},
+  Wednesday:{inside:["Allie W.","Nevaeh R.","Madison R.","Trent T.","Anabell I.","Rosita W.","Mallori H."],
+          outside:["Brent L.","Papa H.","Serinah R.","Chase G."]},
+  Thursday:{inside:["Darryl E. R.","Tyra H.","Greyson C.","Aryn H.","David P.","Joel I.","Dana A."],
+          outside:["Joshua H.","Cardaja H.","Enoc M.","Israel F."]}
 };
 /* ---- Pool rotation monitors ---- */
 const POOL = {
-  Tuesday:{grade:"Completed 6th grade",girls:["15:15","16:00","Allie Wilson"],boys:["16:00","16:45","Cris Contreras"]},
-  Wednesday:{grade:"Completed 7th & 8th grade",girls:["15:15","16:00","Jamie Waters"],boys:["16:00","16:45","Trent Tatum"]},
-  Thursday:{grade:"Completed 9th & 10th grade",girls:["15:15","16:00","Kahanah Chuor"],boys:["16:00","16:45","Noble Swilley"]},
-  Friday:{grade:"Completed 11th & 12th grade",girls:["15:15","16:00","Lisa Powell"],boys:["16:00","16:45","Elijah Hoaglan"]}
+  Tuesday:{grade:"Completed 6th grade",girls:["15:15","16:00","Allie W."],boys:["16:00","16:45","Cris C."]},
+  Wednesday:{grade:"Completed 7th & 8th grade",girls:["15:15","16:00","Jamie W."],boys:["16:00","16:45","Trent T."]},
+  Thursday:{grade:"Completed 9th & 10th grade",girls:["15:15","16:00","Kahanah C."],boys:["16:00","16:45","Noble S."]},
+  Friday:{grade:"Completed 11th & 12th grade",girls:["15:15","16:00","Lisa P."],boys:["16:00","16:45","Elijah H."]}
 };
 
 /* ---- Full leader rosters by church (from the PC26 Leader roster) ---- */
 const KNOWN_CHURCH = {
-  "New Song Nashville":["Grant Ebright","Macey Duncan","Austin Duncan","Kaitlyn Rupert","Chelsey Smith","John Hagan","Melody Hagan","Dana Lathrop","Julia B Morris","Joy Clapp","Alex R Hart","Mark Schamel","Stuart Fritz","Mabel O'Neal","Luca Zapata","Chas Tippett","Jamie Waters","Zachariah McGahey","Pomaikai Chiara Romano","Caeden Rosen","Al Pearson","Judah Siegand","Stewart Fleming","Victoria Phillips","Nathan Cress","Kameryn King","Cameron King","Isabella Gautsche","Brent Lathrop","Allie Wilson","Martha Pearson","Kirk Roncskevitz","Grace Geeslin","Wesley Garrett","Victoria Joy Lanford","Micah Elliott","Ezra Siegand","Ruben Rivera III","Israel Schamel","Manny Schamel","Bryan Hagan","Crystal Schamel","Joel Evrist","Kayla Fritz","Chris Martin","Matthew Peels","Tyler Beiden","Nancy Ochiel","Peter Ochiel"],
-  "Seeds":["Tevin Parker","Hailey Parker","Noble Swilley","Jackie Bragg","Alice Asher","Weston Burris","Zach Dimmock","Scott Asher"],
-  "Southview":["Nevaeh Rampulla","Kahanah Chuor","Amy Myers","Jon Myers","Lily Owens","Sean Baxter","Jim Tannahill","Sheryl Tannahill","Ethan Rain Myers","Marlee Rampulla","Elijah Hoaglan","Seth Mehta","Jaic So'osemea","Tina So'osemea","Madison Reid","Luke Reid","Aadyn Rampulla","Ryan Chew"],
-  "Gateway":["Daniel Burchfield","Paige Hardy","Ella Hufalar","Molly Roberts","Hailey Fields","Brennan Harper","Lisa Powell","Emily Vickers","Trent Tatum","Pierson Nelson","Christian Wylder"],
-  "Nashville Life":["Grant Argent","Dr. Dorothy Gunn","Talesha Kenyetta Simpson","Khadijah Faison","David Veney","Kendale Lark Burch","Noah Lutche","Kayden Alford","Jeremiah Davis","Lydia Akin","Bobby Rhodes","Lily Huseby","Joel Isaacson","Chloe Perrin","Fanchon Tindal","Rosita Williams","Kirby Shepherd","Tyra Harris"],
-  "Belmont Church":["Michelle Thomas","Alfred De Leon"],
-  "Christ Church":["David Peery","Jacob Sharp","Abby Myers","Dave Saunders","Erin Ide","David Eli Carney","Greyson Chumley","Kara Lemonis","Martin Ikenna Ogbunugafor"],
-  "Restoration House":["Austyn Neal Roberts","Jared Wheeler","Deanna Crow"],
-  "Sweetwater":["Chance Fielder","Khrysten Fielder","Mallori Hann","Joshua Hann"],
-  "Bethel":["Jodie Almaguer","Matthew Almaguer","Brett Ratliff","Shailey Ratliff","James Lowe II","Cade Granzow","Monica Almaguer","Darryl E. Reynolds","Gavin Kenney","Ella Ward","Marquis Ferguson","Taryn Perkins","Liliana So'osemea","Garrett Bland","Owen Pastore","Lailah Watts","Titus Shelton","Dana Andrews","Maceline Green","Cris Contreras","Robert L Smith","Ashantia","RC Tidwell","Rebekah Evans","Daniel Johnson","Cardaja Harkins","Xavier Keegan","Tamya Spikes","Naomi Bageant","Chase Garrison","Aryn Harvey","Israel Fayne","Papa Hayford","Serinah Ruiz","Enoc Moma","Anabell Irizarry"]
+  "New Song Nashville":["Grant E.","Macey D.","Austin D.","Kaitlyn R.","Chelsey S.","John H.","Melody H.","Dana L.","Julia B M.","Joy C.","Alex R H.","Mark S.","Stuart F.","Mabel O.","Luca Z.","Chas T.","Jamie W.","Zachariah M.","Pomaikai Chiara R.","Caeden R.","Al P.","Judah S.","Stewart F.","Victoria P.","Nathan C.","Kameryn K.","Cameron K.","Isabella G.","Brent L.","Allie W.","Martha P.","Kirk R.","Grace G.","Wesley G.","Victoria Joy L.","Micah E.","Ezra S.","Ruben R.","Israel S.","Manny S.","Bryan H.","Crystal S.","Joel E.","Kayla F.","Chris M.","Matthew P.","Tyler B.","Nancy O.","Peter O."],
+  "Seeds":["Tevin P.","Hailey P.","Noble S.","Jackie B.","Alice A.","Weston B.","Zach D.","Scott A."],
+  "Southview":["Nevaeh R.","Kahanah C.","Amy M.","Jon M.","Lily O.","Sean B.","Jim T.","Sheryl T.","Ethan Rain M.","Marlee R.","Elijah H.","Seth M.","Jaic S.","Tina S.","Madison R.","Luke R.","Aadyn R.","Ryan C."],
+  "Gateway":["Daniel B.","Paige H.","Ella H.","Molly R.","Hailey F.","Brennan H.","Lisa P.","Emily V.","Trent T.","Pierson N.","Christian W."],
+  "Nashville Life":["Grant A.","Dr. Dorothy G.","Talesha Kenyetta S.","Khadijah F.","David V.","Kendale Lark B.","Noah L.","Kayden A.","Jeremiah D.","Lydia A.","Bobby R.","Lily H.","Joel I.","Chloe P.","Fanchon T.","Rosita W.","Kirby S.","Tyra H."],
+  "Belmont Church":["Michelle T.","Alfred De L."],
+  "Christ Church":["David P.","Jacob S.","Abby M.","Dave S.","Erin I.","David Eli C.","Greyson C.","Kara L.","Martin Ikenna O."],
+  "Restoration House":["Austyn Neal R.","Jared W.","Deanna C."],
+  "Sweetwater":["Chance F.","Khrysten F.","Mallori H.","Joshua H."],
+  "Bethel":["Jodie A.","Matthew A.","Brett R.","Shailey R.","James L.","Cade G.","Monica A.","Darryl E. R.","Gavin K.","Ella W.","Marquis F.","Taryn P.","Liliana S.","Garrett B.","Owen P.","Lailah W.","Titus S.","Dana A.","Maceline G.","Cris C.","Robert L S.","Ashantia","RC T.","Rebekah E.","Daniel J.","Cardaja H.","Xavier K.","Tamya S.","Naomi B.","Chase G.","Aryn H.","Israel F.","Papa H.","Serinah R.","Enoc M.","Anabell I."]
 };
 /* ---- Guest / invited leadership per church. These are PICKABLE (so they can log in) but only
    SHOW in the church list once they've actually logged in (tracked in Firebase 'present'). ---- */
 const GUEST_CHURCH = {
-  "Seeds":["JD Swilley","Jamé Swilley","Melodie Dimmock","Mel Dimmock"]
+  "Seeds":["JD S.","Jamé S.","Melodie D.","Mel D."]
 };
 const GUESTS = new Set(Object.values(GUEST_CHURCH).reduce((a,b)=>a.concat(b),[]));
 function isGuest(name){ return GUESTS.has(name); }
@@ -638,46 +688,46 @@ function guestChurchOf(name){ for(const ch in GUEST_CHURCH){ if(GUEST_CHURCH[ch]
 
 /* ---- Service areas (filter dimension) + their service leaders ---- */
 const AREAS = [
-  {key:"Hospitality",tag:"Hospitality",lead:"Dana Lathrop"},
-  {key:"Admin / Welcome Table",tag:"Admin",lead:"Macey Duncan"},
-  {key:"Free Time",tag:"Free Time",lead:"Austin Duncan & Christian Wylder"},
-  {key:"Snack Shack",tag:"Snack Shack",lead:"Dana Lathrop"},
+  {key:"Hospitality",tag:"Hospitality",lead:"Dana L."},
+  {key:"Admin / Welcome Table",tag:"Admin",lead:"Macey D."},
+  {key:"Free Time",tag:"Free Time",lead:"Austin D. & Christian W."},
+  {key:"Snack Shack",tag:"Snack Shack",lead:"Dana L."},
   {key:"Cabin Sweeps",tag:"Cabin Sweep",lead:""},
-  {key:"Pool",tag:"Pool",lead:"Austin Duncan"}
+  {key:"Pool",tag:"Pool",lead:"Austin D."}
 ];
 /* ---- Service TEAMS (by role, from the leader roster) — selectable in People → By Service Area ---- */
 const SERVICE_TEAMS = {
-  "Worship":["Chelsey Smith","Ezra Siegand","Jaic So'osemea","Joel Evrist","John Hagan","Kayla Fritz","Liliana So'osemea","Lily Huseby","Marquis Ferguson","Matthew Peels","Melody Hagan","Noble Swilley","Ryan Chew","Stewart Fleming","Tyler Beiden"],
-  "Medical":["Chas Tippett","Crystal Schamel","Isabella Gautsche","Israel Schamel","Joy Clapp","Julia B Morris","Kirk Roncskevitz","Manny Schamel","Mark Schamel"],
-  "Safety":["Alex R Hart","Chris Martin","Jim Tannahill","Martha Pearson","Matthew Almaguer","Sheryl Tannahill","Zachariah McGahey"],
-  "Visual":["Bryan Hagan","Kameryn King","Lailah Watts","Monica Almaguer","Rebekah Evans","Seth Mehta","Stuart Fritz"],
-  "Activities (Judges & Set-Up)":["Abby Myers","Al Pearson","Allie Wilson","Brent Lathrop","Chance Fielder","Cris Contreras","Darryl E. Reynolds","David Veney","Deanna Crow","Emily Vickers","Garrett Bland","Gavin Kenney","Jamie Waters","Judah Siegand","Michelle Thomas","Nathan Cress","Robert L Smith","Sean Baxter","Stewart Fleming","Trent Tatum","Victoria Phillips","Weston Burris"]
+  "Worship":["Chelsey S.","Ezra S.","Jaic S.","Joel E.","John H.","Kayla F.","Liliana S.","Lily H.","Marquis F.","Matthew P.","Melody H.","Noble S.","Ryan C.","Stewart F.","Tyler B."],
+  "Medical":["Chas T.","Crystal S.","Isabella G.","Israel S.","Joy C.","Julia B M.","Kirk R.","Manny S.","Mark S."],
+  "Safety":["Alex R H.","Chris M.","Jim T.","Martha P.","Matthew A.","Sheryl T.","Zachariah M."],
+  "Visual":["Bryan H.","Kameryn K.","Lailah W.","Monica A.","Rebekah E.","Seth M.","Stuart F."],
+  "Activities (Judges & Set-Up)":["Abby M.","Al P.","Allie W.","Brent L.","Chance F.","Cris C.","Darryl E. R.","David V.","Deanna C.","Emily V.","Garrett B.","Gavin K.","Jamie W.","Judah S.","Michelle T.","Nathan C.","Robert L S.","Sean B.","Stewart F.","Trent T.","Victoria P.","Weston B."]
 };
-const SERVICE_TEAM_LEAD = {"Worship":"Chelsey Smith","Medical":"Mark Schamel","Safety":"Alex Hart","Visual":"Stu Fritz","Activities (Judges & Set-Up)":"Austin Duncan"};
+const SERVICE_TEAM_LEAD = {"Worship":"Chelsey S.","Medical":"Mark S.","Safety":"Alex H.","Visual":"Stu F.","Activities (Judges & Set-Up)":"Austin D."};
 /* ---- Team Competition teams (Cherokee name · animal · color · 2 leaders) ---- */
 const TEAMS = [
-  {name:"Awi",animal:"Deer",color:"Brown",hex:"#8b5a2b",leaders:["Ethan Myers","Aryn Harvey"]},
-  {name:"Kamama",animal:"Elephant",color:"Light Blue",hex:"#6fd0ec",leaders:["Nevaeh Rampulla","Owen Pastore"]},
-  {name:"Kanunu",animal:"Frog",color:"Green",hex:"#3fae46",leaders:["Tevin Parker","Weston Burris"]},
-  {name:"Ogana",animal:"Groundhog",color:"Gray",hex:"#9aa0a6",leaders:["Noble Swilley","Taryn Perkins"]},
-  {name:"Soquili",animal:"Horse",color:"Yellow",hex:"#f4d000",leaders:["Lisa Powell","Joshua Hann"]},
-  {name:"Tlvdatsi",animal:"Mountain Lion",color:"Purple",hex:"#7b3ff2",leaders:["Hailey Fields","Cade Granzow"]},
-  {name:"Tsula",animal:"Fox",color:"Orange",hex:"#f0883e",leaders:["Caeden Rosen","Naomi Bageant"]},
-  {name:"Ulano",animal:"Turtle",color:"Dark Green",hex:"#1c7a34",leaders:["Elijah Hoaglan","Paige Hardy"]},
-  {name:"Uwaholi",animal:"Eagle",color:"Navy",hex:"#24356e",leaders:["RC Tidwell","Tamya Spikes"]},
-  {name:"Wahuhi",animal:"Owl",color:"White",hex:"#eaeef2",leaders:["Kahanah Chuor","Martin Ikenna Ogbunugafor"]},
-  {name:"Yansa",animal:"Buffalo",color:"Tan",hex:"#c9a96a",leaders:["Seth Mehta","Ashantia"]},
-  {name:"Yona",animal:"Bear",color:"Red",hex:"#e5342b",leaders:["James Lowe II","Mallori Hann"]},
-  {name:"Utsonati",animal:"Rattlesnake",color:"Pink",hex:"#ff5fa2",leaders:["Luke Reid","Anabell Irizarry"]},
-  {name:"Wahya",animal:"Wolf",color:"Teal",hex:"#159a9a",leaders:["Pierson Nelson","Cardaja Harkins"]},
-  {name:"Wadaduga",animal:"Firefly",color:"Cream",hex:"#efe3bf",leaders:["Jackie Bragg","Chase Garrison"]},
-  {name:"Squaduli",animal:"Hornet",color:"Black",hex:"#2a2f37",leaders:["Daniel Burchfield","Enoc Moma"]},
-  {name:"Inoli",animal:"Badger",color:"Light Brown",hex:"#bd8a5a",leaders:["Ella Hufalar","Papa Hayford"]},
-  {name:"Wdulisi",animal:"Bee",color:"Magenta",hex:"#e0189a",leaders:["David Eli Carney","Maceline Green"]},
-  {name:"Tsisidu",animal:"Rabbit",color:"Light Purple",hex:"#b58bff",leaders:["Kara Lemonis","Israel Fayne"]},
-  {name:"Julasgi",animal:"Alligator",color:"Pastel Pink",hex:"#ffb0cf",leaders:["Titus Shelton","Serinah Ruiz"]},
-  {name:"Tsiya",animal:"Otter",color:"Mint",hex:"#7fe0bf",leaders:["Madison Reid","Kendale Lark Burch"]},
-  {name:"Tlameha",animal:"Bat",color:"Burn orange",hex:"#cc5500",leaders:["Xavier Keegan","Molly Roberts"]}
+  {name:"Awi",animal:"Deer",color:"Brown",hex:"#8b5a2b",leaders:["Ethan M.","Aryn H."]},
+  {name:"Kamama",animal:"Elephant",color:"Light Blue",hex:"#6fd0ec",leaders:["Nevaeh R.","Owen P."]},
+  {name:"Kanunu",animal:"Frog",color:"Green",hex:"#3fae46",leaders:["Tevin P.","Weston B."]},
+  {name:"Ogana",animal:"Groundhog",color:"Gray",hex:"#9aa0a6",leaders:["Noble S.","Taryn P."]},
+  {name:"Soquili",animal:"Horse",color:"Yellow",hex:"#f4d000",leaders:["Lisa P.","Joshua H."]},
+  {name:"Tlvdatsi",animal:"Mountain Lion",color:"Purple",hex:"#7b3ff2",leaders:["Hailey F.","Cade G."]},
+  {name:"Tsula",animal:"Fox",color:"Orange",hex:"#f0883e",leaders:["Caeden R.","Naomi B."]},
+  {name:"Ulano",animal:"Turtle",color:"Dark Green",hex:"#1c7a34",leaders:["Elijah H.","Paige H."]},
+  {name:"Uwaholi",animal:"Eagle",color:"Navy",hex:"#24356e",leaders:["RC T.","Tamya S."]},
+  {name:"Wahuhi",animal:"Owl",color:"White",hex:"#eaeef2",leaders:["Kahanah C.","Martin Ikenna O."]},
+  {name:"Yansa",animal:"Buffalo",color:"Tan",hex:"#c9a96a",leaders:["Seth M.","Ashantia"]},
+  {name:"Yona",animal:"Bear",color:"Red",hex:"#e5342b",leaders:["James L.","Mallori H."]},
+  {name:"Utsonati",animal:"Rattlesnake",color:"Pink",hex:"#ff5fa2",leaders:["Luke R.","Anabell I."]},
+  {name:"Wahya",animal:"Wolf",color:"Teal",hex:"#159a9a",leaders:["Pierson N.","Cardaja H."]},
+  {name:"Wadaduga",animal:"Firefly",color:"Cream",hex:"#efe3bf",leaders:["Jackie B.","Chase G."]},
+  {name:"Squaduli",animal:"Hornet",color:"Black",hex:"#2a2f37",leaders:["Daniel B.","Enoc M."]},
+  {name:"Inoli",animal:"Badger",color:"Light Brown",hex:"#bd8a5a",leaders:["Ella H.","Papa H."]},
+  {name:"Wdulisi",animal:"Bee",color:"Magenta",hex:"#e0189a",leaders:["David Eli C.","Maceline G."]},
+  {name:"Tsisidu",animal:"Rabbit",color:"Light Purple",hex:"#b58bff",leaders:["Kara L.","Israel F."]},
+  {name:"Julasgi",animal:"Alligator",color:"Pastel Pink",hex:"#ffb0cf",leaders:["Titus S.","Serinah R."]},
+  {name:"Tsiya",animal:"Otter",color:"Mint",hex:"#7fe0bf",leaders:["Madison R.","Kendale Lark B."]},
+  {name:"Tlameha",animal:"Bat",color:"Burn orange",hex:"#cc5500",leaders:["Xavier K.","Molly R."]}
 ];
 /* ---- Full team rosters (campers) by team → church. Kept SEPARATE from KNOWN_CHURCH/allPeople
    on purpose: these camper names appear ONLY in the team roster popup, nowhere else in the app.
@@ -685,28 +735,28 @@ const TEAMS = [
 const ROSTER_CH = {NSN:"New Song Nashville",CC:"Christ Church",GW:"Gateway",SW:"Sweetwater",BEL:"Belmont Church",SV:"Southview",NL:"Nashville Life",RH:"Restoration House",SD:"Seeds",BTH:"Bethel"};
 const ROSTER_CH_ORDER = ["NSN","CC","GW","SW","BEL","SV","NL","RH","SD","BTH"];
 const TEAM_ROSTER = {
-  "Awi":{NSN:`Eli Murray; Zander Thomas; Elijah Powell; Levi Testerman; Mary Emmaline; Emmaline Madole`,CC:`Savannah Bell; Avery Finnegan`,GW:`Lily Pinho; Sydney Lawrence; Levi Baldwin`,SV:`Jobe del Villar; Gabriel Johnson`,NL:`Amazinggrace; Camden Russell; Jacob Jones`,SD:`Anika Hanson`,BTH:`Lorenzo Reed; Gabrielle Lucas; Harvest Coats; Jedidiah Ojetola; Elías Gil Freitez`},
-  "Kamama":{NSN:`Elijah Stemper; Jeremiah Pearson; Eli Adams; Gloria Clinger; Ellie Owen; Noelle Hart`,CC:`Preston Spittler`,GW:`Kitty (Saoirse) Parada; Sloane Freeburg; Brice Kuhl`,BEL:`Jannat Gurbanzade`,SV:`Preston Player; Judah Bagley`,NL:`Carmen Dirl; Kaniya Neely`,RH:`Dalton Wheeler`,SD:`Solomon Cole`,BTH:`Beaudy Strickland; Tessa Almaguer; Paris White; Jimmie Hudson III; Joshue Ordóñez`},
-  "Kanunu":{NSN:`Isaac Mozingo; Jordan Beasley; Josiah Martinez; Eliana Martínez; Hope Sevits`,CC:`Gavin Ide; Kate Stinson`,GW:`Emma Julian; Elizabeth Tisdale; Aiden Harper`,SW:`Jonah Burns`,SV:`Nathan Certa`,NL:`Analee Mendez; Alexander Holmes`,RH:`Noah Roberts`,SD:`Truth Jansen`,BTH:`Timmy Pingitore; Elle Ratliff; Tatum Williams; Okiki Afuape; Paolo Santiago; Caroline DeLemos`},
-  "Ogana":{NSN:`Eli Martinez; Levi Stemper; Andrew Luthe; Emma Murray; Savannah Garrett; Zoey Wright`,CC:`Sadie Terry; Anyelin Ramirez`,GW:`Carlie Hubbell; Magnolia Priefer; Bennett Boutwell`,SV:`Caleb Whelan`,NL:`Amari Bargas; Makiyah; Marrico Mccall Jr`,SD:`Zoie Benitez`,BTH:`Duval Freites; Cate Rodriguez; Gabriela Watts; Jude Andrews; Silas Parker; Abigail DeLemos`},
-  "Soquili":{NSN:`Davontrey Hauskins; Eli Hart; Elijah Martinez; Eleanor O'Neal; Beth Codington`,CC:`Leah Taulbee; Corina Cherrico`,GW:`Caroline Elzinga; Taylor McKenzie; Rider Kuhl`,BEL:`Kyler Ostrander`,SV:`Wade Shetler`,NL:`Liliana Riley; Noah Mayfield`,RH:`Avey Roberts`,SD:`Emma Bragg`,BTH:`Gabriel Benitez; Carrie "Sue" Ruark; June Rodriguez; Josiah Aman.; JD Conrey; Emily DeLemos`},
-  "Tlvdatsi":{NSN:`Alfonso Martinez; Briggs Davis; Evelyn Testerman; Annabelle Powell; Taylor Styblo; Sophia Jackson`,CC:`Marcus Ateib; Faith Musgrove`,GW:`Carson Dilliard; Novella Glassner; Jonathan Williams`,SW:`Harper Leebron`,SV:`Santiago Saracual`,NL:`Aariyah (Aari) Caldwell; Shelby Scott`,RH:`Landyn Underhill`,SD:`Malina Hickey`,BTH:`Immanuel Hammers; Shaelyn Jade Andrews; Noa Grace Andrews; Elijah Britten; Berlyn Gamlin`},
-  "Tsula":{NSN:`Leo Hoskins; Judson Smith; Isabella Thomas; Audrey Watson`,CC:`Landon Campbell; Sarah Roberson`,GW:`Emma Rees; Lucy Emley; Lawson Tucker`,SW:`Bethany Anson`,SV:`Isaiah Hoaglan`,NL:`Danise Smith; Zionna (Xye) Taylor`,RH:`Ross Gilkey`,SD:`Elijah Asher; Elisabeth Hanson`,BTH:`Ronnie Fox; Samantha (Mufreesboro); Sophia Almaguer; Christopher Wright III; Bentley Knoll`},
-  "Ulano":{NSN:`Garrett Elliott; David Crouch; Teddy O'Neal; Addison Rosen; Hannah G Dodd; Ember Barnum`,CC:`August Cash Billington; Kate Bradford`,GW:`Adelynn McDow; Natalee Pope; David Brooks`,SV:`Caden Jones; Destiny Rampulla`,NL:`Erin Hernandez; Isabella Hogan; Brenden Goode`,RH:`Elisabeth Hanson`,SD:`Sera Holding`,BTH:`Brian Gyamsi; Ava Turney; Annmarie Berzonsky; Colston Laws; Felix Barrios`},
-  "Uwaholi":{NSN:`Blake Berman; Jac Dupree; Rinah Clinger; Rebecca T Dodd; Anastasia Zapata`,CC:`Bretford Bell; Eliana Rivera`,GW:`Haiden Shedd; Ali Johnson; Brooks McDow`,SW:`Delana Lindsey`,SV:`Joshua Myers; Eliana Watson`,NL:`Kamron Pittman; Jagger Springfield`,RH:`Machaira Dixon`,SD:`Michael Mullen; Eliza Jenkins`,BTH:`Jeremiah Hammers; Alyssa Hofacker; Claire Ward; Sam Guice; Mikey Medcalf`},
-  "Wahuhi":{NSN:`Jett Hart; Keenan Mattson; Caitlin Blankenship; Ellie Hewitt; Avis Smith`,CC:`Elizabeth Morrow; Hilary Lopez`,GW:`Khloe Church; Harper Smiley`,BEL:`Nik Chernov`,SV:`Roberto Alexander Lopez II; Nina Ray`,NL:`Iyana Payne; Isabella Hogan; Teriona Majors`,RH:`Colton Wheeler`,SD:`Gabriel Cole`,BTH:`Dawson Ward; Julianne Cunningham; Sophia Bartlett; Max Evans; Kamden Sutton`},
-  "Yansa":{NSN:`Worth Blankenship; Kannon Zimmerman; Amaris Hewitt; Zoe Evrist; Lillah Racki`,CC:`Daniel Mangrum; Lauren Taulbee`,GW:`Emma Reginelli; Abigail Snow; Chase Gleaton`,SW:`Jonathan "Clyde" Lindsey`,SV:`Evan Aviles; Kinsley Simpson`,NL:`Carmello Davis; Marcus Berry`,RH:`Madison Barber`,SD:`Camden Cole; Elsie Steele`,BTH:`Johnny Ratliff; Kamin Smith; Caesyn Richerson; Lucas Reifschneider; Major Robinson III`},
-  "Yona":{NSN:`Abe Cartee; Gabe Edmonson; Emery Smith; Ella Willits; Tess Murray`,CC:`Brooklyn Bennett; Jael Kwakye`,GW:`Bailey Allan; Morgan Lawrence`,BEL:`Deven Wothke`,SV:`Cole Ray; Mia Jones`,NL:`Genevieve Bays; Noah Gaines`,RH:`Izabel King`,SD:`Noah Jansen; Lilliana Rushing`,BTH:`Dallas Siaosi; Karis Smith; Tatum Rodriguez; Jayeln Smith; Fabian Padron`},
-  "Utsonati":{NSN:`Hunter Tarkington; Reuben Doyle; Brooklyn Edmonson; Emory Hillenbrand; Christina Atalyn Martinez`,CC:`Gerson Sanchez; Avery Billington`,GW:`Lucy Freel; Mika Salasin`,SV:`Kypton Brock; Angelina Aviles`,NL:`Jasmine Blanford; Azlan Savage; Jerron Barnes`,RH:`Felix McElfresh`,SD:`AnnMarie Hebden`,BTH:`James Watts III; Foisagaasina Siaosi; Zarian Williams; Benjamin Goudeaux; Abel Barrios`},
-  "Wahya":{NSN:`Jaiden Johnson; Jax Richey; Integrity Schamel; Wren Morris; Arianna Lathrop`,CC:`Zuriel Sanchez; Sophie Hall`,GW:`Adia Berry; Preston Ford Tucker`,BEL:`Isaac Beard`,SV:`Josiah Bagley; Reagan Brunette`,NL:`Zahonnie's Cashwell; Tiffany Nelson`,RH:`John Dixon`,SD:`Cadence Sprouse`,BTH:`Lance Rodriguez; Lakelan So'osemea; Zellaree Williams; Alijah Tucker; Alexandrio Cifuentes`},
-  "Wadaduga":{NSN:`David (Ansel) Hillenbrand; Ezekiel "Zeke" McGregor; Kenna Mozingo; Lexis Zaniewski; Clara Owen`,CC:`Verdley M. Jacques; Michelle Mangrum`,GW:`Tavie Stinson; Sawyer Berry`,SW:`Layla Davis`,NL:`Koi Williams; Tadiwa Vhumisai`,RH:`Chloe Peck`,SD:`Brantley Cole`,BTH:`Omolemo; Anastasia Tweedy; Madison Buntyon; Brandon Lamin-Bangura; Jalen Thompson`},
-  "Squaduli":{NSN:`Joshua Ochiel; Ike Cartee; Averi Zimmerman; Catey Murray; Adelaide Adams`,CC:`Reagan Thompson; Hannah Morrow`,GW:`Irabelle Redmon; Judah Baldwin`,SV:`Judah Johnson; Eliora Bagley`,NL:`Khloe; Gary Mugabi; James Price`,BTH:`Emanuel Gil Freitez; Emmybelle Gyamfi; Maleyah Henry; Kemari Riley; Caleb Lamin-Bangura; Sharlot Rivas`},
-  "Inoli":{NSN:`Noah Phillips; Caleb Ochiel; Danika Yoder; Iris Pearson; Hannah Clinger`,CC:`David Sanchez; Abigail Jones`,GW:`Addison Baldwin; Davis Kuhl`,BEL:`Genesis De Leon`,SV:`Elijah Terry; Makyla Chuor`,NL:`Genevieve Bays; Dominick Alford`,RH:`Savannah Dixon`,SD:`Luke Mullen`,BTH:`Felipe Centeno; Maame Hayford; Hannah Caraway; Travis Riley Jr; Tyson Williams`},
-  "Wdulisi":{NSN:`Zade Oakerson; Judah Ingles; James Daniel; Eden Munden; Maria Rosen`,CC:`Devine Johnson; Juliet Jones`,GW:`Abigail Dodd; Eli Butcher`,SV:`Cephas del Villar; Payton Rampulla`,NL:`Amaris Osagiele; Olivia Terrell`,RH:`Logan`,SD:`Johnny Bratcher; Mattie Jenkins`,BTH:`Elias Huntley; Jesi Reed; Jemimah Ojetola; Jayden Hodges; Pietro Resende Fioravanti`},
-  "Tsisidu":{NSN:`Matthew Dodd; Isaiah Daniels; Abigail Rosen; Chloe Waters; Luma Cavassana`,CC:`Caleb Moore; Dresden Ide`,GW:`Viviana Salasin; Andrew Zerbe`,SW:`Conner Schatz`,SV:`Aiden Clendenen; Kalia Patterson`,NL:`Hannah Gitimu; Isaiah Mayfield`,RH:`Bailey Dixon`,SD:`Gianni Giacomelli`,BTH:`William Pingitore; Alesha Suniula; Isabella Almaguer; King-Elias Morgan; Matt Almaguer`},
-  "Julasgi":{NSN:`Cooper Garrett; James McGregor; Nay Nay Tassaw; Hattie O'Neal; Bella Lathrop`,CC:`Luke Anderson; Grace Foutch`,GW:`Felicity Salasin; Max Gallion`,SV:`Owen Wertz; Piper Whisnant`,NL:`Berklee Timmons; Brinley Rich`,RH:`Gage Lancaster`,SD:`Logan Harper; Selah Cole`,BTH:`Gianni Rodriquez; Alana Williams; Gabriella Robertson; Kadence Riley; Josiah Metoyer`},
-  "Tsiya":{NSN:`Cooke Peterson; Cyrus Munden; Shiloh Verni; Glory Sevits; Myra Davis`,CC:`Maikel Garcia; Hannah Ogbunugafor`,GW:`Elizabeth Cordero; Luke Brown`,SV:`Caleb Watson; Kiana Starr`,NL:`Karmen Hogan; Jaida Norman`,RH:`Reese Franklin`,SD:`Abigail Geerts`,BTH:`Jesiah Sutton; Ariana McClain; Legacy Schroeder; Jeremiah Robertson; Karter Yarbrough; Maci Dodson`},
-  "Tlameha":{NSN:`Ethan Kellums; Caleb Waters; Julia Daniel; Ana Daniels; Camilla Jones`,CC:`Bryant Jackson; CieL Carney`,GW:`Addyson Posusney; Brynner Boutwell`,SV:`Noah Reginelli; Leilani Starr`,NL:`Gabrielle Hall; Keenan Bishop`,RH:`Emma Crow`,SD:`Joscelin Swilley`,BTH:`Kreid Smith; Jakyra Hodges; Laila Gardner; Lincoln Howse; Justice Mallery; Ella Dodson`}
+  "Awi":{NSN:`Eli M.; Zander T.; Elijah P.; Levi T.; Mary E.; Emmaline M.`,CC:`Savannah B.; Avery F.`,GW:`Lily P.; Sydney L.; Levi B.`,SV:`Jobe del V.; Gabriel J.`,NL:`Amazinggrace; Camden R.; Jacob J.`,SD:`Anika H.`,BTH:`Lorenzo R.; Gabrielle L.; Harvest C.; Jedidiah O.; Elías Gil F.`},
+  "Kamama":{NSN:`Elijah S.; Jeremiah P.; Eli A.; Gloria C.; Ellie O.; Noelle H.`,CC:`Preston S.`,GW:`Kitty (Saoirse) P.; Sloane F.; Brice K.`,BEL:`Jannat G.`,SV:`Preston P.; Judah B.`,NL:`Carmen D.; Kaniya N.`,RH:`Dalton W.`,SD:`Solomon C.`,BTH:`Beaudy S.; Tessa A.; Paris W.; Jimmie H.; Joshue O.`},
+  "Kanunu":{NSN:`Isaac M.; Jordan B.; Josiah M.; Eliana M.; Hope S.`,CC:`Gavin I.; Kate S.`,GW:`Emma J.; Elizabeth T.; Aiden H.`,SW:`Jonah B.`,SV:`Nathan C.`,NL:`Analee M.; Alexander H.`,RH:`Noah R.`,SD:`Truth J.`,BTH:`Timmy P.; Elle R.; Tatum W.; Okiki A.; Paolo S.; Caroline D.`},
+  "Ogana":{NSN:`Eli M.; Levi S.; Andrew L.; Emma M.; Savannah G.; Zoey W.`,CC:`Sadie T.; Anyelin R.`,GW:`Carlie H.; Magnolia P.; Bennett B.`,SV:`Caleb W.`,NL:`Amari B.; Makiyah; Marrico M.`,SD:`Zoie B.`,BTH:`Duval F.; Cate R.; Gabriela W.; Jude A.; Silas P.; Abigail D.`},
+  "Soquili":{NSN:`Davontrey H.; Eli H.; Elijah M.; Eleanor O.; Beth C.`,CC:`Leah T.; Corina C.`,GW:`Caroline E.; Taylor M.; Rider K.`,BEL:`Kyler O.`,SV:`Wade S.`,NL:`Liliana R.; Noah M.`,RH:`Avey R.`,SD:`Emma B.`,BTH:`Gabriel B.; Carrie "Sue" R.; June R.; Josiah A.; JD C.; Emily D.`},
+  "Tlvdatsi":{NSN:`Alfonso M.; Briggs D.; Evelyn T.; Annabelle P.; Taylor S.; Sophia J.`,CC:`Marcus A.; Faith M.`,GW:`Carson D.; Novella G.; Jonathan W.`,SW:`Harper L.`,SV:`Santiago S.`,NL:`Aariyah (Aari) C.; Shelby S.`,RH:`Landyn U.`,SD:`Malina H.`,BTH:`Immanuel H.; Shaelyn Jade A.; Noa Grace A.; Elijah B.; Berlyn G.`},
+  "Tsula":{NSN:`Leo H.; Judson S.; Isabella T.; Audrey W.`,CC:`Landon C.; Sarah R.`,GW:`Emma R.; Lucy E.; Lawson T.`,SW:`Bethany A.`,SV:`Isaiah H.`,NL:`Danise S.; Zionna (Xye) T.`,RH:`Ross G.`,SD:`Elijah A.; Elisabeth H.`,BTH:`Ronnie F.; Samantha; Sophia A.; Christopher W.; Bentley K.`},
+  "Ulano":{NSN:`Garrett E.; David C.; Teddy O.; Addison R.; Hannah G D.; Ember B.`,CC:`August Cash B.; Kate B.`,GW:`Adelynn M.; Natalee P.; David B.`,SV:`Caden J.; Destiny R.`,NL:`Erin H.; Isabella H.; Brenden G.`,RH:`Elisabeth H.`,SD:`Sera H.`,BTH:`Brian G.; Ava T.; Annmarie B.; Colston L.; Felix B.`},
+  "Uwaholi":{NSN:`Blake B.; Jac D.; Rinah C.; Rebecca T D.; Anastasia Z.`,CC:`Bretford B.; Eliana R.`,GW:`Haiden S.; Ali J.; Brooks M.`,SW:`Delana L.`,SV:`Joshua M.; Eliana W.`,NL:`Kamron P.; Jagger S.`,RH:`Machaira D.`,SD:`Michael M.; Eliza J.`,BTH:`Jeremiah H.; Alyssa H.; Claire W.; Sam G.; Mikey M.`},
+  "Wahuhi":{NSN:`Jett H.; Keenan M.; Caitlin B.; Ellie H.; Avis S.`,CC:`Elizabeth M.; Hilary L.`,GW:`Khloe C.; Harper S.`,BEL:`Nik C.`,SV:`Roberto Alexander L.; Nina R.`,NL:`Iyana P.; Isabella H.; Teriona M.`,RH:`Colton W.`,SD:`Gabriel C.`,BTH:`Dawson W.; Julianne C.; Sophia B.; Max E.; Kamden S.`},
+  "Yansa":{NSN:`Worth B.; Kannon Z.; Amaris H.; Zoe E.; Lillah R.`,CC:`Daniel M.; Lauren T.`,GW:`Emma R.; Abigail S.; Chase G.`,SW:`Jonathan "Clyde" L.`,SV:`Evan A.; Kinsley S.`,NL:`Carmello D.; Marcus B.`,RH:`Madison B.`,SD:`Camden C.; Elsie S.`,BTH:`Johnny R.; Kamin S.; Caesyn R.; Lucas R.; Major R.`},
+  "Yona":{NSN:`Abe C.; Gabe E.; Emery S.; Ella W.; Tess M.`,CC:`Brooklyn B.; Jael K.`,GW:`Bailey A.; Morgan L.`,BEL:`Deven W.`,SV:`Cole R.; Mia J.`,NL:`Genevieve B.; Noah G.`,RH:`Izabel K.`,SD:`Noah J.; Lilliana R.`,BTH:`Dallas S.; Karis S.; Tatum R.; Jayeln S.; Fabian P.`},
+  "Utsonati":{NSN:`Hunter T.; Reuben D.; Brooklyn E.; Emory H.; Christina Atalyn M.`,CC:`Gerson S.; Avery B.`,GW:`Lucy F.; Mika S.`,SV:`Kypton B.; Angelina A.`,NL:`Jasmine B.; Azlan S.; Jerron B.`,RH:`Felix M.`,SD:`AnnMarie H.`,BTH:`James W.; Foisagaasina S.; Zarian W.; Benjamin G.; Abel B.`},
+  "Wahya":{NSN:`Jaiden J.; Jax R.; Integrity S.; Wren M.; Arianna L.`,CC:`Zuriel S.; Sophie H.`,GW:`Adia B.; Preston Ford T.`,BEL:`Isaac B.`,SV:`Josiah B.; Reagan B.`,NL:`Zahonnie's C.; Tiffany N.`,RH:`John D.`,SD:`Cadence S.`,BTH:`Lance R.; Lakelan S.; Zellaree W.; Alijah T.; Alexandrio C.`},
+  "Wadaduga":{NSN:`David (Ansel) H.; Ezekiel "Zeke" M.; Kenna M.; Lexis Z.; Clara O.`,CC:`Verdley M. J.; Michelle M.`,GW:`Tavie S.; Sawyer B.`,SW:`Layla D.`,NL:`Koi W.; Tadiwa V.`,RH:`Chloe P.`,SD:`Brantley C.`,BTH:`Omolemo; Anastasia T.; Madison B.; Brandon L.; Jalen T.`},
+  "Squaduli":{NSN:`Joshua O.; Ike C.; Averi Z.; Catey M.; Adelaide A.`,CC:`Reagan T.; Hannah M.`,GW:`Irabelle R.; Judah B.`,SV:`Judah J.; Eliora B.`,NL:`Khloe; Gary M.; James P.`,BTH:`Emanuel Gil F.; Emmybelle G.; Maleyah H.; Kemari R.; Caleb L.; Sharlot R.`},
+  "Inoli":{NSN:`Noah P.; Caleb O.; Danika Y.; Iris P.; Hannah C.`,CC:`David S.; Abigail J.`,GW:`Addison B.; Davis K.`,BEL:`Genesis De L.`,SV:`Elijah T.; Makyla C.`,NL:`Genevieve B.; Dominick A.`,RH:`Savannah D.`,SD:`Luke M.`,BTH:`Felipe C.; Maame H.; Hannah C.; Travis R.; Tyson W.`},
+  "Wdulisi":{NSN:`Zade O.; Judah I.; James D.; Eden M.; Maria R.`,CC:`Devine J.; Juliet J.`,GW:`Abigail D.; Eli B.`,SV:`Cephas del V.; Payton R.`,NL:`Amaris O.; Olivia T.`,RH:`Logan`,SD:`Johnny B.; Mattie J.`,BTH:`Elias H.; Jesi R.; Jemimah O.; Jayden H.; Pietro Resende F.`},
+  "Tsisidu":{NSN:`Matthew D.; Isaiah D.; Abigail R.; Chloe W.; Luma C.`,CC:`Caleb M.; Dresden I.`,GW:`Viviana S.; Andrew Z.`,SW:`Conner S.`,SV:`Aiden C.; Kalia P.`,NL:`Hannah G.; Isaiah M.`,RH:`Bailey D.`,SD:`Gianni G.`,BTH:`William P.; Alesha S.; Isabella A.; King-Elias M.; Matt A.`},
+  "Julasgi":{NSN:`Cooper G.; James M.; Nay Nay T.; Hattie O.; Bella L.`,CC:`Luke A.; Grace F.`,GW:`Felicity S.; Max G.`,SV:`Owen W.; Piper W.`,NL:`Berklee T.; Brinley R.`,RH:`Gage L.`,SD:`Logan H.; Selah C.`,BTH:`Gianni R.; Alana W.; Gabriella R.; Kadence R.; Josiah M.`},
+  "Tsiya":{NSN:`Cooke P.; Cyrus M.; Shiloh V.; Glory S.; Myra D.`,CC:`Maikel G.; Hannah O.`,GW:`Elizabeth C.; Luke B.`,SV:`Caleb W.; Kiana S.`,NL:`Karmen H.; Jaida N.`,RH:`Reese F.`,SD:`Abigail G.`,BTH:`Jesiah S.; Ariana M.; Legacy S.; Jeremiah R.; Karter Y.; Maci D.`},
+  "Tlameha":{NSN:`Ethan K.; Caleb W.; Julia D.; Ana D.; Camilla J.`,CC:`Bryant J.; CieL C.`,GW:`Addyson P.; Brynner B.`,SV:`Noah R.; Leilani S.`,NL:`Gabrielle H.; Keenan B.`,RH:`Emma C.`,SD:`Joscelin S.`,BTH:`Kreid S.; Jakyra H.; Laila G.; Lincoln H.; Justice M.; Ella D.`}
 };
 function teamRoster(tname){
   const g=TEAM_ROSTER[tname]; const out=[]; if(!g) return out;
@@ -725,12 +775,12 @@ function teamChipHTML(name){
 function chSpan(ch){ const c=CHURCH_COLOR[ch]; return c?'<span style="color:'+c+';font-weight:600">'+esc(ch)+'</span>':esc(ch); }
 // White outline skateboard, tilted up — shown next to Grant's name
 const SKATE_SVG='<svg class="pic" viewBox="0 0 28 20" width="24" height="17" fill="none" stroke="#ffd400" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(-16 14 10)"><path d="M5 9 C3 9 2.5 7.4 3 5.8"/><path d="M23 9 C25 9 25.5 7.4 25 5.8"/><line x1="5" y1="9" x2="23" y2="9"/><circle cx="9.5" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></g></svg>';
-// Mel/Melodie Dimmock — "TB & Grahams Mom": pink baby girl, blue baby boy, light-yellow dog head (flat pastels)
+// Mel/Melodie D. — "TB & Grahams Mom": pink baby girl, blue baby boy, light-yellow dog head (flat pastels)
 const MEL_ICONS =
   '<svg class="pic" width="17" height="17" viewBox="0 0 24 24" fill="#f7a8c4" aria-hidden="true"><circle cx="8" cy="6.5" r="2.3"/><circle cx="16" cy="6.5" r="2.3"/><circle cx="12" cy="7.3" r="1.4"/><circle cx="12" cy="14" r="7"/></svg>'+
   '<svg class="pic" width="17" height="17" viewBox="0 0 24 24" fill="#8fc4ec" aria-hidden="true"><circle cx="12" cy="14" r="7"/><path d="M9.6 7.4C9.6 4.2 14.4 3.8 14.8 7.2 13.6 5.6 11.4 5.7 9.6 7.4Z"/></svg>'+
   '<svg class="pic" width="17" height="17" viewBox="0 0 24 24" fill="#f2d873" aria-hidden="true"><ellipse cx="6.5" cy="10" rx="2.6" ry="4.6" transform="rotate(-20 6.5 10)"/><ellipse cx="17.5" cy="10" rx="2.6" ry="4.6" transform="rotate(20 17.5 10)"/><circle cx="12" cy="13" r="6.5"/></svg>';
-const PERSON_ICON = {"Grant Ebright":SKATE_SVG,"Mel Dimmock":MEL_ICONS,"Melodie Dimmock":MEL_ICONS};
+const PERSON_ICON = {"Grant E.":SKATE_SVG,"Mel D.":MEL_ICONS,"Melodie D.":MEL_ICONS};
 
 /* ---- Free Time zones (drawn as labeled boxes on the map) ---- */
 const ZONES = [
@@ -1021,7 +1071,7 @@ function nextBlock(b){return b.find(x=>T(x.s)>state.time);}
 function meBarHTML(){
   if(store.me){
     const HEART='<svg class="ico" viewBox="0 0 24 24" fill="#e5342b" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
-    const who = store.me==="Alice Asher"
+    const who = store.me==="Alice A."
       ? 'I '+HEART+' you, '+esc(store.me)
       : 'Welcome, '+esc(store.me)+(churchOf(store.me)?' · '+chSpan(churchOf(store.me)):'');
     const mcol=CHURCH_COLOR[churchOf(store.me)]||"#8b949e";
@@ -1328,15 +1378,15 @@ function openSheet(title,body){
 }
 // Camp & team leaders — ONE per team/group (the main contact). Rows with a number are tap-to-call.
 const LEADERS = [
-  {n:"Grant Ebright", r:"Camp Pastor", tel:""},
-  {n:"Macey Duncan", r:"Camp Administrator · Welcome Table", tel:"615-686-1993"},
-  {n:"Ethan Myers / Liliana So'osemea", r:"Camp Directors", tel:""},
-  {n:"Chelsey Smith", r:"Worship Team", tel:"615-967-1816"},
-  {n:"Austin Duncan", r:"Activities / Competitions · Team Leader · Judicial · Set Up", tel:"615-478-1838"},
-  {n:"Dana Lathrop", r:"Hospitality", tel:"818-384-8080"},
-  {n:"Alex Hart", r:"Medical · Safety", tel:"615-498-4627"},
-  {n:"Mark Schamel", r:"Medical Team Director", tel:""},
-  {n:"Stu Fritz", r:"Visual Team", tel:""}
+  {n:"Grant E.", r:"Camp Pastor", tel:""},
+  {n:"Macey D.", r:"Camp Administrator · Welcome Table", tel:"615-555-0102"},
+  {n:"Ethan M. / Liliana S.", r:"Camp Directors", tel:""},
+  {n:"Chelsey S.", r:"Worship Team", tel:"615-555-0101"},
+  {n:"Austin D.", r:"Activities / Competitions · Team Leader · Judicial · Set Up", tel:"615-555-0104"},
+  {n:"Dana L.", r:"Hospitality", tel:"615-555-0103"},
+  {n:"Alex H.", r:"Medical · Safety", tel:"615-555-0105"},
+  {n:"Mark S.", r:"Medical Team Director", tel:""},
+  {n:"Stu F.", r:"Visual Team", tel:""}
 ];
 // Important contacts — main leaders (one per group) + church pastors
 function contactsHTML(){
