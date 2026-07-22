@@ -177,6 +177,11 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:14px 3
 .contact-form button{width:100%;background:var(--green);color:#fff;border:none;padding:13px;border-radius:24px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:background 0.2s;}
 .contact-form button:hover{background:#8fd44a;}
 #form-thanks{display:none;color:var(--green);font-weight:700;font-size:15px;margin-top:12px;}
+#form-thanks .deposit-cta{margin-top:14px;padding:14px 16px;border:1px solid var(--green);border-radius:12px;background:rgba(124,198,58,0.08);text-align:left;}
+#form-thanks .deposit-cta p{margin:0 0 10px;font-size:14px;font-weight:600;color:inherit;}
+.deposit-btn{display:inline-block;background:var(--green);color:#0d1117;font-weight:800;padding:10px 18px;border-radius:999px;text-decoration:none;font-size:15px;}
+.deposit-btn:hover{filter:brightness(1.1);}
+#form-thanks .deposit-note{margin:10px 0 0;font-size:12px;opacity:0.75;font-weight:400;}
 
 /* ── FOOTER ── */
 footer{border-top:1px solid var(--border);padding:26px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-top:40px;}
@@ -448,7 +453,13 @@ footer{border-top:1px solid var(--border);padding:26px 32px;display:flex;align-i
       <textarea id="cf-msg" placeholder="Any details — the occasion, the reveal, the vibe"></textarea>
       <button type="submit">Build My Reveal →</button>
     </form>
-    <div id="form-thanks">✓ Got it! We'll be in touch within 24 hours.</div>
+    <div id="form-thanks">✓ Got it! We'll be in touch within 24 hours.
+      <div class="deposit-cta">
+        <p>Want to jump the line? Lock in your build today with a <strong>$40 deposit</strong> — it counts toward your game's total.</p>
+        <a class="deposit-btn" href="https://venmo.com/epecho?txn=pay&amount=40&note=Asher%20Arcade%20Game%20Deposit" target="_blank" rel="noopener">🎮 Pay $40 Deposit on Venmo</a>
+        <p class="deposit-note">Prefer to wait? No problem — we'll send your quote first, no obligation.</p>
+      </div>
+    </div>
   </div>
 </div>
 
