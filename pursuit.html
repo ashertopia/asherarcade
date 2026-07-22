@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pursuit Camp 2026 — Leader Schedule</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="./manifest.webmanifest?v=2">
 <meta name="theme-color" content="#0d1117">
 <meta name="mobile-web-app-capable" content="yes">
@@ -270,6 +271,55 @@ textarea.txt{min-height:110px;font-family:monospace;font-size:12px;}
 </style>
 </head>
 <body>
+
+<!-- ── Leader PIN gate ─────────────────────────────────────────────
+     Keeps the schedule, directory, and Wi-Fi info off the open web.
+     Only the SHA-256 hash of the PIN is stored here. To change the PIN,
+     replace GATE_HASH below with the SHA-256 hex of the new PIN
+     (e.g. run in a browser console:
+      crypto.subtle.digest('SHA-256', new TextEncoder().encode('NEWPIN'))
+        .then(b=>console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
+     ). Leaders enter it once per device; it's remembered after that,
+     including offline. -->
+<div id="pin-gate" style="position:fixed;inset:0;z-index:99999;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;">
+  <div style="font-size:44px;">🏕️</div>
+  <div style="font-family:inherit;font-size:20px;font-weight:800;color:#e6edf3;">Pursuit Camp — Leaders Only</div>
+  <div style="font-size:14px;color:#8b949e;max-width:280px;">Enter the leader PIN to open the schedule. Ask your camp director if you don't have it.</div>
+  <input id="pin-input" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="PIN"
+    style="width:180px;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#161b22;color:#e6edf3;font-size:20px;text-align:center;letter-spacing:0.3em;outline:none;">
+  <button id="pin-btn" style="width:180px;padding:12px;border:none;border-radius:999px;background:#7cc63a;color:#0d1117;font-weight:800;font-size:16px;cursor:pointer;">Unlock</button>
+  <div id="pin-err" style="display:none;color:#ff9d96;font-size:13px;font-weight:700;">That's not it — try again.</div>
+</div>
+<script>
+(function(){
+  var GATE_HASH = 'ccc0c17a6e734fceec67b24f1a6a59f650b638350e37e7e33fd9c277f32f6f78';
+  var KEY = 'pc26_gate_ok';
+  var gate = document.getElementById('pin-gate');
+  function open(){ gate.style.display = 'none'; }
+  try { if (localStorage.getItem(KEY) === GATE_HASH) { open(); } } catch(e){}
+  function sha256hex(str){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf), function(x){ return x.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+  function attempt(){
+    var v = document.getElementById('pin-input').value.trim();
+    if (!v) return;
+    sha256hex(v).then(function(hex){
+      if (hex === GATE_HASH) {
+        try { localStorage.setItem(KEY, hex); } catch(e){}
+        open();
+      } else {
+        document.getElementById('pin-err').style.display = 'block';
+        document.getElementById('pin-input').value = '';
+      }
+    });
+  }
+  document.getElementById('pin-btn').addEventListener('click', attempt);
+  document.getElementById('pin-input').addEventListener('keydown', function(e){ if (e.key === 'Enter') attempt(); });
+})();
+</script>
+
 <header class="top">
   <div class="wrap">
     <div class="brand">
