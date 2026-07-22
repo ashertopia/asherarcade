@@ -73,9 +73,15 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.asherarcade.com/office_derby_v5.html</loc>
+    <loc>https://www.asherarcade.com/derby_game.html</loc>
     <lastmod>2026-04-06</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.asherarcade.com/policies.html</loc>
+    <lastmod>2026-07-22</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>
