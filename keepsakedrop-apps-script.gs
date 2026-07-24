@@ -1,6 +1,6 @@
 /**
- * Photo Drop — Google Apps Script backend
- * Saves guest photos from photodrop.html into a Google Drive folder.
+ * KeepsakeDrop — Google Apps Script backend
+ * Saves guest photos from keepsakedrop.html into a Google Drive folder.
  *
  * SETUP (one time, ~3 minutes):
  * 1. Go to https://script.google.com and create a New Project.
@@ -11,7 +11,7 @@
  * 4. Copy the Web app URL (ends in /exec).
  * 5. Create a folder in Google Drive for the event's photos and copy its
  *    folder ID (the long string after /folders/ in the address bar).
- * 6. Open photodrop.html with no URL parameters — the setup screen will
+ * 6. Open keepsakedrop.html with no URL parameters — the setup screen will
  *    ask for the script URL and folder ID and generate the guest QR code.
  */
 
