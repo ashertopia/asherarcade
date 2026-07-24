@@ -969,8 +969,8 @@ function handleBtn(tag){
   if(tag==='promo'){ window.open('https://asherarcade.com','_blank'); return; }
   if(tag==='coffee'){
     const note = encodeURIComponent('Office Derby - great game!');
-    const appUrl = `venmo://paycharge?txn=pay&recipients=epecho&amount=3&note=${note}`;
-    const webUrl = `https://venmo.com/epecho`;
+    const appUrl = `venmo://paycharge?txn=pay&recipients=AsherArcade&amount=3&note=${note}`;
+    const webUrl = `https://venmo.com/AsherArcade`;
     const start = Date.now();
     window.location.href = appUrl;
     setTimeout(()=>{ if(Date.now()-start < 1600) window.open(webUrl,'_blank'); }, 1200);

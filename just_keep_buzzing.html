@@ -215,7 +215,7 @@ canvas.addEventListener('click',function(e){
     var cy=(e.clientY-r.top)*(H/r.height);
     // Venmo tip button region (x:28..W-28, y:448..492)
     if(cx>28&&cx<W-28&&cy>448&&cy<492){
-      window.open('https://venmo.com/epecho?txn=pay&amount=3&note=Asher+Arcade','_blank');
+      window.open('https://venmo.com/AsherArcade?txn=pay&amount=3&note=Asher+Arcade','_blank');
       return;
     }
     resetGame();
@@ -824,7 +824,7 @@ function drawDead(){
   ctx.fillStyle='#ffd700';ctx.font='7px "Press Start 2P"';ctx.textAlign='center';
   ctx.fillText('☕ BUY ME A COFFEE',W/2,466);
   ctx.fillStyle='rgba(255,255,255,0.5)';ctx.font='5px "Press Start 2P"';
-  ctx.fillText('venmo @epecho • $3 pre-filled',W/2,482);
+  ctx.fillText('venmo @AsherArcade • $3 pre-filled',W/2,482);
   drawButton(W/2,522,200,36,'▶ PLAY AGAIN','#7cc63a','#fff');
   ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font='5px "Press Start 2P"';ctx.textAlign='center';ctx.fillText('© 2026 asherarcade.com',W/2,H-8);
 }
