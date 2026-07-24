@@ -1,19 +1,19 @@
 # Asher Arcade — Monetization Plan
 
 **Goal: $150/month minimum, starting now.** That's roughly one $199 custom build
-every 6 weeks, or 2 Photo Drop events per month, or any mix below.
+every 6 weeks, or 2 KeepsakeDrop events per month, or any mix below.
 
 ## Honest assessment of what we have
 
 **Sellable today (the short list):**
 
-1. **Photo Drop** (`photodrop.html`) — the strongest product. Guest photo
+1. **KeepsakeDrop** (`keepsakedrop.html`) — the strongest product. Guest photo
    collection for weddings/grads with a QR code, photos land in the host's
    Google Drive. Zero marginal cost per event, easy to explain, and every
    competitor (The Guest, POV, Guestpix) charges $50–$250 per event. As of this
    update it has a real host setup screen, QR generation, and reliable
    per-photo uploads, plus a deployable Apps Script backend
-   (`photodrop-apps-script.gs`).
+   (`keepsakedrop-apps-script.gs`).
 2. **Quiz Builder** (`quiz-builder.html`) — the "graduation quiz" idea, live.
    Free self-serve tier (up to 10 questions, share by link/QR) that works as a
    lead magnet, with the $199 custom tier as the paid upgrade.
@@ -32,7 +32,7 @@ every 6 weeks, or 2 Photo Drop events per month, or any mix below.
 
 - **No way to pay.** Every page ended at a contact form. → Added a $40 Venmo
   deposit button to the form-success state on all five pages with forms.
-- Photo Drop had **no QR generation and no host setup** — the core pitch didn't
+- KeepsakeDrop had **no QR generation and no host setup** — the core pitch didn't
   exist in code. → Built both, plus the backend script.
 - The trivia page's demo button was disabled. → Now links to the Quiz Builder.
 - Broken links (`Special_Announcement_S-A.html`), missing Google Analytics on
@@ -53,9 +53,9 @@ Verified market facts that shape this:
 
 | Product | Price | Notes |
 |---|---|---|
-| Photo Drop event (site direct) | **$39** | Done-for-you setup: Drive folder, script, printable QR sign PDF |
+| KeepsakeDrop event (site direct) | **$39** | Done-for-you setup: Drive folder, script, printable QR sign PDF |
 | Etsy listing: QR sign + working photo service | **$29–35** | Personalized item; sale completes on Etsy (keeps it policy-safe) |
-| Event bundle | **$79** | Photo Drop + custom quiz + reskinned game favor — mirrors Wedibox's proven all-in-one tier |
+| Event bundle | **$79** | KeepsakeDrop + custom quiz + reskinned game favor — mirrors Wedibox's proven all-in-one tier |
 | Custom quiz (from builder lead) | $199 | Existing Memory tier |
 | Full custom game | $79–$299 | Existing tiers, unchanged |
 
@@ -65,10 +65,10 @@ as possible so cards work too.
 
 ## 30-day actions (in order)
 
-1. **Deploy the Photo Drop Apps Script** (instructions at the top of
-   `photodrop-apps-script.gs`), run one real test event end-to-end.
+1. **Deploy the KeepsakeDrop Apps Script** (instructions at the top of
+   `keepsakedrop-apps-script.gs`), run one real test event end-to-end.
 2. **Create Stripe Payment Links** for $49 / $99 / $199 and swap them in.
-3. **List Photo Drop where couples already shop:** The Knot and WeddingWire
+3. **List KeepsakeDrop where couples already shop:** The Knot and WeddingWire
    vendor listings (free tiers exist), local Facebook wedding/event groups,
    r/weddingplanning (be helpful, not spammy). "QR photo collection for $49
    flat, no subscription, photos go straight to YOUR Google Drive" is a real
@@ -82,7 +82,7 @@ as possible so cards work too.
 
 ## Path to $150/mo
 
-- 3 Photo Drop events ($49 × 3) ≈ $150 — the realistic base case.
+- 3 KeepsakeDrop events ($49 × 3) ≈ $150 — the realistic base case.
 - OR 1 custom build ($199+) covers a month with room to spare.
 - Weddings + grads + baby showers + church events means year-round demand.
 
@@ -102,7 +102,7 @@ last, if ever.
 ## Later (only after first revenue)
 
 - Stripe checkout embedded in the site (replaces Venmo entirely).
-- Photo Drop live slideshow view (photos appear on a projector as guests
+- KeepsakeDrop live slideshow view (photos appear on a projector as guests
   upload) — competitors charge $100+ extra for this; it's a ~1-day build.
 - Per-event leaderboard scoping for the game favors (currently one shared
   global leaderboard per Apps Script).
