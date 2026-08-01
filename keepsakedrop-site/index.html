@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KeepsakeDrop — Every guest's photos, straight to your Google Drive</title>
+<meta name="description" content="Guests scan a QR code at your wedding or event and their photos land in your own Google Drive. No app, no subscription. $39 flat, set up for you.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-pale: #F5E8C0;
+    --cream: #FDFAF3;
+    --white: #FFFFFF;
+    --ink: #1A1614;
+    --ink-soft: #4A4340;
+    --border: rgba(201,168,76,0.3);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,168,76,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+  .ornament { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .ornament-line { height: 1px; width: 48px; background: linear-gradient(90deg, transparent, var(--gold)); }
+  .ornament-line.right { background: linear-gradient(90deg, var(--gold), transparent); }
+  .ornament-diamond { width: 6px; height: 6px; background: var(--gold); transform: rotate(45deg); }
+
+  .eyebrow {
+    font-weight: 300; font-size: 11px; letter-spacing: 0.35em;
+    text-transform: uppercase; color: var(--gold); text-align: center;
+  }
+
+  /* Header */
+  header { padding: 26px 0 0; text-align: center; }
+  .wordmark {
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 13px;
+    letter-spacing: 0.4em; text-transform: uppercase; color: var(--ink);
+  }
+  .wordmark span { color: var(--gold); }
+
+  /* Hero */
+  .hero { padding: 64px 0 56px; text-align: center; }
+  .hero .ornament { margin: 14px 0 18px; }
+  h1 {
+    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic;
+    font-size: clamp(38px, 7vw, 56px); line-height: 1.12; letter-spacing: 0.01em;
+  }
+  .hero-sub {
+    font-weight: 300; font-size: 17px; line-height: 1.7; color: var(--ink-soft);
+    max-width: 520px; margin: 22px auto 0;
+  }
+  .hero-cta { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .btn-gold {
+    display: inline-block; padding: 16px 34px;
+    background: linear-gradient(135deg, #C9A84C, #E8C97A, #C9A84C);
+    background-size: 200% 200%; animation: shimmer 3s ease infinite;
+    border: none; border-radius: 2px; color: var(--white);
+    font-family: 'Jost', sans-serif; font-weight: 500; font-size: 12px;
+    letter-spacing: 0.3em; text-transform: uppercase; text-decoration: none;
+    transition: transform 0.1s;
+  }
+  .btn-gold:active { transform: scale(0.98); }
+  .btn-outline {
+    display: inline-block; padding: 16px 34px;
+    border: 1px solid var(--gold); border-radius: 2px; color: var(--gold);
+    font-family: 'Jost', sans-serif; font-weight: 500; font-size: 12px;
+    letter-spacing: 0.3em; text-transform: uppercase; text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-outline:hover { background: var(--gold); color: var(--white); }
+  @keyframes shimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .hero-note { margin-top: 16px; font-size: 12px; letter-spacing: 0.08em; color: #8A827C; }
+
+  /* Section scaffolding */
+  section { padding: 56px 0; }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-style: italic;
+    font-size: 32px; text-align: center; margin: 12px 0 8px;
+  }
+
+  /* How it works */
+  .steps { display: grid; gap: 16px; margin-top: 32px; }
+  @media (min-width: 640px) { .steps { grid-template-columns: 1fr 1fr 1fr; } }
+  .step {
+    background: var(--white); border: 1px solid var(--border); border-radius: 4px;
+    padding: 28px 22px; text-align: center;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.04);
+  }
+  .step-num {
+    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 30px;
+    color: var(--gold); line-height: 1;
+  }
+  .step h3 {
+    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 12px;
+    letter-spacing: 0.2em; text-transform: uppercase; margin: 12px 0 10px;
+  }
+  .step p { font-weight: 300; font-size: 14px; line-height: 1.65; color: var(--ink-soft); }
+
+  /* Why */
+  .why-list { margin-top: 30px; display: grid; gap: 14px; }
+  @media (min-width: 640px) { .why-list { grid-template-columns: 1fr 1fr; } }
+  .why {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--white); border: 1px solid var(--border); border-radius: 4px;
+    padding: 20px;
+  }
+  .why-diamond { flex: none; width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); margin-top: 7px; }
+  .why h3 { font-size: 12px; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px; }
+  .why p { font-weight: 300; font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+
+  /* Pricing */
+  .price-card {
+    background: var(--white); border: 1px solid var(--gold); border-radius: 4px;
+    padding: 40px 32px; text-align: center; margin-top: 32px;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(201,168,76,0.15);
+  }
+  .price {
+    font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 64px; line-height: 1;
+  }
+  .price sup { font-size: 26px; top: -22px; position: relative; color: var(--gold); }
+  .price-per { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--ink-soft); margin-top: 6px; }
+  .price-includes { list-style: none; margin: 26px auto 30px; max-width: 380px; text-align: left; }
+  .price-includes li {
+    font-weight: 300; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft);
+    padding: 9px 0 9px 24px; position: relative; border-bottom: 1px solid rgba(201,168,76,0.15);
+  }
+  .price-includes li:last-child { border-bottom: none; }
+  .price-includes li::before { content: '✦'; position: absolute; left: 0; color: var(--gold); font-size: 11px; top: 12px; }
+  .bundle-note { margin-top: 18px; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 15px; color: var(--ink-soft); }
+  .bundle-note a { color: var(--gold); }
+
+  /* FAQ */
+  .faq { margin-top: 28px; }
+  details {
+    background: var(--white); border: 1px solid var(--border); border-radius: 4px;
+    margin-bottom: 10px; overflow: hidden;
+  }
+  summary {
+    cursor: pointer; padding: 18px 20px; font-weight: 400; font-size: 14px;
+    letter-spacing: 0.05em; list-style: none; position: relative; padding-right: 44px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '+'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    color: var(--gold); font-size: 20px; font-weight: 300;
+  }
+  details[open] summary::after { content: '–'; }
+  details p {
+    padding: 0 20px 18px; font-weight: 300; font-size: 14px; line-height: 1.7; color: var(--ink-soft);
+  }
+
+  /* Final CTA */
+  .final-cta { text-align: center; padding-bottom: 72px; }
+  .final-cta .ornament { margin: 14px 0 20px; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border); padding: 28px 24px 40px; text-align: center;
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #C0B8B0;
+    position: relative; z-index: 1;
+  }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="wordmark">Keepsake<span>Drop</span></div>
+</header>
+
+<div class="wrap hero">
+  <p class="eyebrow">For Weddings · Graduations · Celebrations</p>
+  <div class="ornament">
+    <div class="ornament-line"></div>
+    <div class="ornament-diamond"></div>
+    <div class="ornament-line right"></div>
+  </div>
+  <h1>Your day, through<br>every guest&rsquo;s eyes</h1>
+  <p class="hero-sub">
+    Guests scan an elegant QR code at their table and every photo they take lands
+    straight in <em>your</em> Google&nbsp;Drive — no app to download, no account to
+    make, nothing held hostage on someone else&rsquo;s platform.
+  </p>
+  <div class="hero-cta">
+    <!-- TEST-MODE Stripe link (sandbox). Swap for the live payment link URL before launch. -->
+    <a class="btn-gold" href="https://buy.stripe.com/test_aFa28t77T6jW2xE5Cm43S00">Book Your Event — $39</a>
+    <a class="btn-outline" href="drop.html?event=demo-wedding&amp;type=wedding&amp;name=Emma+%26+Jake&amp;folder=demo&amp;script=demo">Try the Guest Experience</a>
+  </div>
+  <p class="hero-note">One flat price. No subscription. Set up for you within 24 hours.</p>
+</div>
+
+<section class="wrap" id="how">
+  <p class="eyebrow">How It Works</p>
+  <h2 class="section-title">Three simple steps</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Book in two minutes</h3>
+      <p>Checkout asks for your event name, date, and type. That&rsquo;s the whole form.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>We set everything up</h3>
+      <p>Within 24 hours you get your private guest link and a beautiful print-ready QR sign for your tables.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Guests scan &amp; share</h3>
+      <p>Photos stream into your own Google Drive during the event and for a full 30 days after.</p>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="why">
+  <p class="eyebrow">Why KeepsakeDrop</p>
+  <h2 class="section-title">Yours, beautifully</h2>
+  <div class="why-list">
+    <div class="why">
+      <div class="why-diamond"></div>
+      <div>
+        <h3>You own every photo</h3>
+        <p>Photos go directly to your Google Drive — not our servers. No expiring galleries, no download fees, ever.</p>
+      </div>
+    </div>
+    <div class="why">
+      <div class="why-diamond"></div>
+      <div>
+        <h3>Nothing to download</h3>
+        <p>Guests point their phone camera at the QR code and they&rsquo;re in. Works for every guest, ages 8 to 98.</p>
+      </div>
+    </div>
+    <div class="why">
+      <div class="why-diamond"></div>
+      <div>
+        <h3>One flat $39</h3>
+        <p>Comparable services charge $50&ndash;$250 per event or monthly subscriptions — and keep your photos on their platform.</p>
+      </div>
+    </div>
+    <div class="why">
+      <div class="why-diamond"></div>
+      <div>
+        <h3>Designed for the day</h3>
+        <p>An elegant upload page and a printable gold-framed table sign that looks like it belongs at your event.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" id="pricing">
+  <p class="eyebrow">Pricing</p>
+  <h2 class="section-title">Everything included</h2>
+  <div class="price-card">
+    <div class="price"><sup>$</sup>39</div>
+    <p class="price-per">per event · one-time</p>
+    <ul class="price-includes">
+      <li>Private guest upload page, styled for your event</li>
+      <li>Print-ready QR table sign with your names</li>
+      <li>Photos delivered to your own Google Drive</li>
+      <li>Unlimited guests &amp; unlimited photos</li>
+      <li>Uploads open through 30 days after your event</li>
+      <li>Full setup done for you, within 24 hours</li>
+    </ul>
+    <!-- TEST-MODE Stripe link (sandbox). Swap for the live payment link URL before launch. -->
+    <a class="btn-gold" href="https://buy.stripe.com/test_aFa28t77T6jW2xE5Cm43S00">Book Your Event</a>
+    <p class="bundle-note">Want a custom trivia game or party favor too? See the <a href="https://asherarcade.com" target="_blank" rel="noopener">$79 event bundle at Asher Arcade</a>.</p>
+  </div>
+</section>
+
+<section class="wrap" id="faq">
+  <p class="eyebrow">Questions</p>
+  <h2 class="section-title">Good to know</h2>
+  <div class="faq">
+    <details>
+      <summary>Do my guests need to install anything?</summary>
+      <p>No. They open their phone&rsquo;s camera, point it at the QR code, and tap the link. The upload page works in any browser — no app, no account, no sign-in.</p>
+    </details>
+    <details>
+      <summary>Where do the photos go?</summary>
+      <p>Straight into a Google Drive folder that belongs to you. We set it up, you own it. Nothing is stored on our side, and nothing expires or gets ransomed behind a paywall.</p>
+    </details>
+    <details>
+      <summary>How long can guests upload?</summary>
+      <p>From the moment you receive your link through 30 days after your event date — plenty of time for everyone to get home from the honeymoon and share what they captured.</p>
+    </details>
+    <details>
+      <summary>What do I receive after booking?</summary>
+      <p>Within 24 hours: your private guest link, and a print-ready, letter-size QR sign designed with your names — ready for table cards or a welcome-table frame.</p>
+    </details>
+    <details>
+      <summary>What about videos?</summary>
+      <p>KeepsakeDrop collects photos. For videos, we suggest guests send them to you directly — video files are too large for reliable on-the-spot uploads on venue Wi-Fi.</p>
+    </details>
+    <details>
+      <summary>Can I try it first?</summary>
+      <p>Yes — <a href="drop.html?event=demo-wedding&amp;type=wedding&amp;name=Emma+%26+Jake&amp;folder=demo&amp;script=demo" style="color:var(--gold);">preview the guest experience</a> right now. It&rsquo;s a demo, so nothing is actually uploaded.</p>
+    </details>
+  </div>
+</section>
+
+<div class="wrap final-cta">
+  <p class="eyebrow">Ready?</p>
+  <div class="ornament">
+    <div class="ornament-line"></div>
+    <div class="ornament-diamond"></div>
+    <div class="ornament-line right"></div>
+  </div>
+  <h2 class="section-title" style="margin-bottom:26px;">Let&rsquo;s capture your day</h2>
+  <!-- TEST-MODE Stripe link (sandbox). Swap for the live payment link URL before launch. -->
+  <a class="btn-gold" href="https://buy.stripe.com/test_aFa28t77T6jW2xE5Cm43S00">Book Your Event — $39</a>
+</div>
+
+<footer>
+  KeepsakeDrop · Asher Arcade © 2026 · a Scott Asher LLC business<br><br>
+  <a href="mailto:keepsakedrop@asherarcade.com">keepsakedrop@asherarcade.com</a> · <a href="https://asherarcade.com/policies.html">Policies</a> · <a href="https://asherarcade.com">Asher Arcade</a>
+</footer>
+
+</body>
+</html>
