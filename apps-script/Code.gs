@@ -22,6 +22,12 @@
 // ID sent by the page.
 var LOCKED_FOLDER_ID = '';
 
+// Optional: last day uploads are accepted, e.g. '2026-09-15' (set this to
+// the event date + 30 days to match the page's ?until= behavior). Leave ''
+// to accept uploads forever. This is the real enforcement — the page-side
+// check is just a friendly notice.
+var UPLOAD_CLOSE_DATE = '';
+
 // Reject any single request bigger than ~8 MB of base64 (one compressed
 // photo is typically 200-600 KB, so this is generous).
 var MAX_BODY_CHARS = 8 * 1024 * 1024;
@@ -33,6 +39,13 @@ function doPost(e) {
     }
     if (e.postData.contents.length > MAX_BODY_CHARS) {
       return jsonOut({ ok: false, error: 'request too large' });
+    }
+
+    if (UPLOAD_CLOSE_DATE) {
+      var closeMs = new Date(UPLOAD_CLOSE_DATE + 'T23:59:59Z').getTime();
+      if (new Date().getTime() > closeMs) {
+        return jsonOut({ ok: false, error: 'closed' });
+      }
     }
 
     var body = JSON.parse(e.postData.contents);

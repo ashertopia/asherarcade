@@ -163,7 +163,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     font-style: italic;
     font-family: 'Cormorant Garamond', serif;
   }
-  input[type="text"] {
+  input[type="text"], input[type="date"] {
     width: 100%;
     padding: 12px 14px;
     border: 1px solid var(--border);
@@ -176,7 +176,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     outline: none;
     transition: border-color 0.2s;
   }
-  input[type="text"]:focus {
+  input[type="text"]:focus, input[type="date"]:focus {
     border-color: var(--gold);
     background: var(--white);
   }
@@ -569,15 +569,105 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     color: var(--ink-soft);
     text-align: left;
   }
+  /* ── Printable guest sign ── */
+  #print-sign { display: none; }
   @media print {
-    body * { display: none !important; }
+    @page { size: letter portrait; margin: 0.4in; }
     body::before { display: none !important; }
-    #setup-screen, #setup-screen .card, #qr-result, #qr-result * { display: block !important; }
-    #setup-screen .field-group, #setup-screen .card-label, .qr-actions, .btn-submit, .setup-help, .guest-link-box, #setup-screen .arcade-tag, #setup-screen .ornament, #setup-screen .footer { display: none !important; }
-    #qr-canvas { margin: 40px auto; }
-    .print-title { display: block !important; text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 32px; margin-top: 40px; }
+    body > .page, body > #thankyou-screen { display: none !important; }
+    #print-sign {
+      display: flex !important;
+      width: 100%;
+      min-height: 96vh;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
   }
-  .print-title { display: none; }
+  .ps-frame {
+    flex: 1;
+    border: 1.5px solid var(--gold);
+    padding: 8px;
+    display: flex;
+  }
+  .ps-inner {
+    flex: 1;
+    border: 1px solid var(--gold);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 40px;
+    gap: 0;
+  }
+  .ps-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 13px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .ps-orn { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
+  .ps-orn .ornament-line { width: 70px; }
+  .ps-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: 56px;
+    line-height: 1.1;
+    color: var(--ink);
+    max-width: 90%;
+  }
+  .ps-sub {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 15px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-top: 14px;
+  }
+  #ps-qr {
+    width: 300px;
+    max-width: 60%;
+    margin: 40px 0 28px;
+    border: 1px solid var(--border);
+    padding: 10px;
+  }
+  .ps-hint {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--ink-soft);
+  }
+  .ps-foot {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #B8B0A8;
+    margin-top: 36px;
+  }
+
+  /* ── Closed-event note ── */
+  .closed-note {
+    display: none;
+    width: 100%;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 40px 28px;
+    margin-top: 28px;
+    box-shadow: 0 2px 24px rgba(0,0,0,0.05);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 19px;
+    font-style: italic;
+    color: var(--ink-soft);
+    text-align: center;
+    line-height: 1.6;
+  }
+  .closed-note.show { display: block; }
 
   /* Keyframes */
   @keyframes fadeUp {
@@ -629,6 +719,12 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     </div>
 
     <div class="field-group">
+      <label class="field-label" for="setup-date">Event Date <span class="field-optional">— optional</span></label>
+      <input type="date" id="setup-date">
+      <p class="setup-help">Guest uploads stay open until 30 days after this date, then the page gracefully closes. Leave blank for no time limit.</p>
+    </div>
+
+    <div class="field-group">
       <label class="field-label" for="setup-script">Apps Script URL</label>
       <input type="text" id="setup-script" placeholder="https://script.google.com/macros/s/…/exec">
       <p class="setup-help">Photos are saved to your own Google Drive via a small Google Apps Script. Need help setting it up? <a href="https://asherarcade.com/#contact" target="_blank" rel="noopener">We'll do it for you</a> — full setup included with every KeepsakeDrop package.</p>
@@ -644,7 +740,6 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     <div class="error-msg" id="setup-error">Please fill in the event name, script URL, and folder ID.</div>
 
     <div id="qr-result">
-      <p class="print-title" id="print-title"></p>
       <canvas id="qr-canvas" width="290" height="290"></canvas>
       <div class="guest-link-box" id="guest-link-box"></div>
       <div class="qr-actions">
@@ -711,7 +806,36 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     <button class="btn-submit" id="btn-submit" disabled>Upload Photos</button>
   </div>
 
+  <div class="closed-note" id="closed-note">
+    This event’s photo collection has come to a close.<br>
+    Thank you to everyone who shared their memories!
+  </div>
+
   <footer class="footer">Asher Arcade © 2026 · a Scott Asher LLC business · <a href="mailto:keepsakedrop@asherarcade.com" style="color:inherit;">keepsakedrop@asherarcade.com</a> · <a href="policies.html" style="color:inherit;">Policies</a></footer>
+</div>
+
+<!-- ── PRINTABLE GUEST SIGN (visible only when printing from the setup screen) ── -->
+<div id="print-sign">
+  <div class="ps-frame">
+    <div class="ps-inner">
+      <p class="ps-eyebrow" id="ps-eyebrow">Capture the Memories</p>
+      <div class="ps-orn">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line right"></div>
+      </div>
+      <h1 class="ps-title" id="ps-title">Share Your Photos</h1>
+      <p class="ps-sub" id="ps-sub">Share your photos from today</p>
+      <img id="ps-qr" alt="QR code to upload photos">
+      <p class="ps-hint">Open your phone’s camera and point it at the code</p>
+      <div class="ps-orn">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line right"></div>
+      </div>
+      <p class="ps-foot">KeepsakeDrop &middot; asherarcade.com</p>
+    </div>
+  </div>
 </div>
 
 <!-- ── THANK YOU SCREEN ── -->
@@ -770,6 +894,7 @@ function buildGuestUrl() {
   const ev     = document.getElementById('setup-event').value.trim();
   const type   = document.getElementById('setup-type').value;
   const host   = document.getElementById('setup-name').value.trim();
+  const date   = document.getElementById('setup-date').value;
   const script = document.getElementById('setup-script').value.trim();
   const folder = document.getElementById('setup-folder').value.trim();
   if (!ev || !script || !folder) return null;
@@ -778,6 +903,13 @@ function buildGuestUrl() {
   q.set('event', slugify(ev));
   q.set('type', type);
   if (host) q.set('name', host);
+  if (date) {
+    const d = new Date(date + 'T00:00:00');
+    if (!isNaN(d.getTime())) {
+      d.setDate(d.getDate() + 30);
+      q.set('until', d.toISOString().slice(0, 10));
+    }
+  }
   q.set('folder', folder);
   q.set('script', script);
   return base + '?' + q.toString();
@@ -812,9 +944,18 @@ if (isSetupMode) {
     drawQr(document.getElementById('qr-canvas'), url);
     document.getElementById('guest-link-box').textContent = url;
     document.getElementById('btn-test-link').href = url;
-    document.getElementById('print-title').textContent =
-      'Share your photos — ' + document.getElementById('setup-event').value.trim();
     document.getElementById('qr-result').classList.add('show');
+
+    // Populate the printable sign
+    const ev   = document.getElementById('setup-event').value.trim();
+    const host = document.getElementById('setup-name').value.trim();
+    const type = document.getElementById('setup-type').value;
+    const signEyebrow = { wedding: 'Capture the Memories', graduation: 'Celebrate the Moment', event: 'Capture the Memories' };
+    const signSub     = { wedding: 'Share your photos from our wedding day', graduation: 'Share your photos from today', event: 'Share your photos from today' };
+    document.getElementById('ps-eyebrow').textContent = signEyebrow[type] || signEyebrow.event;
+    document.getElementById('ps-title').textContent   = host || ev;
+    document.getElementById('ps-sub').textContent     = signSub[type] || signSub.event;
+    document.getElementById('ps-qr').src = document.getElementById('qr-canvas').toDataURL('image/png');
   });
   document.getElementById('btn-copy-link').addEventListener('click', function() {
     const url = document.getElementById('guest-link-box').textContent;
@@ -872,6 +1013,17 @@ document.getElementById('ty-headline').textContent    = c.headline;
 document.getElementById('ty-from').textContent        = c.from;
 document.getElementById('ty-message').textContent     = c.message;
 document.title = c.title + ' \u00B7 KeepsakeDrop';
+
+// \u2500\u2500 Time-limited events: ?until=YYYY-MM-DD closes uploads after that day \u2500\u2500
+const untilStr = params.get('until') || '';
+if (!isSetupMode && untilStr) {
+  const end = new Date(untilStr + 'T23:59:59');
+  if (!isNaN(end.getTime()) && Date.now() > end.getTime()) {
+    document.querySelector('#upload-screen .card').style.display = 'none';
+    document.getElementById('closed-note').classList.add('show');
+    document.getElementById('event-subtitle').textContent = 'The photo collection has closed';
+  }
+}
 
 // ── File handling ──
 const fileInput   = document.getElementById('file-input');
