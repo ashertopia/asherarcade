@@ -398,7 +398,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     animation: fadeIn 0.6s 0.4s ease both;
   }
 
-  /* Venmo tip */
+  /* Tip (Stripe payment link) */
   .tip-section {
     animation: fadeUp 0.6s 0.45s ease both;
     text-align: center;
@@ -411,15 +411,15 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     color: var(--ink-soft);
     margin-bottom: 12px;
   }
-  .btn-venmo {
+  .btn-tip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 14px 28px;
-    background: #3D95CE;
+    background: var(--ink);
     border: none;
     border-radius: 2px;
-    color: white;
+    color: var(--gold-light);
     font-family: 'Jost', sans-serif;
     font-size: 12px;
     font-weight: 500;
@@ -429,17 +429,17 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
     text-decoration: none;
     transition: opacity 0.2s;
   }
-  .btn-venmo:hover { opacity: 0.85; }
-  .venmo-icon {
+  .btn-tip:hover { opacity: 0.85; }
+  .tip-icon {
     width: 18px; height: 18px;
-    background: white;
+    background: var(--gold-light);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 11px;
-    color: #3D95CE;
+    color: var(--ink);
   }
 
   /* Arcade promo */
@@ -781,9 +781,10 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 
   <div class="tip-section">
     <p class="tip-label">Enjoyed the experience?</p>
-    <a class="btn-venmo" href="https://venmo.com/AsherArcade?txn=pay&amount=3&note=Photo+Drop+by+Asher+Arcade" target="_blank" rel="noopener">
-      <span class="venmo-icon">☕</span>
-      Buy Me a Coffee — @AsherArcade
+    <!-- TEST-MODE Stripe link (sandbox). Swap for the live payment link URL before launch. -->
+    <a class="btn-tip" href="https://donate.stripe.com/test_7sYcN7eAl23G3BI1m643S01" target="_blank" rel="noopener">
+      <span class="tip-icon">☕</span>
+      Buy Me a Coffee
     </a>
   </div>
 
@@ -1024,17 +1025,18 @@ async function startUpload() {
     }
 
     try {
-      await fetch(scriptUrl, {
+      const res = await fetch(scriptUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
           folder: folderId,
           name:   guestName,
           photos: [{ filename: file.name, type: 'image/jpeg', data: data }]
-        }),
-        mode: 'no-cors'
+        })
       });
-      uploaded++;
+      const out = await res.json();
+      if (out && out.ok && out.saved > 0) uploaded++;
+      else failed++;
     } catch(e) {
       failed++;
     }
@@ -1050,7 +1052,7 @@ async function startUpload() {
     progressWrap.classList.remove('visible');
   } else {
     let msg = `${uploaded} photo${uploaded !== 1 ? 's' : ''} sent!`;
-    if (skipped + failed > 0) msg += ` (${skipped + failed} couldn't be read — try those again)`;
+    if (skipped + failed > 0) msg += ` (${skipped + failed} didn't go through — please try those again)`;
     progressLabel.textContent = msg;
     setTimeout(showThankyou, 800);
   }

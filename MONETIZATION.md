@@ -13,7 +13,7 @@ every 6 weeks, or 2 KeepsakeDrop events per month, or any mix below.
    competitor (The Guest, POV, Guestpix) charges $50–$250 per event. As of this
    update it has a real host setup screen, QR generation, and reliable
    per-photo uploads, plus a deployable Apps Script backend
-   (`keepsakedrop-apps-script.gs`).
+   (`apps-script/Code.gs`, clasp-ready — see `apps-script/README.md`).
 2. **Quiz Builder** (`quiz-builder.html`) — the "graduation quiz" idea, live.
    Free self-serve tier (up to 10 questions, share by link/QR) that works as a
    lead magnet, with the $199 custom tier as the paid upgrade.
@@ -65,9 +65,14 @@ as possible so cards work too.
 
 ## 30-day actions (in order)
 
-1. **Deploy the KeepsakeDrop Apps Script** (instructions at the top of
-   `keepsakedrop-apps-script.gs`), run one real test event end-to-end.
-2. **Create Stripe Payment Links** for $49 / $99 / $199 and swap them in.
+1. **Deploy the KeepsakeDrop Apps Script** (see `apps-script/README.md` for
+   clasp or manual steps), run one real test event end-to-end.
+2. **Recreate the Stripe Payment Links in live mode.** Sandbox versions
+   already exist (KeepsakeDrop $39 package with promo codes enabled, plus a
+   pay-what-you-want tip link wired into `keepsakedrop.html`); once the live
+   account is connected, mint the live equivalents and swap the URLs. One-off
+   free codes = 100%-off coupon + single-use promotion codes (e.g.
+   `KDFREE-0001`).
 3. **List KeepsakeDrop where couples already shop:** The Knot and WeddingWire
    vendor listings (free tiers exist), local Facebook wedding/event groups,
    r/weddingplanning (be helpful, not spammy). "QR photo collection for $49

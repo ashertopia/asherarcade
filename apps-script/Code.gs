@@ -2,7 +2,9 @@
  * KeepsakeDrop — Google Apps Script backend
  * Saves guest photos from keepsakedrop.html into a Google Drive folder.
  *
- * SETUP (one time, ~3 minutes):
+ * SETUP — two options (see README.md in this folder for the clasp version):
+ *
+ * Manual (one time, ~3 minutes):
  * 1. Go to https://script.google.com and create a New Project.
  * 2. Paste this entire file into Code.gs (replace what's there).
  * 3. Click Deploy → New deployment → type: Web app.
