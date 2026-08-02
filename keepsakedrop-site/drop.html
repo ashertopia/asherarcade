@@ -10,13 +10,14 @@
 <style>
   :root {
     --gold: #C9A84C;
+    --accent-rgb: 201, 168, 76;
     --gold-light: #E8C97A;
     --gold-pale: #F5E8C0;
     --cream: #FDFAF3;
     --white: #FFFFFF;
     --ink: #1A1614;
     --ink-soft: #4A4340;
-    --border: rgba(201,168,76,0.3);
+    --border: rgba(var(--accent-rgb),0.3);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,8 +39,8 @@
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(201,168,76,0.12) 0%, transparent 70%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,168,76,0.08) 0%, transparent 60%);
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(var(--accent-rgb),0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(var(--accent-rgb),0.08) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
   }
@@ -124,7 +125,7 @@
     border-radius: 4px;
     padding: 32px 28px;
     margin-top: 28px;
-    box-shadow: 0 2px 24px rgba(0,0,0,0.05), 0 0 0 1px rgba(201,168,76,0.08);
+    box-shadow: 0 2px 24px rgba(0,0,0,0.05), 0 0 0 1px rgba(var(--accent-rgb),0.08);
     opacity: 0;
     animation: fadeUp 0.7s 0.5s ease forwards;
   }
@@ -197,13 +198,13 @@
     justify-content: center;
     gap: 10px;
     cursor: pointer;
-    background: rgba(201,168,76,0.03);
+    background: rgba(var(--accent-rgb),0.03);
     transition: background 0.2s, border-color 0.2s;
     position: relative;
     padding: 24px;
   }
   .drop-zone:hover, .drop-zone.dragover {
-    background: rgba(201,168,76,0.07);
+    background: rgba(var(--accent-rgb),0.07);
     border-color: var(--gold-light);
   }
   .drop-zone input[type="file"] {
@@ -292,7 +293,7 @@
     width: 100%;
     padding: 16px;
     margin-top: 24px;
-    background: linear-gradient(135deg, #C9A84C, #E8C97A, #C9A84C);
+    background: linear-gradient(135deg, var(--gold), var(--gold-light), var(--gold));
     background-size: 200% 200%;
     border: none;
     border-radius: 2px;
@@ -451,8 +452,8 @@
   /* Stay on page warning */
   .upload-warning {
     display: none;
-    background: rgba(201,168,76,0.12);
-    border: 1px solid rgba(201,168,76,0.4);
+    background: rgba(var(--accent-rgb),0.12);
+    border: 1px solid rgba(var(--accent-rgb),0.4);
     border-radius: 2px;
     padding: 10px 14px;
     margin-top: 14px;
@@ -723,6 +724,19 @@
     </div>
 
     <div class="field-group">
+      <label class="field-label" for="setup-theme">Color Theme</label>
+      <select id="setup-theme">
+        <option value="gold">Classic Gold</option>
+        <option value="blush">Blush Pink</option>
+        <option value="blue">Dusty Blue</option>
+        <option value="sage">Sage Green</option>
+        <option value="custom">Custom — match my wedding colors</option>
+      </select>
+      <input type="text" id="setup-accent" placeholder="Hex color, e.g. #7C9EC4" maxlength="7" style="display:none; margin-top:8px;">
+      <p class="setup-help">The guest page and the printed sign both follow this palette. Pick custom and paste any hex color to match the wedding.</p>
+    </div>
+
+    <div class="field-group">
       <label class="field-label" for="setup-script">Apps Script URL</label>
       <input type="text" id="setup-script" placeholder="https://script.google.com/macros/s/…/exec">
       <p class="setup-help">Photos are saved to your own Google Drive via a small Google Apps Script. Need help setting it up? <a href="https://asherarcade.com/#contact" target="_blank" rel="noopener">We'll do it for you</a> — full setup included with every KeepsakeDrop package.</p>
@@ -875,6 +889,54 @@ const hostName    = params.get('name')   || '';
 const eventType   = params.get('type')   || 'event';
 const scriptUrl   = params.get('script') || '';
 
+// ── Color themes ──
+// Preset accents; every other shade (light, pale, background) is derived
+// from the accent so a custom hex works exactly like a preset.
+const THEMES = { gold: '#C9A84C', blush: '#C98A9E', blue: '#7C9EC4', sage: '#8CA68C' };
+
+function hexToHsl(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = (n >> 16 & 255) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, sat = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    sat = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      default: h = (r - g) / d + 4;
+    }
+    h /= 6;
+  }
+  return [h * 360, sat * 100, l * 100];
+}
+const hsl = (h, s, l) => `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+
+function applyTheme(themeName, accentHex) {
+  let hex = THEMES[themeName] || '';
+  if (accentHex && /^#?[0-9a-fA-F]{6}$/.test(accentHex)) hex = '#' + accentHex.replace('#', '');
+  const root = document.documentElement.style;
+  if (!hex || hex === THEMES.gold) {
+    ['--gold', '--gold-light', '--gold-pale', '--cream', '--border', '--accent-rgb']
+      .forEach(v => root.removeProperty(v));
+    return;
+  }
+  const [h, s, l] = hexToHsl(hex);
+  const n = parseInt(hex.slice(1), 16);
+  root.setProperty('--gold', hex);
+  root.setProperty('--accent-rgb', `${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}`);
+  root.setProperty('--gold-light', hsl(h, s, Math.min(l + 14, 82)));
+  root.setProperty('--gold-pale', hsl(h, Math.min(s, 70), 88));
+  root.setProperty('--cream', hsl(h, Math.min(s, 45), 97));
+  root.setProperty('--border', `rgba(${n >> 16 & 255}, ${n >> 8 & 255}, ${n & 255}, 0.3)`);
+}
+
+const themeParam  = params.get('theme')  || 'gold';
+const accentParam = params.get('accent') || '';
+applyTheme(themeParam, accentParam);
+
 // ── Mode: no script URL means this is the host opening the page directly ──
 const isSetupMode = !scriptUrl;
 if (isSetupMode) {
@@ -908,6 +970,13 @@ function buildGuestUrl() {
       q.set('until', d.toISOString().slice(0, 10));
     }
   }
+  const theme  = document.getElementById('setup-theme').value;
+  const accent = document.getElementById('setup-accent').value.trim().replace('#', '');
+  if (theme === 'custom' && /^[0-9a-fA-F]{6}$/.test(accent)) {
+    q.set('accent', accent);
+  } else if (theme !== 'gold' && theme !== 'custom') {
+    q.set('theme', theme);
+  }
   q.set('folder', folder);
   q.set('script', script);
   return base + '?' + q.toString();
@@ -933,13 +1002,23 @@ function drawQr(canvas, text) {
 }
 
 if (isSetupMode) {
+  // Live theme preview while the host picks
+  const themeSel   = document.getElementById('setup-theme');
+  const accentIn   = document.getElementById('setup-accent');
+  const previewTheme = () => {
+    accentIn.style.display = themeSel.value === 'custom' ? 'block' : 'none';
+    if (themeSel.value === 'custom') applyTheme('custom', accentIn.value.trim());
+    else applyTheme(themeSel.value, '');
+  };
+  themeSel.addEventListener('change', previewTheme);
+  accentIn.addEventListener('input', previewTheme);
+
   const genBtn = document.getElementById('btn-generate');
   genBtn.addEventListener('click', () => {
     const err = document.getElementById('setup-error');
     err.classList.remove('show');
     const url = buildGuestUrl();
     if (!url) { err.classList.add('show'); return; }
-    drawQr(document.getElementById('qr-canvas'), url);
     document.getElementById('guest-link-box').textContent = url;
     document.getElementById('btn-test-link').href = url;
     document.getElementById('qr-result').classList.add('show');
@@ -953,7 +1032,15 @@ if (isSetupMode) {
     document.getElementById('ps-eyebrow').textContent = signEyebrow[type] || signEyebrow.event;
     document.getElementById('ps-title').textContent   = host || ev;
     document.getElementById('ps-sub').textContent     = signSub[type] || signSub.event;
-    document.getElementById('ps-qr').src = document.getElementById('qr-canvas').toDataURL('image/png');
+
+    // QR drawing needs the qrcode library; if it failed to load, the link
+    // still works — retry the QR by regenerating once the network is back.
+    try {
+      drawQr(document.getElementById('qr-canvas'), url);
+      document.getElementById('ps-qr').src = document.getElementById('qr-canvas').toDataURL('image/png');
+    } catch (e) {
+      console.warn('QR library unavailable:', e);
+    }
   });
   document.getElementById('btn-copy-link').addEventListener('click', function() {
     const url = document.getElementById('guest-link-box').textContent;
