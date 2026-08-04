@@ -6,6 +6,7 @@
 <title>Book Your Event — KeepsakeDrop</title>
 <meta name="description" content="Pick your event type and colors, then check out securely with Stripe. $39 flat, set up for you within 24 hours.">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
   :root {
     --gold: #C9A84C;
@@ -124,6 +125,47 @@
     font-family: 'Cormorant Garamond', serif; font-style: italic;
     font-size: 14px; color: #8A827C;
   }
+  /* Mini table-sign preview */
+  .mini-sign {
+    border: 1.5px solid var(--gold);
+    padding: 5px;
+    background: var(--white);
+  }
+  .ms-inner {
+    border: 1px solid var(--gold);
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center; padding: 26px 18px;
+  }
+  .ms-eyebrow {
+    font-size: 9px; font-weight: 300; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .ms-orn { display: flex; align-items: center; gap: 8px; margin: 10px 0 6px; }
+  .ms-orn .ornament-line { width: 34px; }
+  .ms-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300; font-style: italic; font-size: 28px; line-height: 1.1;
+    color: var(--ink);
+  }
+  .ms-sub {
+    font-size: 9px; font-weight: 300; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--ink-soft); margin-top: 7px;
+  }
+  #ms-qr {
+    width: 112px; height: 112px;
+    margin: 18px 0 12px;
+    border: 1px solid var(--border);
+    padding: 6px; background: #fff;
+  }
+  .ms-hint {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 12px; color: var(--ink-soft);
+  }
+  .ms-foot {
+    font-size: 8px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: #B8B0A8; margin-top: 14px;
+  }
+
   .btn-checkout {
     display: block; width: 100%; text-align: center;
     padding: 17px; margin-top: 26px;
@@ -170,17 +212,37 @@
   <div class="card">
     <div class="step-label">2 &middot; Pick your colors</div>
     <div class="swatch-row" id="swatch-row">
-      <button class="swatch sel" data-theme="gold"><span class="dot" style="background:#C9A84C;"></span><span class="nm">Classic Gold</span></button>
-      <button class="swatch" data-theme="blush"><span class="dot" style="background:#C98A9E;"></span><span class="nm">Blush Pink</span></button>
-      <button class="swatch" data-theme="blue"><span class="dot" style="background:#7C9EC4;"></span><span class="nm">Dusty Blue</span></button>
-      <button class="swatch" data-theme="sage"><span class="dot" style="background:#8CA68C;"></span><span class="nm">Sage Green</span></button>
-      <button class="swatch custom" data-theme="custom"><span class="dot"></span><span class="nm">My Colors</span></button>
+      <button class="swatch sel" data-theme="gold"><span class="dot" style="background:#C9A84C;"></span><span class="nm">Gold</span></button>
+      <button class="swatch" data-theme="blush"><span class="dot" style="background:#C98A9E;"></span><span class="nm">Blush</span></button>
+      <button class="swatch" data-theme="blue"><span class="dot" style="background:#7C9EC4;"></span><span class="nm">Blue</span></button>
+      <button class="swatch" data-theme="sage"><span class="dot" style="background:#8CA68C;"></span><span class="nm">Sage</span></button>
+      <button class="swatch custom" data-theme="custom"><span class="dot"></span><span class="nm">Custom</span></button>
     </div>
     <div class="custom-note" id="custom-note">
       <label for="custom-color">Tap the circle to match your wedding colors</label><br>
       <input type="color" id="custom-color" value="#8E6A8A">
     </div>
     <p class="preview-note">This whole page previews your choice — your guests&rsquo; upload page and printed sign will match.</p>
+  </div>
+
+  <div class="card">
+    <div class="step-label">Your Printed Table Sign</div>
+    <div class="mini-sign">
+      <div class="ms-inner">
+        <p class="ms-eyebrow" id="ms-eyebrow">Capture the Memories</p>
+        <div class="ms-orn">
+          <div class="ornament-line"></div>
+          <div class="ornament-diamond"></div>
+          <div class="ornament-line right"></div>
+        </div>
+        <h2 class="ms-title" id="ms-title">Emma &amp; Jake</h2>
+        <p class="ms-sub" id="ms-sub">Share your photos from our wedding day</p>
+        <canvas id="ms-qr" width="112" height="112"></canvas>
+        <p class="ms-hint">Open your phone&rsquo;s camera and point it at the code</p>
+        <p class="ms-foot">KeepsakeDrop</p>
+      </div>
+    </div>
+    <p class="preview-note">A letter-size sign like this — in your colors, with your names — comes print-ready with every booking.</p>
   </div>
 
   <a class="btn-checkout" id="btn-checkout" href="#">Continue to Secure Checkout</a>
@@ -198,6 +260,11 @@
 const STRIPE_LINK = 'https://buy.stripe.com/test_aFa28t77T6jW2xE5Cm43S00';
 
 const PRESETS = { gold: '#C9A84C', blush: '#C98A9E', blue: '#7C9EC4', sage: '#8CA68C' };
+const SIGN = {
+  wedding:    { eyebrow: 'Capture the Memories',  title: 'Emma & Jake',    sub: 'Share your photos from our wedding day' },
+  graduation: { eyebrow: 'Celebrate the Moment',  title: 'Congrats, Maya!', sub: 'Share your photos from today' },
+  event:      { eyebrow: 'Capture the Memories',  title: 'The Big Night',   sub: 'Share your photos from today' }
+};
 let eventType = 'wedding';
 let theme = 'gold';
 
@@ -238,6 +305,10 @@ function currentHex() {
 
 function refresh() {
   applyAccent(currentHex());
+  const s = SIGN[eventType] || SIGN.event;
+  document.getElementById('ms-eyebrow').textContent = s.eyebrow;
+  document.getElementById('ms-title').textContent   = s.title;
+  document.getElementById('ms-sub').textContent     = s.sub;
   // The color choice travels to Stripe in the checkout's reference ID,
   // e.g. wedding_blush or wedding_c8E6A8A for a custom color.
   const code = theme === 'custom'
@@ -246,6 +317,41 @@ function refresh() {
   document.getElementById('btn-checkout').href =
     STRIPE_LINK + '?client_reference_id=' + encodeURIComponent(code);
 }
+
+// Draw a real QR (of the homepage) on the sign preview; if the QR library
+// is unavailable, draw a decorative stand-in so the sign still reads as a sign.
+function drawSignQr() {
+  const canvas = document.getElementById('ms-qr');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#1A1614';
+  try {
+    const qr = qrcode(0, 'M');
+    qr.addData('https://keepsakedrop.com');
+    qr.make();
+    const count = qr.getModuleCount();
+    const scale = canvas.width / count;
+    for (let r = 0; r < count; r++)
+      for (let col = 0; col < count; col++)
+        if (qr.isDark(r, col))
+          ctx.fillRect(col * scale, r * scale, Math.ceil(scale), Math.ceil(scale));
+  } catch (e) {
+    const m = 21, s = canvas.width / m;
+    const finder = (x, y) => {
+      ctx.fillRect(x * s, y * s, 7 * s, 7 * s);
+      ctx.fillStyle = '#fff'; ctx.fillRect((x + 1) * s, (y + 1) * s, 5 * s, 5 * s);
+      ctx.fillStyle = '#1A1614'; ctx.fillRect((x + 2) * s, (y + 2) * s, 3 * s, 3 * s);
+    };
+    finder(0, 0); finder(m - 7, 0); finder(0, m - 7);
+    for (let r = 0; r < m; r++)
+      for (let col = 0; col < m; col++) {
+        const inFinder = (r < 8 && col < 8) || (r < 8 && col >= m - 8) || (r >= m - 8 && col < 8);
+        if (!inFinder && ((r * 31 + col * 17 + r * col) % 5 < 2)) ctx.fillRect(col * s, r * s, s, s);
+      }
+  }
+}
+drawSignQr();
 
 document.getElementById('type-row').addEventListener('click', e => {
   const btn = e.target.closest('.type-btn');
