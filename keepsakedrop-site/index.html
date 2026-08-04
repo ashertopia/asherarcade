@@ -48,12 +48,18 @@
   }
 
   /* Header */
-  header { padding: 26px 0 0; text-align: center; }
+  header { padding: 34px 0 0; text-align: center; }
   .wordmark {
-    font-family: 'Jost', sans-serif; font-weight: 400; font-size: 13px;
+    font-family: 'Jost', sans-serif; font-weight: 400;
+    font-size: clamp(20px, 3vw, 30px);
     letter-spacing: 0.4em; text-transform: uppercase; color: var(--ink);
   }
   .wordmark span { color: var(--gold); }
+  .wordmark-sub {
+    margin-top: 8px;
+    font-size: 11px; font-weight: 300; letter-spacing: 0.3em;
+    text-transform: uppercase; color: #A89F98;
+  }
 
   /* Hero */
   .hero { padding: 64px 0 56px; text-align: center; }
@@ -183,6 +189,7 @@
 
 <header class="wrap">
   <div class="wordmark">Keepsake<span>Drop</span></div>
+  <div class="wordmark-sub">Guest Photo Collection</div>
 </header>
 
 <div class="wrap hero">
@@ -195,12 +202,12 @@
   <h1>Your day, through<br>every guest&rsquo;s eyes</h1>
   <p class="hero-sub">
     Guests scan an elegant QR code at their table and every photo they take lands
-    straight in <em>your</em> Google&nbsp;Drive — no app to download, no account to
-    make, nothing held hostage on someone else&rsquo;s platform.
+    in a private Google&nbsp;Drive album shared with you — watch them arrive live.
+    No app to download, no account to make, nothing held hostage on someone
+    else&rsquo;s platform.
   </p>
   <div class="hero-cta">
-    <!-- TEST-MODE Stripe link (sandbox). Swap for the live payment link URL before launch. -->
-    <a class="btn-gold" href="https://buy.stripe.com/test_aFa28t77T6jW2xE5Cm43S00">Book Your Event — $39</a>
+    <a class="btn-gold" href="book.html">Book Your Event — $39</a>
     <a class="btn-outline" href="drop.html?event=demo-wedding&amp;type=wedding&amp;name=Emma+%26+Jake&amp;folder=demo&amp;script=demo">Try the Guest Experience</a>
   </div>
   <p class="hero-note">One flat price. No subscription. Set up for you within 24 hours.</p>
@@ -223,7 +230,7 @@
     <div class="step">
       <div class="step-num">3</div>
       <h3>Guests scan &amp; share</h3>
-      <p>Photos stream into your own Google Drive during the event and for a full 30 days after.</p>
+      <p>Photos stream into a private Drive album shared with you — live during the event and for a full 30 days after.</p>
     </div>
   </div>
 </section>
@@ -236,7 +243,7 @@
       <div class="why-diamond"></div>
       <div>
         <h3>You own every photo</h3>
-        <p>Photos go directly to your Google Drive — not our servers. No expiring galleries, no download fees, ever.</p>
+        <p>Your album is shared with you from day one, and 30 days after your event the folder becomes yours alone. No expiring galleries, no download fees, ever.</p>
       </div>
     </div>
     <div class="why">
@@ -283,8 +290,7 @@
       <li>Uploads open through 30 days after your event</li>
       <li>Full setup done for you, within 24 hours</li>
     </ul>
-    <!-- TEST-MODE Stripe link (sandbox). Swap for the live payment link URL before launch. -->
-    <a class="btn-gold" href="https://buy.stripe.com/test_aFa28t77T6jW2xE5Cm43S00">Book Your Event</a>
+    <a class="btn-gold" href="book.html">Book Your Event</a>
     <p class="bundle-note">Want a custom trivia game or party favor too? See the <a href="https://asherarcade.com" target="_blank" rel="noopener">$79 event bundle at Asher Arcade</a>.</p>
   </div>
 </section>
@@ -299,7 +305,7 @@
     </details>
     <details>
       <summary>Where do the photos go?</summary>
-      <p>Straight into a Google Drive folder that belongs to you. We set it up, you own it. Nothing is stored on our side, and nothing expires or gets ransomed behind a paywall.</p>
+      <p>Into a private Google Drive folder we create for your event and share with you before the big day — you watch photos arrive in real time. While collection is open we keep access so we can make sure everything is working; when it closes, the folder is handed over to you entirely and we delete our access. Nothing expires or gets ransomed behind a paywall.</p>
     </details>
     <details>
       <summary>How long can guests upload?</summary>
@@ -328,8 +334,7 @@
     <div class="ornament-line right"></div>
   </div>
   <h2 class="section-title" style="margin-bottom:26px;">Let&rsquo;s capture your day</h2>
-  <!-- TEST-MODE Stripe link (sandbox). Swap for the live payment link URL before launch. -->
-  <a class="btn-gold" href="https://buy.stripe.com/test_aFa28t77T6jW2xE5Cm43S00">Book Your Event — $39</a>
+  <a class="btn-gold" href="book.html">Book Your Event — $39</a>
 </div>
 
 <footer>
