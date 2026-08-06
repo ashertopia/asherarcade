@@ -572,12 +572,18 @@
   #print-sign { display: none; }
   @media print {
     @page { size: letter portrait; margin: 0.4in; }
+    html, body { height: 100%; }
+    body {
+      background: var(--cream);
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
     body::before { display: none !important; }
     body > .page, body > #thankyou-screen { display: none !important; }
     #print-sign {
       display: flex !important;
       width: 100%;
-      min-height: 96vh;
+      height: 100%;
       print-color-adjust: exact;
       -webkit-print-color-adjust: exact;
     }
