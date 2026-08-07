@@ -1032,6 +1032,16 @@ if (!isSetupMode && untilStr) {
 }
 
 // ── File handling ──
+// Remember the guest's name for this event for a day, so "Upload More"
+// and return visits don't ask again.
+const NAME_KEY = 'ksd_name_' + eventName;
+try {
+  const savedName = JSON.parse(localStorage.getItem(NAME_KEY) || 'null');
+  if (savedName && savedName.n && Date.now() - savedName.t < 86400000) {
+    document.getElementById('guest-name').value = savedName.n;
+  }
+} catch(e) {}
+
 const fileInput   = document.getElementById('file-input');
 const dropZone    = document.getElementById('drop-zone');
 const previewStrip = document.getElementById('preview-strip');
@@ -1106,6 +1116,9 @@ async function startUpload() {
   progressBar.style.width = '0%';
 
   const guestName = document.getElementById('guest-name').value.trim() || 'Anonymous';
+  if (guestName !== 'Anonymous') {
+    try { localStorage.setItem(NAME_KEY, JSON.stringify({ n: guestName, t: Date.now() })); } catch(e) {}
+  }
   const total = selectedFiles.length;
 
   let uploaded = 0;
@@ -1196,10 +1209,9 @@ function resetToUpload() {
   ty.classList.remove('show');
   ty.style.display = 'none';
   up.style.display = 'flex';
-  // Reset form
+  // Reset form — but keep the guest's name so "Upload More" doesn't ask again
   selectedFiles = [];
   document.getElementById('preview-strip').innerHTML = '';
-  document.getElementById('guest-name').value = '';
   document.getElementById('progress-wrap').classList.remove('visible');
   document.getElementById('progress-bar').style.width = '0%';
   document.getElementById('upload-warning').classList.remove('show');
