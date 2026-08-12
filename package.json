@@ -1,0 +1,10 @@
+{
+  "name": "asherarcade-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static Asher Arcade / KeepsakeDrop site plus a small serverless function for rendering the KeepsakeDrop table sign to PDF.",
+  "dependencies": {
+    "@sparticuz/chromium": "^131.0.1",
+    "puppeteer-core": "^23.11.1"
+  }
+}
