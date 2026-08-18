@@ -1,0 +1,4 @@
+# Python packages for the home-media tools.
+# Install with:  pip install -r requirements.txt
+scenedetect[opencv]>=0.6.4
+requests>=2.31
