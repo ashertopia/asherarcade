@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "api/sign-pdf.js": {
+      "maxDuration": 30,
+      "memory": 1536
+    }
+  }
+}

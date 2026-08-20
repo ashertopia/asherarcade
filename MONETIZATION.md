@@ -1,113 +1,136 @@
 # Asher Arcade — Monetization Plan
 
-**Goal: $150/month minimum, starting now.** That's roughly one $199 custom build
-every 6 weeks, or 2 KeepsakeDrop events per month, or any mix below.
+*Last updated 2026-08-20. If a number here disagrees with the site, one of them
+is stale and both should be checked — but `policies.html` outranks this file for
+anything about retention, refunds, or hosting periods.*
 
-## Honest assessment of what we have
+**Goal: $150/month minimum.** At current prices that is four KeepsakeDrop
+bookings, two event bundles, or one custom game.
 
-**Sellable today (the short list):**
+## Where things actually live
 
-1. **KeepsakeDrop** (`keepsakedrop.html`) — the strongest product. Guest photo
-   collection for weddings/grads with a QR code, photos land in the host's
-   Google Drive. Zero marginal cost per event, easy to explain, and every
-   competitor (The Guest, POV, Guestpix) charges $50–$250 per event. As of this
-   update it has a real host setup screen, QR generation, and reliable
-   per-photo uploads, plus a deployable Apps Script backend
-   (`apps-script/Code.gs`, clasp-ready — see `apps-script/README.md`).
-2. **Quiz Builder** (`quiz-builder.html`) — the "graduation quiz" idea, live.
-   Free self-serve tier (up to 10 questions, share by link/QR) that works as a
-   lead magnet, with the $199 custom tier as the paid upgrade.
-3. **Custom game commissions** — the existing $79/$199/$299 tiers. Real but
-   slow; each sale takes hands-on work. The portfolio (Bragg Racing, Mag's
-   Skate, Tinlee's Catch, puzzles) is genuinely good proof-of-work.
+| Thing | Where it runs | Source |
+|---|---|---|
+| Asher Arcade marketing site | `asherarcade.com` — GitHub Pages, deploys from `main` | repo root |
+| KeepsakeDrop product + app | `keepsakedrop.com` — Vercel project `keepsakedrop` | `keepsakedrop-site/` |
+| Sign-to-PDF endpoint | `keepsakedrop.com/api/sign-pdf` | `api/sign-pdf.js` |
+| Guest photo backend | Google Apps Script | `apps-script/` |
+| Order fulfillment | Google Apps Script | `apps-script-fulfillment/` |
 
-**Not sellable / don't invest further:**
+`asherarcade.com/keepsakedrop.html` and `/photodrop.html` are **redirects only**.
+They forward to `keepsakedrop.com/drop.html` carrying the query string, because
+QR signs printed before the move encode the old URL with the event on it. Do not
+put content back on those two files.
 
-- The generic arcade games (Bubble Drift, Pulse Tap, Zen Tracer, etc.) — fun
-  portfolio pieces, but nobody pays for generic browser games in 2026. Keep
-  them as free demos that funnel to the contact form.
-- Pursuit and Walk the Word are personal/ministry projects, not products.
+## Pricing
 
-## What was broken in the funnel (now fixed)
+| Product | Price | What it is |
+|---|---|---|
+| KeepsakeDrop event | **$39** | Done-for-you setup: Drive folder, Apps Script, printable QR sign |
+| Etsy listing: QR sign + working photo service | **$29–35** | Personalized item; the sale completes on Etsy, which keeps it policy-safe |
+| The Occasion (event bundle) | **$89** | KeepsakeDrop + a custom quiz + a puzzle reveal. All templated, no bespoke art |
+| The Memory (custom game) | **$199–$299** | The only tier with original artwork. $199 reskins a mechanic we have, $299 builds a new one |
 
-- **No way to pay.** Every page ended at a contact form. → Added a $40 Venmo
-  deposit button to the form-success state on all five pages with forms.
-- KeepsakeDrop had **no QR generation and no host setup** — the core pitch didn't
-  exist in code. → Built both, plus the backend script.
-- The trivia page's demo button was disabled. → Now links to the Quiz Builder.
-- Broken links (`Special_Announcement_S-A.html`), missing Google Analytics on
-  3 of 7 landing pages, phantom sitemap entry. → Fixed.
+Two rules that keep this coherent:
 
-## Pricing (updated after market research, July 2026)
+1. **No bespoke artwork below $199.** The bundle used to include a reskinned
+   game favor, which meant a customer could get a game for $79 and never look at
+   the $199 tier. Artwork is where the hours go, so it has to sit above the
+   bundle.
+2. **KeepsakeDrop is the cheapest way in, and it is priced on its own.** Do not
+   fold it into a higher tier and call the difference value.
 
-Verified market facts that shape this:
+Discounts go to military, veterans, first responders, teachers and homeschool
+families. **Do not advertise a discount limited to Christian churches or
+ministries.** A published religious test in a commercial offer is a real legal
+exposure, and it was live on three pages until 2026-08-20 — including inside a
+FAQPage block, which is the version Google can surface. A discount to a
+particular congregation is a private, case-by-case decision, not published copy.
+This still needs a lawyer's read.
+
+## Market context (verified July 2026)
+
 - **Wedibox** charges $49 (photos) / $79 (all-in-one with RSVP + website +
   seating) — bundling, not a higher photo price, is the proven upsell path.
-- **PixBearer** offers free (100 uploads/10 GB) + $19 one-time unlimited with
-  the same "your own Google Drive" angle — so that alone isn't a moat.
-  Compete on done-for-you service and bundles instead.
+- **PixBearer** offers free (100 uploads/10 GB) plus $19 one-time unlimited with
+  the same "your own Google Drive" angle, so that alone is not a moat. Compete
+  on done-for-you service and bundles instead.
 - **Etsy** has 4,000+ listings for QR wedding photo-share *sign templates* at
-  ~$3.50–$15 (mostly under $8) — big buyer pool, but they're just printable
-  signs with no photo service behind them. A listing that includes a
-  *working* QR service stands out in that crowd.
+  roughly $3.50–$15, mostly under $8. Big buyer pool, but they are printable
+  signs with no photo service behind them. A listing that includes a *working*
+  QR service stands out in that crowd.
 
-| Product | Price | Notes |
-|---|---|---|
-| KeepsakeDrop event (site direct) | **$39** | Done-for-you setup: Drive folder, script, printable QR sign PDF |
-| Etsy listing: QR sign + working photo service | **$29–35** | Personalized item; sale completes on Etsy (keeps it policy-safe) |
-| Event bundle | **$79** | KeepsakeDrop + custom quiz + reskinned game favor — mirrors Wedibox's proven all-in-one tier |
-| Custom quiz (from builder lead) | $199 | Existing Memory tier |
-| Full custom game | $79–$299 | Existing tiers, unchanged |
+## Taking money
 
-Deposits via Venmo now; set up **Stripe Payment Links** (free, no code needed —
-create in the Stripe dashboard, paste URLs where the Venmo links are) as soon
-as possible so cards work too.
+**Stripe Payment Links.** Sandbox links exist for the flat $39 KeepsakeDrop
+package, plus a pay-what-you-want tip link wired into the KeepsakeDrop site.
+Once the live account is connected, mint the live equivalents and swap the URLs.
+There are no promo codes on the $39 package.
 
-## 30-day actions (in order)
+**Venmo is gone.** Removed site-wide on 2026-08-20: the $40 deposit button, the
+tip modal, and the deep links. Do not reintroduce it. If a payment path is
+needed before Stripe is live, ask first.
 
-1. **Deploy the KeepsakeDrop Apps Script** (see `apps-script/README.md` for
-   clasp or manual steps), run one real test event end-to-end.
-2. **Recreate the Stripe Payment Links in live mode.** Sandbox versions
-   already exist (KeepsakeDrop $39 package with promo codes enabled, plus a
-   pay-what-you-want tip link wired into `keepsakedrop.html`); once the live
-   account is connected, mint the live equivalents and swap the URLs. One-off
-   free codes = 100%-off coupon + single-use promotion codes (e.g.
-   `KDFREE-0001`).
+## What is sellable
+
+1. **KeepsakeDrop** — the strongest product. Zero marginal cost per event, easy
+   to explain, and competitors charge $50–$250. It has a host setup screen, QR
+   generation, colour themes, per-photo uploads with retry, and a deployable
+   Apps Script backend.
+2. **Quiz Builder** (`quiz-builder.html`) — free self-serve tier, up to 10
+   questions, shared by link or QR. Works as a lead magnet with the $199 custom
+   tier as the paid upgrade.
+3. **Custom game commissions** — real but slow; each sale takes hands-on work.
+   The portfolio (Tinlee's Catch, Mag's Skate, Bragg Racing) is genuinely good
+   proof-of-work, and it now leads the homepage instead of sitting below three
+   generic sections.
+
+**Not worth further investment:** the generic arcade games (Bubble Drift, Pulse
+Tap, Zen Tracer). Keep them as free demos that funnel to the contact form.
+Pursuit and Walk the Word are personal and ministry projects, not products.
+
+## Next actions
+
+1. **Deploy the KeepsakeDrop Apps Script** (see `apps-script/README.md`) and run
+   one real test event end to end.
+2. **Recreate the Stripe Payment Links in live mode** and swap the URLs.
 3. **List KeepsakeDrop where couples already shop:** The Knot and WeddingWire
-   vendor listings (free tiers exist), local Facebook wedding/event groups,
-   r/weddingplanning (be helpful, not spammy). "QR photo collection for $49
-   flat, no subscription, photos go straight to YOUR Google Drive" is a real
-   differentiator — every competitor holds photos hostage on their platform.
-4. **Push the Quiz Builder for grad season and holidays:** share it free in
-   parenting/grad Facebook groups. Every quiz made shows the $199 upsell on
-   its end screen.
-5. **Ask past customers** (Bragg, Mag's, Tinlee families) for a referral and a
-   testimonial with photo. Word of mouth is the entire growth channel at this
-   scale.
+   vendor listings (free tiers exist), local Facebook wedding and event groups,
+   r/weddingplanning — be helpful, not spammy. "KeepsakeDrop, $39 flat, no
+   subscription, and the photos go straight to YOUR Google Drive" is a real
+   differentiator, because every competitor holds photos on their own platform.
+4. **Push the Quiz Builder for grad season and holidays.** Every quiz made shows
+   the $199 upsell on its end screen.
+5. **Ask past customers** (the Bragg, Mag's and Tinlee families) for a referral
+   and a testimonial with a photo. Word of mouth is the entire growth channel at
+   this scale.
+6. **Have a lawyer read the discount wording** before relying on it.
 
 ## Path to $150/mo
 
-- 3 KeepsakeDrop events ($49 × 3) ≈ $150 — the realistic base case.
-- OR 1 custom build ($199+) covers a month with room to spare.
-- Weddings + grads + baby showers + church events means year-round demand.
+- Four separate KeepsakeDrop bookings in a month ($39 × 4) = $156. Four
+  customers, not a multi-event package — we do not sell one.
+- Or two event bundles ($89 × 2) = $178.
+- Or one custom build ($199+), which covers a month with room to spare.
+- Weddings, grads, baby showers and church events mean year-round demand.
 
-## Why not an Android app (researched, July 2026)
+## Why not an Android app (researched July 2026)
 
 Verified against Google's own policy pages: a new personal Play developer
 account cannot publish until it runs a closed test with **12 testers opted in
-continuously for 14 days**, then separately applies for production access —
-2–4 weeks before revenue is even possible. The only bypass is an organization
-account requiring business verification (D-U-N-S). On top of that, freemium
-apps convert at roughly 1–10% (medians ~2–3%), so a $5–15 unlock needs
-hundreds of downloads per month to clear $150 — with zero audience and no ad
-budget, that's the slowest possible route. Web-first wins; consider a PWA
-wrapper later only if mobile install friction proves real, and Play Store
-last, if ever.
+continuously for 14 days**, then separately applies for production access. That
+is 2–4 weeks before revenue is even possible. The only bypass is an organization
+account requiring business verification (D-U-N-S). On top of that, freemium apps
+convert at roughly 1–10%, medians around 2–3%, so a $5–15 unlock needs hundreds
+of downloads a month to clear $150. With no audience and no ad budget that is
+the slowest possible route. Web-first wins. Consider a PWA wrapper later only if
+mobile install friction proves real, and the Play Store last, if ever.
 
 ## Later (only after first revenue)
 
-- Stripe checkout embedded in the site (replaces Venmo entirely).
-- KeepsakeDrop live slideshow view (photos appear on a projector as guests
-  upload) — competitors charge $100+ extra for this; it's a ~1-day build.
-- Per-event leaderboard scoping for the game favors (currently one shared
-  global leaderboard per Apps Script).
+- Stripe checkout embedded in the site.
+- KeepsakeDrop live slideshow view, where photos appear on a projector as guests
+  upload. Competitors charge $100+ extra for this and it is roughly a one-day
+  build.
+- Per-event leaderboard scoping for the game favors. Right now there is one
+  shared global leaderboard per Apps Script.
