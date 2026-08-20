@@ -30,7 +30,7 @@
   "name": "Asher Arcade",
   "url": "https://www.asherarcade.com",
   "description": "Custom browser games and apps for weddings, baby showers, birthdays, graduations, churches, and more. Personalized, shareable, no download needed.",
-  "priceRange": "$79 - $299+",
+  "priceRange": "$39 - $299+",
   "serviceType": [
     "Custom Browser Games",
     "Wedding Games",
@@ -64,11 +64,11 @@
   "areaServed": "United States",
   "offers": {
     "@type": "Offer",
-    "price": "79",
+    "price": "199",
     "priceCurrency": "USD",
     "priceSpecification": {
       "@type": "PriceSpecification",
-      "minPrice": "79",
+      "minPrice": "199",
       "maxPrice": "299",
       "priceCurrency": "USD"
     },
@@ -136,7 +136,7 @@
   "areaServed": "United States",
   "offers": {
     "@type": "Offer",
-    "price": "79",
+    "price": "39",
     "priceCurrency": "USD",
     "availability": "https://schema.org/InStock"
   }
@@ -198,10 +198,10 @@
     },
     {
       "@type": "Question",
-      "name": "Do you offer discounts for churches or nonprofits?",
+      "name": "Do you offer discounts?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. We offer 50% off the first game for Christian churches, ministries, homeschool families, active military, veterans, and first responders. It runs on the honor system with no paperwork required. Mention it when you reach out."
+        "text": "Yes. Discounts are available for active military, veterans, first responders, teachers and homeschool families, and nonprofit organizations. Tell us what the game is for when you reach out and we will let you know what we can do."
       }
     }
   ]
@@ -273,7 +273,7 @@ a{color:var(--blue-deep);}
 }
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);}
 .brand img{width:46px;height:46px;display:block;}
-.brand span{font-family:var(--display);font-size:15px;letter-spacing:.01em;}
+.brand span{font-family:var(--display);font-size:19px;letter-spacing:.01em;}
 .topbar nav{margin-left:auto;display:flex;gap:22px;}
 .topbar nav a{
   font-size:14px;font-weight:500;color:var(--ink-soft);text-decoration:none;
@@ -290,7 +290,7 @@ a{color:var(--blue-deep);}
   .topbar nav{display:none;}
   .topbar .cta{display:none;}      /* the hero CTA sits right below; two is one too many */
   .brand img{width:52px;height:52px;}
-  .brand span{font-size:17px;}
+  .brand span{font-size:18px;}
 }
 
 /* ============================= HERO ============================= */
@@ -417,6 +417,11 @@ a{color:var(--blue-deep);}
 .drop h2{font-family:var(--display);font-size:clamp(27px,4.2vw,44px);line-height:1.05;margin:16px 0 0;}
 .drop h2 em{font-style:normal;color:var(--amber);}
 .drop p.intro{color:#D6CDBC;margin:20px 0 0;font-size:16.5px;max-width:46ch;}
+.drop-price{margin:24px 0 0;font-size:15px;color:#D6CDBC;}
+.drop-price span{font-family:var(--display);font-size:27px;color:var(--paper);margin-right:8px;
+  vertical-align:-2px;font-variant-numeric:tabular-nums;}
+.tier-alt{margin:15px 0 0;font-size:13.5px;color:var(--ink-soft);}
+.tier-alt a{color:var(--blue-deep);}
 .drop .btn-warm{
   display:inline-block;margin-top:26px;background:var(--amber);color:var(--ink);
   font-size:13.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
@@ -467,7 +472,7 @@ a{color:var(--blue-deep);}
 .pricing .lede{color:var(--ink-soft);max-width:58ch;margin:0 0 38px;}
 .tiers{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:26px;align-items:start;}
 .tier{border:2px solid var(--ink);background:var(--paper);padding:26px 24px 28px;}
-.tier.pick{background:var(--ink);color:var(--paper);}
+.tier.pick{background:var(--navy);color:var(--paper);}
 .tier-tag{
   font-size:11px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;
   color:var(--ink);background:var(--ochre);display:inline-block;padding:4px 9px;margin-bottom:14px;
@@ -487,7 +492,7 @@ a{color:var(--blue-deep);}
   font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   background:var(--ink);color:var(--paper);
 }
-.tier.pick .buy{background:var(--ochre);color:var(--ink);}
+.tier.pick .buy{background:var(--amber);color:var(--ink);}
 .tier .buy:hover{background:var(--blue-deep);color:var(--paper);}
 .price-foot{margin:34px 0 0;color:var(--ink-soft);max-width:62ch;}
 .ministry{
@@ -534,6 +539,7 @@ a{color:var(--blue-deep);}
 }
 .cform button:hover{box-shadow:2px 2px 0 var(--ochre);}
 .cform button:disabled{opacity:.6;cursor:default;box-shadow:none;}
+.cf-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
 #form-thanks{
   display:none;border:2px solid var(--ink);background:var(--ochre);
   padding:24px;font-size:17px;font-weight:600;
@@ -613,8 +619,8 @@ a{color:var(--blue-deep);}
     <div class="folio-head">
       <p class="kicker">Commissioned work</p>
       <h2>Three games, made for <span class="hl">real people</span>.</h2>
-      <p>Every game below was paid for by someone with a specific person and a specific date in mind. Play them, then
-        picture the version with your people in it.</p>
+      <p>Every game below was built for a specific person and a specific occasion. Play them, then picture the
+        version with your people in it.</p>
     </div>
 
     <div class="ledger">
@@ -742,6 +748,7 @@ a{color:var(--blue-deep);}
       <p class="intro">Guests scan a QR code at your event and upload photos right from their phone. There is no app
         to install and no account to create. You get the folder on day one and watch the photos arrive as they
         happen.</p>
+      <p class="drop-price"><span>$39</span> per event, one time. No subscription.</p>
       <a class="btn-warm" href="keepsakedrop.html">See KeepsakeDrop</a>
     </div>
     <dl>
@@ -824,15 +831,16 @@ a{color:var(--blue-deep);}
       <div class="tier">
         <h3>The Occasion</h3>
         <div class="amt">$79</div>
-        <p class="terms">Event-day tools &middot; hosted 60 days</p>
+        <p class="terms">The whole event day &middot; hosted 60 days</p>
         <ul>
-          <li>KeepsakeDrop guest photo collection app</li>
-          <li>Puzzle Reveal announcement game</li>
-          <li>Branded for your event with names, date, and a custom message</li>
-          <li>Works on any phone, with no app needed</li>
+          <li>KeepsakeDrop guest photo collection</li>
+          <li>A custom quiz built around your event</li>
+          <li>A reskinned game favor with your people in it</li>
+          <li>All three branded with your names, date, and a custom message</li>
           <li>Hosted on asherarcade.com for 60 days</li>
         </ul>
         <a class="buy" href="#contact">Get started</a>
+        <p class="tier-alt">Just want the photos? <a href="keepsakedrop.html">KeepsakeDrop on its own is $39.</a></p>
       </div>
 
       <div class="tier pick">
@@ -867,13 +875,14 @@ a{color:var(--blue-deep);}
       </div>
     </div>
 
-    <p class="price-foot">Not sure which tier fits? Send the idea and we will give you a straight quote with no
-      pressure.</p>
+    <p class="price-foot">The difference between $199 and $299 is how much is built from scratch. A reskin of a
+      mechanic we already have starts at $199. A brand new mechanic, designed only for your event, starts at $299.
+      Send the idea either way and we will give you a straight quote with no pressure.</p>
 
     <div class="ministry">
-      <p>We offer <strong>50% off</strong> for Christian churches and ministries, homeschool families, active
-        military, veterans, and first responders. It runs on the honor system with no paperwork.
-        <a href="#contact">Mention it when you reach out.</a></p>
+      <p><strong>Discounts are available</strong> for active military, veterans, first responders, teachers and
+        homeschool families, and nonprofit organizations. <a href="#contact">Tell us what the game is for</a> when you
+        reach out and we will let you know what we can do.</p>
     </div>
   </div>
 </section>
@@ -908,8 +917,8 @@ a{color:var(--blue-deep);}
         <p>KeepsakeDrop is a guest photo collection app. Guests scan a QR code at your event and upload photos straight from their phone, with no app to install. The photos land in a private Google Drive folder we create for your event and share with you from day one, so you can watch them arrive. The collection window runs through 30 days after your event, and then the folder is handed over to you.</p>
       </details>
       <details class="qa">
-        <summary>Do you offer discounts for churches or nonprofits?</summary>
-        <p>Yes. We offer 50% off the first game for Christian churches, ministries, homeschool families, active military, veterans, and first responders. It runs on the honor system with no paperwork required. Mention it when you reach out.</p>
+        <summary>Do you offer discounts?</summary>
+        <p>Yes. Discounts are available for active military, veterans, first responders, teachers and homeschool families, and nonprofit organizations. Tell us what the game is for when you reach out and we will let you know what we can do.</p>
       </details>
   </div>
 </section>
@@ -922,10 +931,14 @@ a{color:var(--blue-deep);}
       <h2>Tell us your idea</h2>
       <p class="pitch">Fill this out and we will be back within 24 hours with a quote. Nothing is committed at this
         stage. If you would rather email, write to
-        <a href="mailto:hello@asherarcade.com">hello@asherarcade.com</a>.</p>
+        <a id="cf-mail" href="#contact">our inbox</a><noscript> (hello at asherarcade dot com)</noscript>.</p>
     </div>
     <div>
       <form class="cform" id="contactForm">
+        <div class="cf-hp" aria-hidden="true">
+          <label for="cf-website">Leave this field empty</label>
+          <input type="text" id="cf-website" name="website" tabindex="-1" autocomplete="off">
+        </div>
         <input type="text" id="cf-name" placeholder="Your name" required>
         <input type="email" id="cf-email" placeholder="Your email" required>
         <select id="cf-type">
@@ -969,12 +982,38 @@ a{color:var(--blue-deep);}
 </footer>
 
 <script>
+// When the page finished loading. A crawler that posts the form instantly
+// cannot have spent real time filling it in.
+var CF_LOADED_AT = Date.now();
+
 document.addEventListener('DOMContentLoaded', function() {
+
+  // ── EMAIL ── assembled here so the address is not sitting in the served HTML
+  (function() {
+    var user = 'hello', host = 'asherarcade' + '.' + 'com';
+    var a = document.getElementById('cf-mail');
+    if (a) {
+      a.href = 'mai' + 'lto:' + user + '@' + host;
+      a.textContent = user + '@' + host;
+    }
+  })();
 
   // ── CONTACT FORM ──
   document.getElementById('contactForm').addEventListener('submit', function(e) {
     e.preventDefault();
     var btn   = this.querySelector('button[type="submit"]');
+
+    // Spam gate. A real person leaves the honeypot alone and takes more than a
+    // few seconds to type. Bots get the thank-you screen and nothing is sent,
+    // so a crawler cannot tell it was rejected and retry.
+    var trap    = document.getElementById('cf-website').value;
+    var elapsed = Date.now() - CF_LOADED_AT;
+    if (trap || elapsed < 3000) {
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('form-thanks').style.display = 'block';
+      return;
+    }
+
     var name  = document.getElementById('cf-name').value.trim();
     var email = document.getElementById('cf-email').value.trim();
     var type  = document.getElementById('cf-type').value;
@@ -988,7 +1027,8 @@ document.addEventListener('DOMContentLoaded', function() {
       + '&email=' + encodeURIComponent(email)
       + '&type='  + encodeURIComponent(type)
       + '&idea='  + encodeURIComponent(idea)
-      + '&msg='   + encodeURIComponent(msg);
+      + '&msg='   + encodeURIComponent(msg)
+      + '&ms='    + encodeURIComponent(elapsed);
     function done() {
       document.getElementById('contactForm').style.display = 'none';
       document.getElementById('form-thanks').style.display = 'block';
