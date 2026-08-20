@@ -13,9 +13,23 @@ bookings, two event bundles, or one custom game.
 |---|---|---|
 | Asher Arcade marketing site | `asherarcade.com` — GitHub Pages, deploys from `main` | repo root |
 | KeepsakeDrop product + app | `keepsakedrop.com` — Vercel project `keepsakedrop` | `keepsakedrop-site/` |
-| Sign-to-PDF endpoint | `keepsakedrop.com/api/sign-pdf` | `api/sign-pdf.js` |
+| Sign-to-PDF endpoint | **not deployed** — see the note below | `api/sign-pdf.js` |
 | Guest photo backend | Google Apps Script | `apps-script/` |
 | Order fulfillment | Google Apps Script | `apps-script-fulfillment/` |
+
+Two things about the Vercel project that are easy to get wrong:
+
+- Its **production branch is `claude/keepsakedrop-review-r0k9md`, not `main`.**
+  Pushing to `main` builds a *preview*, so keepsakedrop.com does not move.
+  To ship the site, merge `main` into that branch and push it. Better: change
+  Production Branch to `main` in the Vercel project's Git settings, then this
+  stops being a trap.
+- Its **root directory is `keepsakedrop-site/`**, so nothing else in the repo
+  is deployed there. `api/sign-pdf.js` sits at the repo root, which is why
+  `keepsakedrop.com/api/sign-pdf` returns 404 (verified 2026-08-20). The
+  fulfillment Apps Script calls that endpoint, so it has to be given a real
+  home before order fulfillment can render a sign — either move it under
+  `keepsakedrop-site/api/` or give it its own Vercel project.
 
 `asherarcade.com/keepsakedrop.html` and `/photodrop.html` are **redirects only**.
 They forward to `keepsakedrop.com/drop.html` carrying the query string, because
