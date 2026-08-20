@@ -75,7 +75,7 @@ as possible so cards work too.
    `KDFREE-0001`).
 3. **List KeepsakeDrop where couples already shop:** The Knot and WeddingWire
    vendor listings (free tiers exist), local Facebook wedding/event groups,
-   r/weddingplanning (be helpful, not spammy). "QR photo collection for $49
+   r/weddingplanning (be helpful, not spammy). "QR photo collection for $39
    flat, no subscription, photos go straight to YOUR Google Drive" is a real
    differentiator — every competitor holds photos hostage on their platform.
 4. **Push the Quiz Builder for grad season and holidays:** share it free in
@@ -87,7 +87,7 @@ as possible so cards work too.
 
 ## Path to $150/mo
 
-- 3 KeepsakeDrop events ($49 × 3) ≈ $150 — the realistic base case.
+- 4 KeepsakeDrop events ($39 × 4) = $156 — the realistic base case.
 - OR 1 custom build ($199+) covers a month with room to spare.
 - Weddings + grads + baby showers + church events means year-round demand.
 
