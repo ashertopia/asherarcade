@@ -242,7 +242,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&amp;family=Rubik:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <style>
 :root{
-  --green:#C2761B;--blue:#33507D;--dark:#F6F0E4;--card:#EDE4D1;--card2:#E4D9C1;--pink:#B4566E;--gold:#E8A038;--text:#241F1A;--muted:#6B6255;--border:rgba(36,31,26,0.14);--navy:#0A1A32;--ochre-deep:#9E5C0E;--red:#B4432F;
+  --green:#C2761B;--accent-text:#854D08;--blue:#33507D;--dark:#F6F0E4;--card:#EDE4D1;--card2:#E4D9C1;--pink:#8E3B4E;--gold:#E8A038;--text:#241F1A;--muted:#615948;--border:rgba(36,31,26,0.14);--navy:#0A1A32;--ochre-deep:#9E5C0E;--red:#B4432F;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -257,7 +257,7 @@ nav{
 }
 .nav-brand{display:flex;align-items:center;gap:10px;text-decoration:none;}
 .nav-logo{height:40px;width:40px;box-shadow:3px 3px 0 var(--green);}
-.nav-name{font-family:'Rubik Mono One',sans-serif;font-size:16px;color:var(--green);letter-spacing:1px;}
+.nav-name{font-family:'Rubik Mono One',sans-serif;font-size:16px;color:var(--accent-text);letter-spacing:1px;}
 .nav-links{display:flex;gap:24px;}
 .nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:600;transition:color 0.2s;}
 .nav-links a:hover{color:var(--text);}
@@ -276,7 +276,7 @@ nav{
 }
 .hero-eyebrow{
   display:inline-block;background:rgba(194,118,27,0.12);
-  color:var(--green);border:1px solid rgba(194,118,27,0.25);
+  color:var(--accent-text);border:1px solid rgba(194,118,27,0.25);
   padding:5px 18px;border-radius:0;font-size:13px;font-weight:700;
   letter-spacing:0.5px;margin-bottom:22px;
 }
@@ -286,7 +286,7 @@ nav{
   line-height:1.1;margin-bottom:18px;
   max-width:880px;margin-left:auto;margin-right:auto;
 }
-.hero h1 span{color:var(--green);}
+.hero h1 span{color:var(--accent-text);}
 .hero-sub{
   font-size:clamp(15px,2.5vw,18px);color:var(--muted);
   max-width:620px;margin:0 auto;line-height:1.7;
@@ -323,7 +323,7 @@ nav{
 .section{padding:60px 24px;max-width:1080px;margin:0 auto;}
 .section-label{
   font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--green);margin-bottom:10px;
+  color:var(--accent-text);margin-bottom:10px;
 }
 .section-title{font-family:'Rubik Mono One',sans-serif;font-size:clamp(22px,3.2vw,31px);margin-bottom:8px;}
 .section-divider{border:none;border-top:1px solid var(--border);margin:0;}
@@ -375,7 +375,7 @@ nav{
 .game-info{padding:18px 20px 20px;flex:1;display:flex;flex-direction:column;}
 .game-type{
   font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--green);margin-bottom:6px;
+  color:var(--accent-text);margin-bottom:6px;
 }
 .game-info h3{font-family:'Rubik Mono One',sans-serif;font-size:20px;margin-bottom:8px;letter-spacing:0.3px;}
 .game-info p{color:var(--muted);font-size:13.5px;line-height:1.6;flex:1;margin-bottom:14px;}
@@ -384,7 +384,7 @@ nav{
   margin-bottom:14px;display:flex;align-items:baseline;gap:6px;
 }
 .game-price span{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;}
-.game-price strong{color:var(--green);font-size:15px;}
+.game-price strong{color:var(--accent-text);font-size:15px;}
 .game-btns{display:flex;gap:8px;}
 .btn-play, .btn-make, .btn-soon{
   flex:1;min-height:38px;
@@ -400,7 +400,7 @@ nav{
   background:transparent;color:var(--text);
   border:1.5px solid rgba(36,31,26,0.18);
 }
-.btn-make:hover{border-color:var(--green);color:var(--green);}
+.btn-make:hover{border-color:var(--green);color:var(--accent-text);}
 .btn-soon{
   background:rgba(36,31,26,0.05);color:var(--muted);
   cursor:default;
@@ -416,7 +416,7 @@ nav{
   font-family:'Rubik Mono One',sans-serif;
   font-size:clamp(28px,4.5vw,42px);margin-bottom:16px;
 }
-.bottom-cta h2 span{color:var(--green);}
+.bottom-cta h2 span{color:var(--accent-text);}
 .bottom-cta p{
   color:var(--muted);font-size:16px;line-height:1.7;
   max-width:620px;margin:0 auto 28px;
@@ -472,7 +472,7 @@ footer{
 }
 .testimonial:hover{border-color:rgba(194,118,27,0.3);transform:translateY(-2px);}
 .testimonial .quote-mark{
-  width:28px;height:28px;color:var(--green);opacity:0.75;
+  width:28px;height:28px;color:var(--accent-text);opacity:0.75;
   flex-shrink:0;
 }
 .testimonial .quote{
@@ -484,10 +484,10 @@ footer{
   margin:0;
 }
 .testimonial .author{
-  color:var(--green);font-size:13px;font-weight:700;opacity:0.9;
+  color:var(--accent-text);font-size:13px;font-weight:700;opacity:0.9;
 }
 .testimonial .quote-stat{
-  font-size:12.5px;font-weight:800;color:var(--green);
+  font-size:12.5px;font-weight:800;color:var(--accent-text);
   letter-spacing:0.2px;margin:0;
   padding:8px 12px;border-left:3px solid rgba(194,118,27,0.5);
   background:rgba(194,118,27,0.07);border-radius:0 6px 6px 0;
