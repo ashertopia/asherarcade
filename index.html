@@ -201,7 +201,7 @@
       "name": "Do you offer discounts?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. Discounts are available for active military, veterans, first responders, teachers and homeschool families, and nonprofit organizations. Tell us what the game is for when you reach out and we will let you know what we can do."
+        "text": "Yes. Discounts are available for active military, veterans, first responders, teachers, and homeschool families. Tell us what the game is for when you reach out and we will let you know what we can do."
       }
     }
   ]
@@ -268,11 +268,11 @@ a{color:var(--blue-deep);}
   border-bottom:1px solid var(--rule);
 }
 .topbar-in{
-  max-width:1120px;margin:0 auto;padding:12px 28px;
+  max-width:1120px;margin:0 auto;padding:13px 28px 16px;
   display:flex;align-items:center;gap:26px;
 }
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);}
-.brand img{width:46px;height:46px;display:block;}
+.brand img{width:46px;height:46px;display:block;box-shadow:4px 4px 0 var(--ochre);}
 .brand span{font-family:var(--display);font-size:19px;letter-spacing:.01em;}
 .topbar nav{margin-left:auto;display:flex;gap:22px;}
 .topbar nav a{
@@ -550,7 +550,7 @@ a{color:var(--blue-deep);}
 .foot{border-top:2px solid var(--ink);padding:34px 0 46px;}
 .foot-in{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;}
 .foot-brand{display:flex;align-items:center;gap:11px;}
-.foot-brand img{width:38px;height:38px;}
+.foot-brand img{width:38px;height:38px;box-shadow:3px 3px 0 var(--ochre);}
 .foot-brand small{font-size:13px;color:var(--ink-soft);}
 .foot-brand small a{color:inherit;}
 .foot-nav{display:flex;flex-wrap:wrap;gap:18px;}
@@ -763,7 +763,7 @@ a{color:var(--blue-deep);}
       <dd>Guests can keep uploading through 30 days after your event. Once the window closes we hand the folder over
         to you entirely and delete our access.</dd>
       <dt>Pair it with a game</dt>
-      <dd>Add KeepsakeDrop to any Memory or Experience order. Mention it when you reach out.</dd>
+      <dd>Add KeepsakeDrop to any custom game order. Mention it when you reach out.</dd>
     </dl>
   </div>
 </section>
@@ -829,6 +829,21 @@ a{color:var(--blue-deep);}
 
     <div class="tiers">
       <div class="tier">
+        <h3>KeepsakeDrop</h3>
+        <div class="amt">$39<small>per event, one time</small></div>
+        <p class="terms">Guest photos &middot; no subscription</p>
+        <ul>
+          <li>A private Google Drive folder that is yours from day one</li>
+          <li>A printable QR sign for the table</li>
+          <li>Branded with your names and your event date</li>
+          <li>Guests upload with no app and no account</li>
+          <li>Collection stays open through 30 days after the event</li>
+        </ul>
+        <a class="buy" href="keepsakedrop.html">See KeepsakeDrop</a>
+      </div>
+
+      <div class="tier pick">
+        <span class="tier-tag">Most popular</span>
         <h3>The Occasion</h3>
         <div class="amt">$79</div>
         <p class="terms">The whole event day &middot; hosted 60 days</p>
@@ -840,49 +855,31 @@ a{color:var(--blue-deep);}
           <li>Hosted on asherarcade.com for 60 days</li>
         </ul>
         <a class="buy" href="#contact">Get started</a>
-        <p class="tier-alt">Just want the photos? <a href="keepsakedrop.html">KeepsakeDrop on its own is $39.</a></p>
       </div>
 
-      <div class="tier pick">
-        <span class="tier-tag">Most popular</span>
+      <div class="tier">
         <h3>The Memory</h3>
         <div class="amt">$199<small>starting at</small></div>
-        <p class="terms">Custom game &middot; 1 year hosting &middot; renew $20/yr</p>
+        <p class="terms">A game built for one person &middot; 1 year hosting &middot; renew $20/yr</p>
         <ul>
-          <li>Custom trivia built around a person or occasion</li>
-          <li>Personalized reskin of an existing game template</li>
-          <li>Original artwork with one or two characters</li>
+          <li>Original artwork with your characters in it</li>
           <li>Live leaderboard so guests compete</li>
+          <li>A reskin of a mechanic we already have, from $199</li>
+          <li>A brand new mechanic built only for your event, from $299</li>
           <li>Hosted one year on asherarcade.com</li>
           <li>Shareable link that works on any device</li>
         </ul>
         <a class="buy" href="#contact">Get a quote</a>
       </div>
-
-      <div class="tier">
-        <h3>The Experience</h3>
-        <div class="amt">$299<small>starting at</small></div>
-        <p class="terms">Built from scratch &middot; 1 year hosting &middot; renew $20/yr</p>
-        <ul>
-          <li>Something we have never built before, designed around your event</li>
-          <li>Fully custom mechanic, characters, and scenes</li>
-          <li>Multiple characters, levels, or interactive features</li>
-          <li>Leaderboard, voting, prediction, or multi-screen options</li>
-          <li>Hosted one year on asherarcade.com</li>
-          <li>Scoped and quoted per project</li>
-        </ul>
-        <a class="buy" href="#contact">Get a quote</a>
-      </div>
     </div>
 
-    <p class="price-foot">The difference between $199 and $299 is how much is built from scratch. A reskin of a
-      mechanic we already have starts at $199. A brand new mechanic, designed only for your event, starts at $299.
-      Send the idea either way and we will give you a straight quote with no pressure.</p>
+    <p class="price-foot">Every custom game is scoped and quoted per project. Send the idea and we will come back
+      with a straight number and no pressure.</p>
 
     <div class="ministry">
-      <p><strong>Discounts are available</strong> for active military, veterans, first responders, teachers and
-        homeschool families, and nonprofit organizations. <a href="#contact">Tell us what the game is for</a> when you
-        reach out and we will let you know what we can do.</p>
+      <p><strong>Discounts are available</strong> for active military, veterans, first responders, teachers, and
+        homeschool families. <a href="#contact">Tell us what the game is for</a> when you reach out and we will let
+        you know what we can do.</p>
     </div>
   </div>
 </section>
@@ -918,7 +915,7 @@ a{color:var(--blue-deep);}
       </details>
       <details class="qa">
         <summary>Do you offer discounts?</summary>
-        <p>Yes. Discounts are available for active military, veterans, first responders, teachers and homeschool families, and nonprofit organizations. Tell us what the game is for when you reach out and we will let you know what we can do.</p>
+        <p>Yes. Discounts are available for active military, veterans, first responders, teachers, and homeschool families. Tell us what the game is for when you reach out and we will let you know what we can do.</p>
       </details>
   </div>
 </section>
