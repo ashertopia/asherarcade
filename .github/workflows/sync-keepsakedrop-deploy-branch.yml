@@ -1,0 +1,66 @@
+# Keeps keepsakedrop.com shipping from main.
+#
+# The Vercel "keepsakedrop" project builds production from the branch
+# claude/keepsakedrop-review-r0k9md, not from main. That is a project setting in
+# Vercel (Settings -> Git -> Production Branch) and nothing in this repo can
+# change it, so pushes to main only ever produced preview deployments and the
+# live site silently fell behind.
+#
+# This workflow closes that gap: when the KeepsakeDrop site changes on main, it
+# moves the deploy branch to main's exact contents, Vercel sees the push, and
+# keepsakedrop.com ships.
+#
+# If someone later repoints Production Branch at main in Vercel, this workflow
+# is redundant and can be deleted.
+
+name: Sync keepsakedrop deploy branch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'keepsakedrop-site/**'
+      - '.github/workflows/sync-keepsakedrop-deploy-branch.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Never let two syncs race for the same branch.
+concurrency:
+  group: sync-keepsakedrop-deploy-branch
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Move the deploy branch to main's contents
+        env:
+          DEPLOY_BRANCH: claude/keepsakedrop-review-r0k9md
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags origin "$DEPLOY_BRANCH"
+          tip="$(git rev-parse FETCH_HEAD)"
+          tree="$(git rev-parse "${GITHUB_SHA}^{tree}")"
+
+          if [ "$(git rev-parse "${tip}^{tree}")" = "$tree" ]; then
+            echo "Deploy branch already carries this tree. Nothing to ship."
+            exit 0
+          fi
+
+          # Build the new tip by hand rather than running `git merge`: the commit
+          # takes main's tree verbatim, so the result cannot drift from main and
+          # a merge conflict is not possible. Keeping the old tip as the first
+          # parent makes this a fast-forward, so no force push is needed.
+          new="$(git commit-tree "$tree" -p "$tip" -p "$GITHUB_SHA" \
+            -m "Ship main to keepsakedrop.com" \
+            -m "Automated by .github/workflows/sync-keepsakedrop-deploy-branch.yml. Contents are exactly main at ${GITHUB_SHA}.")"
+
+          git push origin "${new}:refs/heads/${DEPLOY_BRANCH}"
+          echo "Deploy branch ${tip} -> ${new} (tree from ${GITHUB_SHA})"

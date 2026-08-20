@@ -20,10 +20,14 @@ bookings, two event bundles, or one custom game.
 Two things about the Vercel project that are easy to get wrong:
 
 - Its **production branch is `claude/keepsakedrop-review-r0k9md`, not `main`.**
-  Pushing to `main` builds a *preview*, so keepsakedrop.com does not move.
-  To ship the site, merge `main` into that branch and push it. Better: change
-  Production Branch to `main` in the Vercel project's Git settings, then this
-  stops being a trap.
+  A push to `main` builds a *preview*, so on its own it does not move
+  keepsakedrop.com. **You do not have to do anything about this** —
+  `.github/workflows/sync-keepsakedrop-deploy-branch.yml` watches `main` for
+  changes under `keepsakedrop-site/` and moves the deploy branch to match, so
+  merging to `main` ships the site. The workflow copies `main`'s tree verbatim
+  onto a fast-forward commit, so the branch cannot drift and there is no force
+  push and no merge conflict to resolve. If Production Branch is ever repointed
+  at `main` in Vercel's Git settings, delete the workflow.
 - Its **root directory is `keepsakedrop-site/`**, so nothing else in the repo
   is deployed there. `api/sign-pdf.js` sits at the repo root, which is why
   `keepsakedrop.com/api/sign-pdf` returns 404 (verified 2026-08-20). The
