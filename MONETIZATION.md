@@ -55,9 +55,9 @@ Verified market facts that shape this:
 |---|---|---|
 | KeepsakeDrop event (site direct) | **$39** | Done-for-you setup: Drive folder, script, printable QR sign PDF |
 | Etsy listing: QR sign + working photo service | **$29–35** | Personalized item; sale completes on Etsy (keeps it policy-safe) |
-| Event bundle | **$79** | KeepsakeDrop + custom quiz + reskinned game favor — mirrors Wedibox's proven all-in-one tier |
+| Event bundle | **$89** | KeepsakeDrop + custom quiz + puzzle reveal. All templated, no bespoke art — that is what keeps the $199 tier intact |
 | Custom quiz (from builder lead) | $199 | Existing Memory tier |
-| Full custom game | $79–$299 | Existing tiers, unchanged |
+| Full custom game | $199–$299 | The only tier with original artwork |
 
 Deposits via Venmo now; set up **Stripe Payment Links** (free, no code needed —
 create in the Stripe dashboard, paste URLs where the Venmo links are) as soon
@@ -68,15 +68,13 @@ as possible so cards work too.
 1. **Deploy the KeepsakeDrop Apps Script** (see `apps-script/README.md` for
    clasp or manual steps), run one real test event end-to-end.
 2. **Recreate the Stripe Payment Links in live mode.** Sandbox versions
-   already exist (KeepsakeDrop $39 package with promo codes enabled, plus a
-   pay-what-you-want tip link wired into `keepsakedrop.html`); once the live
-   account is connected, mint the live equivalents and swap the URLs. One-off
-   free codes = 100%-off coupon + single-use promotion codes (e.g.
-   `KDFREE-0001`).
+   already exist (the flat $39 KeepsakeDrop package, plus a pay-what-you-want
+   tip link wired into `keepsakedrop.html`); once the live account is
+   connected, mint the live equivalents and swap the URLs.
 3. **List KeepsakeDrop where couples already shop:** The Knot and WeddingWire
    vendor listings (free tiers exist), local Facebook wedding/event groups,
-   r/weddingplanning (be helpful, not spammy). "QR photo collection for $49
-   flat, no subscription, photos go straight to YOUR Google Drive" is a real
+   r/weddingplanning (be helpful, not spammy). "KeepsakeDrop, $39 flat, no
+   subscription, and the photos go straight to YOUR Google Drive" is a real
    differentiator — every competitor holds photos hostage on their platform.
 4. **Push the Quiz Builder for grad season and holidays:** share it free in
    parenting/grad Facebook groups. Every quiz made shows the $199 upsell on
@@ -87,7 +85,8 @@ as possible so cards work too.
 
 ## Path to $150/mo
 
-- 3 KeepsakeDrop events ($49 × 3) ≈ $150 — the realistic base case.
+- Four separate KeepsakeDrop bookings in a month ($39 × 4) = $156. Four
+  customers, not a multi-event package — we do not sell one.
 - OR 1 custom build ($199+) covers a month with room to spare.
 - Weddings + grads + baby showers + church events means year-round demand.
 
