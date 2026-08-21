@@ -763,7 +763,7 @@
       <div class="qr-actions">
         <button class="qr-btn" id="btn-copy-link">Copy Link</button>
         <button class="qr-btn" id="btn-download-qr">Download QR</button>
-        <button class="qr-btn" onclick="window.print()">Print Sign</button>
+        <button class="qr-btn" onclick="printSign()">Print Sign</button>
         <a class="qr-btn" id="btn-test-link" href="#" target="_blank" rel="noopener">Preview Guest View</a>
       </div>
       <p class="setup-help" style="margin-top:14px;">Print the QR code on your table cards or welcome sign — guests scan it with their phone camera and their photos land straight in your Drive folder.</p>
@@ -1007,6 +1007,37 @@ function drawQr(canvas, text) {
         ctx.fillRect((col + quiet) * scale, (r + quiet) * scale, scale, scale);
 }
 
+// The sign is display:none until print media, so the browser has never laid out
+// its text and has only pulled the glyphs the visible page asked for. Going
+// straight to window.print() can embed a font subset missing the letters that
+// appear only on the sign — one sign printed this way read "SHARE OUR PHOTOS
+// ROM TOA", having dropped exactly the letters (D, F, Y) the sign uses and the
+// line above it does not.
+//
+// Ask for the faces the sign needs and let them settle first. If they cannot be
+// loaded at all we still print: a sign set in the fallback face is fine, a sign
+// missing letters is not.
+async function printSign() {
+  const qr = document.getElementById('ps-qr');
+  if (!qr || !qr.src) {
+    alert('The QR code has not been generated yet, so the sign would print without one.\n\nTap "Generate Link & QR Code" first. If you already did, check your connection and try again.');
+    return;
+  }
+  try {
+    await Promise.all([
+      document.fonts.load('300 13px Jost'),
+      document.fonts.load('300 15px Jost'),
+      document.fonts.load('400 10px Jost'),
+      document.fonts.load('300 italic 20px "Cormorant Garamond"'),
+      document.fonts.load('300 italic 56px "Cormorant Garamond"'),
+    ]);
+    await document.fonts.ready;
+  } catch (e) {
+    console.warn('Sign fonts did not load; printing with fallbacks:', e);
+  }
+  window.print();
+}
+
 if (isSetupMode) {
   // Live theme preview while the host picks
   const themeSel   = document.getElementById('setup-theme');
@@ -1103,7 +1134,7 @@ document.getElementById('ty-icon').textContent        = c.emoji;
 document.getElementById('ty-headline').textContent    = c.headline;
 document.getElementById('ty-from').textContent        = c.from;
 document.getElementById('ty-message').textContent     = c.message;
-document.title = c.title + ' \u00B7 KeepsakeDrop';
+if (!isSetupMode) document.title = c.title + ' \u00B7 KeepsakeDrop';
 
 // \u2500\u2500 Time-limited events: ?until=YYYY-MM-DD closes uploads after that day \u2500\u2500
 const untilStr = params.get('until') || '';

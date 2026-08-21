@@ -80,10 +80,17 @@ This still needs a lawyer's read.
 
 ## Taking money
 
-**Stripe Payment Links.** Sandbox links exist for the flat $39 KeepsakeDrop
-package, plus a pay-what-you-want tip link wired into the KeepsakeDrop site.
-Once the live account is connected, mint the live equivalents and swap the URLs.
-There are no promo codes on the $39 package.
+**Stripe Payment Links.** The live account (Scott Asher LLC) is connected and
+there is exactly one live payment link: `buy.stripe.com/5kQaEZctC9xq3I8b6OcMM00`,
+the flat $39 KeepsakeDrop package. `keepsakedrop-site/book.html` points at it and
+passes the event type and colour choice through as `client_reference_id`
+(e.g. `wedding_blush`, or `event_cFCD1FF` for a custom hex). Checkout collects
+event name, event date, and the album's Google email as custom fields.
+
+The link **does** accept promo codes, and one 100%-off code has been used: the
+Tinlee Belle album on 2026-08-04. That is why it shows as a $0 order and not a
+sale. As of 2026-08-20 it is the only KeepsakeDrop checkout that has ever run,
+so nothing below has been exercised by a paying customer yet.
 
 **Venmo is gone.** Removed site-wide on 2026-08-20: the $40 deposit button, the
 tip modal, and the deep links. Do not reintroduce it. If a payment path is
