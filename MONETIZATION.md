@@ -13,7 +13,7 @@ bookings, two event bundles, or one custom game.
 |---|---|---|
 | Asher Arcade marketing site | `asherarcade.com` — GitHub Pages, deploys from `main` | repo root |
 | KeepsakeDrop product + app | `keepsakedrop.com` — Vercel project `keepsakedrop` | `keepsakedrop-site/` |
-| Sign-to-PDF endpoint | **not deployed** — see the note below | `api/sign-pdf.js` |
+| Sign-to-PDF endpoint | `keepsakedrop.com/api/sign-pdf` | `keepsakedrop-site/api/sign-pdf.js` |
 | Guest photo backend | Google Apps Script | `apps-script/` |
 | Order fulfillment | Google Apps Script | `apps-script-fulfillment/` |
 
@@ -28,12 +28,13 @@ Two things about the Vercel project that are easy to get wrong:
   onto a fast-forward commit, so the branch cannot drift and there is no force
   push and no merge conflict to resolve. If Production Branch is ever repointed
   at `main` in Vercel's Git settings, delete the workflow.
-- Its **root directory is `keepsakedrop-site/`**, so nothing else in the repo
-  is deployed there. `api/sign-pdf.js` sits at the repo root, which is why
-  `keepsakedrop.com/api/sign-pdf` returns 404 (verified 2026-08-20). The
-  fulfillment Apps Script calls that endpoint, so it has to be given a real
-  home before order fulfillment can render a sign — either move it under
-  `keepsakedrop-site/api/` or give it its own Vercel project.
+- Its **root directory is `keepsakedrop-site/`**, so nothing outside that folder
+  is deployed. The sign-PDF function used to sit at the repo root and was
+  therefore never built at all — `keepsakedrop.com/api/sign-pdf` answered 404
+  from the day it was written. It lives at `keepsakedrop-site/api/sign-pdf.js`
+  now, with `package.json` and `vercel.json` beside it, and the endpoint
+  responds as of 2026-08-21. Anything else the site needs to serve has to live
+  under `keepsakedrop-site/` too.
 
 `asherarcade.com/keepsakedrop.html` and `/photodrop.html` are **redirects only**.
 They forward to `keepsakedrop.com/drop.html` carrying the query string, because

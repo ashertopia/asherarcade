@@ -45,20 +45,26 @@ proportionate here — a forged request can only create fulfillment artifacts
    | Property | Value |
    |---|---|
    | `WEBHOOK_TOKEN` | a long random string (Claude generated one for this — ask for it) |
-   | `SIGN_PDF_ENDPOINT` | `https://keepsakedrop.com/api/sign-pdf` — **not live yet, see below** |
+   | `SIGN_PDF_ENDPOINT` | `https://keepsakedrop.com/api/sign-pdf` |
    | `SIGN_PDF_API_KEY` | must match the `SIGN_PDF_API_KEY` env var set in the Vercel `keepsakedrop` project |
    | `GUEST_SCRIPT_EXEC_URL` | the **existing** photo-upload script's `/exec` URL (the one already in `apps-script/`, ends in `AKfycbwY.../exec`) |
    | `README_TEMPLATE_DOC_ID` | `1yw2HkRMhBbLqTnmH130NAwbceWZm0lmH5x_yq59rfp0` (tokenized Read Me template — separate from Tinlee's real doc) |
    | `OWNER_EMAIL` | your email, for the "2 clicks left" / digest notifications |
 
-   > **The sign-PDF endpoint is not deployed.** `api/sign-pdf.js`, `package.json`
-   > and `vercel.json` sit at the repo root, but the Vercel `keepsakedrop`
-   > project builds from `keepsakedrop-site/`, so that URL returns 404
-   > (checked 2026-08-20). Fulfillment survives it — `attachSignPdf_` throws,
-   > the run is marked `signPdfOk: false`, and the owner notification says to
-   > add the sign manually — but no PDF is generated until the function gets a
-   > real home, either under `keepsakedrop-site/api/` or in its own Vercel
-   > project.
+   > **`SIGN_PDF_API_KEY` has to exist in two places or the endpoint refuses
+   > everything.** Set the same value as an environment variable named
+   > `SIGN_PDF_API_KEY` in the Vercel `keepsakedrop` project (Settings →
+   > Environment Variables, Production), and as a Script Property here. With no
+   > variable set on Vercel the endpoint answers 401 to every request, including
+   > correctly-signed ones, because the handler treats an unset key as a closed
+   > door. Redeploy after adding it — Vercel only injects environment variables
+   > at build time.
+   >
+   > If it does fail, fulfillment still completes: `attachSignPdf_` throws, the
+   > run records `signPdfOk: false`, and the owner notification says to add the
+   > sign by hand. Note that the customer delivery draft is written either way
+   > and tells them the sign is in their folder, so read the owner email before
+   > sending the draft.
    | `PAYMENT_LINK_ID` | optional, defaults to `plink_1U16AQRyTAXcMvg49vhhR39i` |
    | `SITE_URL` | optional, defaults to `https://keepsakedrop.com` |
 
