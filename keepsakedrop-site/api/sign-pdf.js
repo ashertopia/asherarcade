@@ -107,6 +107,27 @@ module.exports = async (req, res) => {
       return !!(qr && qr.src && qr.src.indexOf('data:') === 0);
     }, { timeout: 10000 });
 
+    // #print-sign is display:none until print media, so nothing on the sign has
+    // been laid out yet and the browser has only fetched the glyphs the visible
+    // page needed. Printing from here embeds a font subset built from the wrong
+    // text: a sign printed by hand this way came out reading "SHARE OUR PHOTOS
+    // ROM TOA", having lost exactly the Jost-300 letters (D, F, Y) that appear
+    // on the sign but nowhere in the eyebrow line above it.
+    //
+    // Switch to print media first so the sign is laid out for real, then wait
+    // for the faces it uses before rendering.
+    await page.emulateMediaType('print');
+    await page.evaluate(async () => {
+      await Promise.all([
+        document.fonts.load('300 15px Jost'),
+        document.fonts.load('300 13px Jost'),
+        document.fonts.load('400 10px Jost'),
+        document.fonts.load('300 italic 56px "Cormorant Garamond"'),
+        document.fonts.load('300 italic 20px "Cormorant Garamond"'),
+      ]);
+      await document.fonts.ready;
+    });
+
     const pdf = await page.pdf({
       printBackground: true,
       preferCSSPageSize: true, // honors the page's own @page { size: letter portrait; margin: 0.4in; }
