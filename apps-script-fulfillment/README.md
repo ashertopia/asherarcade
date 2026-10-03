@@ -35,10 +35,10 @@ What the script does with each event:
 
 | Event | Result |
 |---|---|
-| `checkout.session.completed`, `payment_status` `paid` or `no_payment_required` (100%-off promo) | fulfilled |
+| `checkout.session.completed`, `payment_status` `paid` (including 100%-off promo orders, which arrive as `paid`) or `no_payment_required` | fulfilled |
 | `checkout.session.completed`, `unpaid` (delayed payment method) | owner emailed; fulfilled when `checkout.session.async_payment_succeeded` arrives |
 | `checkout.session.async_payment_failed`, other payment links, other event types, duplicate sessions | not fulfilled; **owner emailed** with the reason |
-| paid, but the event date can't be read or the event name is missing | **held** on the "Held orders" tab of the log Sheet; owner emailed. Fix the date (and the name if needed) there, then run `releaseHeldOrders` (the 8 AM `dailyCheck` also runs it) |
+| paid, but the event date can't be read or the event name is missing | **held** on the "Held orders" tab of the log Sheet; owner emailed. Fix the date (and the name if needed) there, then run `releaseHeldOrders` (the 8 AM `dailyCheck` also runs it). A row that fails to release is marked `error` and the owner is emailed; check for half-made folders/drafts, then set it back to `held` |
 
 Orders are de-duplicated by Stripe session ID under a script lock. If a Drive
 folder with the same album name already exists, the new folder gets a
@@ -123,7 +123,7 @@ suffix and the owner email points it out.
 - `Code.gs` — webhook entry point (`doPost`), event routing, config, order field + date parsing
 - `Fulfillment.gs` — folder/doc/PDF/draft/calendar creation for a new order
 - `Sheet.gs` — the fulfillment log (dedup + due-date tracking)
-- `Digest.gs` — `dailyCheck()`: handoff/last-chance follow-ups (sent on or after their day), held-order release, unsent-draft nudges
+- `Digest.gs` — `dailyCheck()`: handoff/last-chance follow-ups (sent on or after their day, never once the album's delete date has arrived), held-order release, unsent-draft nudges
 - `Setup.gs` — one-time helpers: `installDailyTrigger`, `checkConfig`, `testFulfillOrder`
 
 ## Redeploying after a code change

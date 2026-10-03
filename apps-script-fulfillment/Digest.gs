@@ -10,6 +10,8 @@
  * Pure: which follow-ups are due for a log row today. "Due" means the date
  * has arrived or passed and it hasn't been sent, so a day the trigger didn't
  * run (quota, outage) delays a follow-up instead of skipping it forever.
+ * Once the album's delete date (close + 60 days) has arrived nothing is due
+ * any more, so old rows never get a late handoff or last-chance email.
  * ISO 'YYYY-MM-DD' strings compare correctly as plain strings.
  */
 function dueFollowUps_(closeIso, todayIso, handoffSent, lastChanceSent) {
@@ -18,10 +20,12 @@ function dueFollowUps_(closeIso, todayIso, handoffSent, lastChanceSent) {
   var handoffDate = fmtISO_(addDays_(close, 1));
   var lastChanceDate = fmtISO_(addDays_(close, 56)); // close+56 = event+86
   var deleteDate = fmtISO_(addDays_(close, 60)); // close+60 = event+90
+  var expired = todayIso >= deleteDate;
   return {
-    handoff: todayIso >= handoffDate && !handoffSent,
-    lastChance: todayIso >= lastChanceDate && !lastChanceSent,
+    handoff: !expired && todayIso >= handoffDate && !handoffSent,
+    lastChance: !expired && todayIso >= lastChanceDate && !lastChanceSent,
     deleteDate: deleteDate,
+    expired: expired,
   };
 }
 
@@ -159,30 +163,55 @@ function releaseHeldOrders() {
   var values = sheet.getRange(2, 1, sheet.getLastRow() - 1, HELD_HEADERS.length).getValues();
   var col = function (name) { return HELD_HEADERS.indexOf(name); };
   var released = 0;
+  var failures = [];
   var lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {
     values.forEach(function (row, i) {
       if (row[col('status')] !== 'held') return;
-      var fixedDate = row[col('fixedEventDate')];
-      var date = isDate_(fixedDate) ? isoToDate_(fixedDate) : parseEventDate_(fixedDate);
-      if (!date) return;
-      var order = JSON.parse(row[col('orderJson')]);
-      var fixedName = String(row[col('fixedEventName')] || '').trim();
-      if (fixedName) { order.eventName = fixedName; order.eventNameProvided = true; }
-      if (!order.eventNameProvided) return;
-      order.eventDate = date;
       var statusCell = sheet.getRange(i + 2, col('status') + 1);
-      if (isAlreadyFulfilled_(order)) {
-        statusCell.setValue('already fulfilled');
-        return;
+      // One bad row (unparseable orderJson, a Drive/Docs hiccup mid-fulfillment)
+      // must not block the rest. A failed row is marked "error" rather than
+      // retried automatically, because fulfillOrder_ may already have made a
+      // folder or draft; the owner checks, then sets it back to "held".
+      try {
+        var fixedDate = row[col('fixedEventDate')];
+        var date = isDate_(fixedDate) ? isoToDate_(fixedDate) : parseEventDate_(fixedDate);
+        if (!date) return;
+        var order = JSON.parse(row[col('orderJson')]);
+        var fixedName = String(row[col('fixedEventName')] || '').trim();
+        if (fixedName) { order.eventName = fixedName; order.eventNameProvided = true; }
+        if (!order.eventNameProvided) return;
+        order.eventDate = date;
+        if (isAlreadyFulfilled_(order)) {
+          statusCell.setValue('already fulfilled');
+          return;
+        }
+        fulfillOrder_(order);
+        statusCell.setValue('released ' + fmtISO_(new Date()));
+        released++;
+      } catch (err) {
+        var msg = String(err && err.message || err);
+        failures.push((row[col('sessionId')] || '(no session id)') + ' — ' + row[col('eventName')] + ': ' + msg);
+        try { statusCell.setValue('error: ' + msg.slice(0, 200)); } catch (e2) { /* keep going */ }
       }
-      fulfillOrder_(order);
-      statusCell.setValue('released ' + fmtISO_(new Date()));
-      released++;
     });
   } finally {
     lock.releaseLock();
   }
+  if (failures.length) notifyHeldFailures_(failures);
   return released;
+}
+
+function notifyHeldFailures_(failures) {
+  try {
+    var cfg = CFG_();
+    if (!cfg.OWNER_EMAIL) return;
+    MailApp.sendEmail(cfg.OWNER_EMAIL,
+      'KeepsakeDrop: ' + failures.length + ' held order(s) could not be released',
+      'These rows on the "Held orders" tab failed and were marked "error":\n\n- ' +
+      failures.join('\n- ') + '\n\n' +
+      'Check Drive and Gmail drafts for anything half-made for that customer, fix the row, ' +
+      'set its status back to "held", then run releaseHeldOrders() again.');
+  } catch (e2) { /* notification must never throw */ }
 }

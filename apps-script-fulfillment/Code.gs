@@ -98,7 +98,9 @@ function classifyEvent_(event, paymentLinkId) {
   if (session.status !== 'complete') {
     return { action: 'ignore', reason: 'session status is ' + session.status };
   }
-  // 'no_payment_required' is what a 100%-off promo code produces.
+  // A 100%-off promo order has arrived as 'paid' in practice; Stripe also
+  // documents 'no_payment_required' for sessions that collect nothing, so
+  // accept that too rather than silently dropping such an order.
   if (session.payment_status === 'paid' || session.payment_status === 'no_payment_required') {
     return { action: 'fulfill', reason: 'payment_status ' + session.payment_status };
   }
