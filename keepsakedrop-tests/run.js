@@ -177,6 +177,36 @@ test('releaseHeldOrders: one bad row does not block the others; owner is emailed
   assert.ok(/2 held order/.test(mails[0].subject) && /cs_bad/.test(mails[0].body) && /cs_boom/.test(mails[0].body));
 });
 
+test('other payment links (e.g. PackLocker) are ignored quietly; other ignores still email the owner', () => {
+  const mails = [];
+  const H = load(['apps-script-fulfillment/Code.gs', 'apps-script-fulfillment/Fulfillment.gs',
+    'apps-script-fulfillment/Sheet.gs', 'apps-script-fulfillment/Digest.gs'], {
+    console: { log() {}, error: console.error },
+    PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => (k === 'OWNER_EMAIL' ? 'owner@example.com' : null) }) },
+    MailApp: { sendEmail(to, subject, body) { mails.push({ to, subject, body }); } },
+  });
+  const cfg = { PAYMENT_LINK_ID: LINK };
+  const packLocker = ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed'];
+  for (const type of packLocker) {
+    const r = H.handleStripeEvent_(ev(type, { payment_status: 'paid', payment_link: 'plink_packlocker' }), cfg);
+    assert.ok(r.ok && /different payment link/.test(r.ignored), type);
+  }
+  const r2 = H.handleStripeEvent_(ev('checkout.session.completed', { payment_status: 'paid', payment_link: null }), cfg);
+  assert.ok(r2.ok && r2.ignored, 'checkout without a payment link (API/test event)');
+  assert.strictEqual(mails.length, 0, 'no owner email for other-link events');
+  assert.strictEqual(F.classifyEvent_(ev('checkout.session.completed', { payment_status: 'paid' }), LINK).quiet, undefined);
+
+  const loud = [
+    ev('checkout.session.async_payment_failed', { payment_status: 'unpaid' }),
+    ev('checkout.session.completed', { payment_status: 'unpaid' }),
+    ev('checkout.session.completed', { payment_status: 'paid', status: 'open' }),
+    ev('charge.refunded', {}),
+  ];
+  for (const e of loud) assert.ok(H.handleStripeEvent_(e, cfg).ok);
+  assert.strictEqual(mails.length, loud.length, 'every other ignored reason still emails the owner');
+  assert.ok(mails.every((m) => m.to === 'owner@example.com' && /not fulfilled/.test(m.subject)));
+});
+
 test('logRowIndex_ on a header-only sheet returns -1 instead of throwing', () => {
   // Fake sheet that behaves like Apps Script: zero-row ranges throw.
   const sheet = {

@@ -77,7 +77,8 @@ function doPost(e) {
 
 /**
  * Decide what a Stripe event means for us. Pure (no Google services), so it
- * can be unit-tested. Returns { action: 'fulfill' | 'ignore' | 'wait', reason }.
+ * can be unit-tested. Returns { action: 'fulfill' | 'ignore' | 'wait', reason },
+ * plus quiet: true when the owner should NOT be emailed about it.
  */
 function classifyEvent_(event, paymentLinkId) {
   var type = event && event.type;
@@ -90,7 +91,11 @@ function classifyEvent_(event, paymentLinkId) {
   }
   if (!session) return { action: 'ignore', reason: 'event has no session object' };
   if (session.payment_link !== paymentLinkId) {
-    return { action: 'ignore', reason: 'different payment link (' + session.payment_link + ')' };
+    // Other products on the same Stripe account (e.g. PackLocker) fire
+    // checkout events at this endpoint too. They are not ours: ignore them
+    // quietly, without an owner email. (checkConfig logs PAYMENT_LINK_ID so a
+    // wrong value can be spotted.)
+    return { action: 'ignore', quiet: true, reason: 'different payment link (' + session.payment_link + ')' };
   }
   if (type === 'checkout.session.async_payment_failed') {
     return { action: 'ignore', reason: 'delayed payment FAILED; nothing was fulfilled' };
@@ -116,7 +121,11 @@ function handleStripeEvent_(event, cfg) {
   var sessionId = session && session.id;
 
   if (decision.action !== 'fulfill') {
-    notifyIgnored_(event, decision.reason);
+    if (decision.quiet) {
+      console.log('Ignored quietly: ' + decision.reason + ' ' + (event && event.id));
+    } else {
+      notifyIgnored_(event, decision.reason);
+    }
     return { ok: true, ignored: decision.reason, sessionId: sessionId };
   }
 
@@ -136,7 +145,8 @@ function handleStripeEvent_(event, cfg) {
   return { ok: true, result: result };
 }
 
-/** Owner email for every event that did not produce a fulfilled order. */
+/** Owner email for an event that did not produce a fulfilled order (all
+ * ignored reasons except a different payment link, which is quiet). */
 function notifyIgnored_(event, reason) {
   try {
     var cfg = CFG_();

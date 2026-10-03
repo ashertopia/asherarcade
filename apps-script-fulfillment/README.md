@@ -37,7 +37,8 @@ What the script does with each event:
 |---|---|
 | `checkout.session.completed`, `payment_status` `paid` (including 100%-off promo orders, which arrive as `paid`) or `no_payment_required` | fulfilled |
 | `checkout.session.completed`, `unpaid` (delayed payment method) | owner emailed; fulfilled when `checkout.session.async_payment_succeeded` arrives |
-| `checkout.session.async_payment_failed`, other payment links, other event types, duplicate sessions | not fulfilled; **owner emailed** with the reason |
+| a different payment link (e.g. PackLocker checkouts on the same Stripe account) | ignored **quietly**: answered OK, no owner email (only an execution-log line) |
+| `checkout.session.async_payment_failed`, other event types, duplicate sessions | not fulfilled; **owner emailed** with the reason |
 | paid, but the event date can't be read or the event name is missing | **held** on the "Held orders" tab of the log Sheet; owner emailed. Fix the date (and the name if needed) there, then run `releaseHeldOrders` (the 8 AM `dailyCheck` also runs it). A row that fails to release is marked `error` and the owner is emailed; check for half-made folders/drafts, then set it back to `held` |
 
 Orders are de-duplicated by Stripe session ID under a script lock. If a Drive
@@ -83,7 +84,7 @@ suffix and the owner email points it out.
    > sign by hand. Note that the customer delivery draft is written either way
    > and tells them the sign is in their folder, so read the owner email before
    > sending the draft.
-   | `PAYMENT_LINK_ID` | optional, defaults to `plink_1U16AQRyTAXcMvg49vhhR39i` — must be the live link's ID or every order is ignored |
+   | `PAYMENT_LINK_ID` | optional, defaults to `plink_1U16AQRyTAXcMvg49vhhR39i` — must be the live link's ID or every order is ignored, **silently** (other-link events don't email). Check it with `checkConfig` |
    | `SITE_URL` | optional, defaults to `https://keepsakedrop.com` (sign-pdf only accepts that origin unless `SIGN_PDF_ALLOWED_ORIGINS` is set on Vercel) |
    | `AUTO_SHARE_ALBUM` | optional; `true` shares each new album folder with the customer's album email automatically (Google sends them its usual "shared a folder" email). Unset = the old manual step |
 
