@@ -755,7 +755,7 @@
     </div>
 
     <button class="btn-submit" id="btn-generate">Generate Link &amp; QR Code</button>
-    <div class="error-msg" id="setup-error">Please fill in the event name, script URL, and folder ID.</div>
+    <div class="error-msg" id="setup-error">Please fill in the event name, script URL (https://script.google.com/macros/s/…/exec), and folder ID.</div>
 
     <div id="qr-result">
       <canvas id="qr-canvas" width="290" height="290"></canvas>
@@ -895,6 +895,20 @@ const hostName    = params.get('name')   || '';
 const eventType   = params.get('type')   || 'event';
 const scriptUrl   = params.get('script') || '';
 
+// Photos may only be sent to a Google Apps Script web app (or the landing
+// page's demo). Without this, anyone could build a keepsakedrop.com link
+// whose ?script= points at their own server and collect guests' photos.
+function isAllowedScriptUrl(u) {
+  if (u === 'demo') return true;
+  try {
+    const x = new URL(u);
+    return x.protocol === 'https:' && x.hostname === 'script.google.com' &&
+      (/^\/macros\/s\/[\w-]+\/exec$/.test(x.pathname) ||
+       /^\/a\/macros\/[^/]+\/s\/[\w-]+\/exec$/.test(x.pathname)); // Workspace accounts
+  } catch (e) { return false; }
+}
+const scriptUrlOk = !scriptUrl || isAllowedScriptUrl(scriptUrl);
+
 // ── Color themes ──
 // Preset accents; every other shade (light, pale, background) is derived
 // from the accent so a custom hex works exactly like a preset.
@@ -964,6 +978,7 @@ function buildGuestUrl() {
   const script = document.getElementById('setup-script').value.trim();
   const folder = document.getElementById('setup-folder').value.trim();
   if (!ev || !script || !folder) return null;
+  if (!isAllowedScriptUrl(script)) return null;
   const base = location.origin + location.pathname;
   const q = new URLSearchParams();
   q.set('event', slugify(ev));
@@ -1097,30 +1112,36 @@ if (isSetupMode) {
 
 const prettyEvent = eventName.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
 
+// Done-for-you links set name= to the same text as the event ("Tinlee Belle
+// turns ONE"), so don't wrap it again ("…turns ONE’s Tinlee Belle Turns One").
+const nameIsEvent = !!hostName && slugify(hostName) === eventName;
+const nameSaysWedding = nameIsEvent && /wedding/i.test(hostName);
+const nameSaysGrad = nameIsEvent && /grad/i.test(hostName);
+
 // ── Event type content map ──
 const content = {
   wedding: {
-    title:    hostName ? hostName + '\u2019s Wedding' : prettyEvent,
+    title:    hostName ? (nameSaysWedding ? hostName : hostName + '\u2019s Wedding') : prettyEvent,
     subtitle: 'Share your memories from today',
     emoji:    '\uD83D\uDC8D',
     headline: 'Thank You',
-    from:     hostName ? '\u2014 With love, ' + hostName : '\u2014 With love, from the couple',
+    from:     hostName && !nameSaysWedding ? '\u2014 With love, ' + hostName : '\u2014 With love, from the couple',
     message:  'Your photos mean the world to us. We can\u2019t wait to relive every moment through your eyes.'
   },
   graduation: {
-    title:    hostName ? 'Congrats, ' + hostName + '!' : prettyEvent,
+    title:    hostName ? (nameSaysGrad ? hostName : 'Congrats, ' + hostName + '!') : prettyEvent,
     subtitle: 'Capture the moment \u2014 share your photos',
     emoji:    '\uD83C\uDF93',
     headline: 'You\u2019re the Best!',
-    from:     hostName ? '\u2014 With gratitude, ' + hostName : '\u2014 With gratitude',
+    from:     hostName && !nameSaysGrad ? '\u2014 With gratitude, ' + hostName : '\u2014 With gratitude',
     message:  'These memories will last a lifetime. Thank you for celebrating this milestone with me.'
   },
   event: {
-    title:    hostName ? hostName + '\u2019s ' + prettyEvent : prettyEvent,
+    title:    hostName ? (nameIsEvent ? hostName : hostName + '\u2019s ' + prettyEvent) : prettyEvent,
     subtitle: 'Share your photos from today',
     emoji:    '\uD83C\uDF89',
     headline: 'Thank You!',
-    from:     hostName ? '\u2014 ' + hostName : '\u2014 Thanks for coming',
+    from:     hostName && !nameIsEvent ? '\u2014 ' + hostName : '\u2014 Thanks for coming',
     message:  'So glad you were here. Thanks for sharing your photos and helping us remember this special day.'
   }
 };
@@ -1138,13 +1159,20 @@ if (!isSetupMode) document.title = c.title + ' \u00B7 KeepsakeDrop';
 
 // \u2500\u2500 Time-limited events: ?until=YYYY-MM-DD closes uploads after that day \u2500\u2500
 const untilStr = params.get('until') || '';
+function showClosed(noteHtml, subtitle) {
+  document.querySelector('#upload-screen .card').style.display = 'none';
+  const note = document.getElementById('closed-note');
+  if (noteHtml) note.innerHTML = noteHtml;
+  note.classList.add('show');
+  document.getElementById('event-subtitle').textContent = subtitle || 'The photo collection has closed';
+}
 if (!isSetupMode && untilStr) {
   const end = new Date(untilStr + 'T23:59:59');
-  if (!isNaN(end.getTime()) && Date.now() > end.getTime()) {
-    document.querySelector('#upload-screen .card').style.display = 'none';
-    document.getElementById('closed-note').classList.add('show');
-    document.getElementById('event-subtitle').textContent = 'The photo collection has closed';
-  }
+  if (!isNaN(end.getTime()) && Date.now() > end.getTime()) showClosed();
+}
+if (!isSetupMode && !scriptUrlOk) {
+  showClosed('This upload link isn\u2019t a valid KeepsakeDrop link.<br>Please ask the hosts to share their link again.',
+             'This link isn\u2019t working');
 }
 
 // ── File handling ──
@@ -1214,8 +1242,8 @@ btnSubmit.addEventListener('click', startUpload);
 let uploading = false;
 
 async function startUpload() {
-  if (!scriptUrl) {
-    showError('No Apps Script URL configured. Add ?script=YOUR_URL to the page URL.');
+  if (!scriptUrl || !scriptUrlOk) {
+    showError('This upload link isn\u2019t set up correctly. Please ask the hosts for their link.');
     return;
   }
   if (selectedFiles.length === 0) return;
@@ -1256,6 +1284,7 @@ async function startUpload() {
 
   let uploaded = 0;
   let skipped  = 0;
+  let closed   = false;
   const failedFiles = [];
 
   // Upload one photo per request: keeps each payload small enough for
@@ -1273,7 +1302,10 @@ async function startUpload() {
       continue;
     }
 
-    if (await sendPhoto(file, data, guestName)) uploaded++;
+    const result = await sendPhoto(file, data, guestName);
+    if (result === 'ok') uploaded++;
+    else if (result === 'closed') { closed = true; break; }   // event over: stop sending
+    else if (result === 'rejected') skipped++;               // server refused this file
     else failedFiles.push(file);
     progressBar.style.width = Math.round(((i + 1) / total) * 100) + '%';
   }
@@ -1282,6 +1314,25 @@ async function startUpload() {
   document.getElementById('upload-warning').classList.remove('show');
 
   const failed = failedFiles.length;
+  if (closed) {
+    // The server says collection has ended — Retry would never succeed, so
+    // say so plainly instead of blaming the guest's connection.
+    progressWrap.classList.remove('visible');
+    if (uploaded > 0) {
+      showError(`${uploaded} photo${uploaded !== 1 ? 's were' : ' was'} saved, but this event\u2019s photo collection has now closed.`);
+    } else {
+      showClosed();
+    }
+    return;
+  }
+  if (uploaded === 0 && failed === 0 && skipped > 0) {
+    // Nothing went through and retrying won't help (unreadable or refused files).
+    progressWrap.classList.remove('visible');
+    selectedFiles = [];
+    btnSubmit.textContent = 'Upload Photos';
+    showError(`${skipped === 1 ? 'That photo' : 'Those photos'} couldn\u2019t be uploaded. Please try different photos.`);
+    return;
+  }
   if (uploaded === 0 && failed > 0) {
     showError('Upload failed. Please check your connection and tap Retry.');
     selectedFiles = failedFiles;
@@ -1304,7 +1355,9 @@ async function startUpload() {
 }
 
 // Send one photo with up to 3 attempts and increasing backoff — a single
-// Wi-Fi hiccup shouldn't lose a wedding photo.
+// Wi-Fi hiccup shouldn't lose a wedding photo. Returns 'ok', 'closed',
+// 'rejected' (the server will never take it; don't retry) or 'failed'.
+const NO_RETRY = ['unknown folder', 'missing folder', 'unsupported file', 'bad request', 'request too large'];
 async function sendPhoto(file, data, guestName) {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -1318,12 +1371,13 @@ async function sendPhoto(file, data, guestName) {
         })
       });
       const out = await res.json();
-      if (out && out.ok && out.saved > 0) return true;
-      if (out && out.error === 'closed') return false; // event over — retrying won't help
+      if (out && out.ok && out.saved > 0) return 'ok';
+      if (out && out.error === 'closed') return 'closed'; // event over — retrying won't help
+      if (out && (NO_RETRY.indexOf(out.error) !== -1 || (out.ok && !out.saved))) return 'rejected';
     } catch(e) { /* network error — retry */ }
     if (attempt < 2) await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
   }
-  return false;
+  return 'failed';
 }
 
 // Compress and re-encode as JPEG. Starts at 1600px/85%; if the result is
