@@ -30,11 +30,24 @@ function getLogSheet_() {
 
 function logRowIndex_(sessionId) {
   var sheet = getLogSheet_();
-  var ids = sheet.getRange(2, 1, Math.max(sheet.getLastRow() - 1, 0), 1).getValues();
+  // getRange() throws "The number of rows in the range must be at least 1"
+  // when the sheet holds only its header row, i.e. on the very first order.
+  if (sheet.getLastRow() < 2) return -1;
+  var ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
   for (var i = 0; i < ids.length; i++) {
     if (ids[i][0] === sessionId) return i + 2; // 1-indexed, +1 for header row
   }
   return -1;
+}
+
+/**
+ * Dates are written with a leading apostrophe so Sheets stores them as the
+ * literal text "2026-10-15" instead of converting them to date cells (which
+ * getValues() would hand back as Date objects). Readers go through
+ * cellIso_() anyway, so rows written by the old code still work.
+ */
+function asText_(s) {
+  return s ? "'" + s : '';
 }
 
 function appendLogRow_(order, folder, dates) {
@@ -44,16 +57,28 @@ function appendLogRow_(order, folder, dates) {
     order.eventName,
     order.customerEmail,
     order.albumEmail,
-    order.eventDate ? fmtISO_(order.eventDate) : '',
+    asText_(order.eventDate ? fmtISO_(order.eventDate) : ''),
     folder.getId(),
     folder.getUrl(),
-    fmtISO_(dates.close),
-    fmtISO_(dates.claim),
-    fmtISO_(dates.deleteOn),
+    asText_(fmtISO_(dates.close)),
+    asText_(fmtISO_(dates.claim)),
+    asText_(fmtISO_(dates.deleteOn)),
     false,
     false,
-    fmtISO_(new Date()),
+    asText_(fmtISO_(new Date())),
   ]);
+}
+
+/** A date cell's value as 'YYYY-MM-DD', whether Sheets kept text or made a Date. */
+function cellIso_(v) {
+  if (isDate_(v)) return isNaN(v.getTime()) ? '' : fmtISO_(v);
+  var mt = String(v || '').trim().match(/^'?(\d{4}-\d{2}-\d{2})/);
+  return mt ? mt[1] : '';
+}
+
+/** Checkbox-ish cell: true, or the text TRUE. */
+function cellTrue_(v) {
+  return v === true || String(v).toUpperCase() === 'TRUE';
 }
 
 function markLogFlag_(sessionId, columnName, value) {
@@ -79,4 +104,44 @@ function getAllLogRows_() {
 
 function sessionAlreadyLogged_(sessionId) {
   return logRowIndex_(sessionId) !== -1;
+}
+
+// ── Held orders (paid, but event date/name unreadable) ──
+
+var HELD_HEADERS = [
+  'sessionId', 'eventName', 'eventDateAsTyped', 'customerEmail',
+  'fixedEventDate', 'fixedEventName', 'status', 'heldAt', 'orderJson',
+];
+
+function getHeldSheet_() {
+  var ss = getLogSheet_().getParent();
+  var sheet = ss.getSheetByName('Held orders');
+  if (!sheet) {
+    sheet = ss.insertSheet('Held orders');
+    sheet.appendRow(HELD_HEADERS);
+    sheet.setFrozenRows(1);
+    // Keep typed dates as text so "2027-06-06" is read back verbatim.
+    sheet.getRange(1, HELD_HEADERS.indexOf('fixedEventDate') + 1, sheet.getMaxRows(), 1).setNumberFormat('@');
+  }
+  return sheet;
+}
+
+function findHeldRow_(sessionId) {
+  var sheet = getHeldSheet_();
+  if (sheet.getLastRow() < 2) return -1;
+  var ids = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getValues();
+  for (var i = 0; i < ids.length; i++) {
+    if (ids[i][0] === sessionId) return i + 2;
+  }
+  return -1;
+}
+
+function appendHeldRow_(order, event) {
+  var stored = {};
+  Object.keys(order).forEach(function (k) { stored[k] = order[k]; });
+  stored.eventDate = null;
+  getHeldSheet_().appendRow([
+    order.sessionId, order.eventName, order.eventDateRaw, order.customerEmail,
+    '', '', 'held', asText_(fmtISO_(new Date())), JSON.stringify(stored),
+  ]);
 }

@@ -4,8 +4,9 @@ Replaces the two Claude-Code Routines ("KeepsakeDrop order watcher" and
 "KeepsakeDrop morning comms digest") with a zero-LLM pipeline:
 
 ```
-Stripe (checkout.session.completed)
-  -> this script's doPost webhook
+Stripe (checkout.session.completed / async_payment_succeeded)
+  -> keepsakedrop.com/api/stripe-webhook (verifies Stripe-Signature, answers Stripe)
+  -> this script's doPost (?token=WEBHOOK_TOKEN)
   -> Drive folder + Read Me doc + table sign PDF (via the sign-pdf Vercel endpoint)
   -> Gmail draft to the customer
   -> Calendar reminder for Scott
@@ -16,15 +17,32 @@ A daily trigger (`dailyCheck`) then handles the +31 day handoff email, the
 +86 day last-chance notice, and nudges about any unsent KeepsakeDrop Gmail
 drafts — all deterministic, no memory dependency.
 
-## Why a URL token instead of a signature
+## How Stripe reaches this script
 
-Apps Script's `doPost(e)` does not expose incoming HTTP headers, so the
-script can't read Stripe's `Stripe-Signature` header and verify the usual
-HMAC. Instead, the Stripe webhook URL itself carries a shared secret as a
-query parameter (`?token=...`), which *is* visible via `e.parameter`. This
-is a well-known workaround for this specific Apps Script limitation. It's
-proportionate here — a forged request can only create fulfillment artifacts
-(folder/doc/draft), not move money.
+Apps Script's `doPost(e)` can't read HTTP headers, so it can't check Stripe's
+`Stripe-Signature` header itself. It also answers every POST with a 302
+redirect to `script.googleusercontent.com`, and Stripe counts any redirect
+as a failed delivery ("We consider redirect responses to webhook requests as
+failures", docs.stripe.com/webhooks). Pointed straight at this script, Stripe
+would mark every order failed and keep retrying.
+
+So Stripe calls `keepsakedrop-site/api/stripe-webhook.js` on Vercel instead.
+That function checks the signature with `STRIPE_WEBHOOK_SECRET`, forwards the
+verified event here with `?token=<WEBHOOK_TOKEN>`, and answers Stripe with a
+2xx code. The token stays as a second check between Vercel and this script.
+
+What the script does with each event:
+
+| Event | Result |
+|---|---|
+| `checkout.session.completed`, `payment_status` `paid` or `no_payment_required` (100%-off promo) | fulfilled |
+| `checkout.session.completed`, `unpaid` (delayed payment method) | owner emailed; fulfilled when `checkout.session.async_payment_succeeded` arrives |
+| `checkout.session.async_payment_failed`, other payment links, other event types, duplicate sessions | not fulfilled; **owner emailed** with the reason |
+| paid, but the event date can't be read or the event name is missing | **held** on the "Held orders" tab of the log Sheet; owner emailed. Fix the date (and the name if needed) there, then run `releaseHeldOrders` (the 8 AM `dailyCheck` also runs it) |
+
+Orders are de-duplicated by Stripe session ID under a script lock. If a Drive
+folder with the same album name already exists, the new folder gets a
+suffix and the owner email points it out.
 
 ## One-time setup
 
@@ -65,8 +83,9 @@ proportionate here — a forged request can only create fulfillment artifacts
    > sign by hand. Note that the customer delivery draft is written either way
    > and tells them the sign is in their folder, so read the owner email before
    > sending the draft.
-   | `PAYMENT_LINK_ID` | optional, defaults to `plink_1U16AQRyTAXcMvg49vhhR39i` |
-   | `SITE_URL` | optional, defaults to `https://keepsakedrop.com` |
+   | `PAYMENT_LINK_ID` | optional, defaults to `plink_1U16AQRyTAXcMvg49vhhR39i` — must be the live link's ID or every order is ignored |
+   | `SITE_URL` | optional, defaults to `https://keepsakedrop.com` (sign-pdf only accepts that origin unless `SIGN_PDF_ALLOWED_ORIGINS` is set on Vercel) |
+   | `AUTO_SHARE_ALBUM` | optional; `true` shares each new album folder with the customer's album email automatically (Google sends them its usual "shared a folder" email). Unset = the old manual step |
 
    (`LOG_SHEET_ID` fills itself in automatically on first run — leave blank.)
 
@@ -83,18 +102,28 @@ proportionate here — a forged request can only create fulfillment artifacts
    you can check the output before any real money is involved. Delete the
    test folder afterward if you'd like.
 
-6. **Hand the `/exec` URL back** so the real Stripe webhook can be wired up
-   (`https://api.stripe.com/v1/webhook_endpoints`, event
-   `checkout.session.completed`, URL =
-   `<your exec URL>?token=<WEBHOOK_TOKEN>`) — either paste it in chat or
-   set it up yourself in the Stripe Dashboard under Developers → Webhooks.
+6. **Wire up Stripe through the Vercel relay.** In the Stripe Dashboard
+   (Developers → Webhooks, live mode) add an endpoint with URL
+   `https://keepsakedrop.com/api/stripe-webhook` and events
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+   `checkout.session.async_payment_failed`. Copy its signing secret
+   (`whsec_...`). In the Vercel `keepsakedrop` project set
+   `STRIPE_WEBHOOK_SECRET` (that secret), `FULFILLMENT_SCRIPT_URL` (this
+   script's `/exec` URL) and `FULFILLMENT_TOKEN` (the same value as
+   `WEBHOOK_TOKEN`), then redeploy. Don't point Stripe at the `/exec` URL
+   directly (see "How Stripe reaches this script").
+
+7. **Give the guest-upload script the log Sheet.** After the first run,
+   copy `LOG_SHEET_ID` from this project's Script Properties into the
+   guest-upload project's Script Properties (see `apps-script/README.md`),
+   so that script only accepts album folders listed in the log.
 
 ## Files
 
-- `Code.gs` — webhook entry point (`doPost`), config, order field extraction
+- `Code.gs` — webhook entry point (`doPost`), event routing, config, order field + date parsing
 - `Fulfillment.gs` — folder/doc/PDF/draft/calendar creation for a new order
 - `Sheet.gs` — the fulfillment log (dedup + due-date tracking)
-- `Digest.gs` — `dailyCheck()`: handoff/last-chance follow-ups + unsent-draft nudges
+- `Digest.gs` — `dailyCheck()`: handoff/last-chance follow-ups (sent on or after their day), held-order release, unsent-draft nudges
 - `Setup.gs` — one-time helpers: `installDailyTrigger`, `checkConfig`, `testFulfillOrder`
 
 ## Redeploying after a code change
@@ -103,3 +132,12 @@ proportionate here — a forged request can only create fulfillment artifacts
 clasp push && clasp deploy
 ```
 (or redeploy the existing deployment ID so the `/exec` URL doesn't change).
+
+The manifest's `oauthScopes` now includes `https://mail.google.com/` (needed by
+`GmailApp` drafts) and `https://www.googleapis.com/auth/script.send_mail`
+(needed by `MailApp`). After pushing, run any function from the editor once
+(e.g. `checkConfig`) and approve the new permissions, then re-run
+`installDailyTrigger` so the trigger uses them.
+
+Sanity tests for the date parsing and event routing: `node keepsakedrop-tests/run.js`
+from the repo root.

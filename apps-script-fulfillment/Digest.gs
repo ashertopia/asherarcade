@@ -6,30 +6,60 @@
  * surfaced as a nudge since sending itself stays a manual, human step.
  */
 
+/**
+ * Pure: which follow-ups are due for a log row today. "Due" means the date
+ * has arrived or passed and it hasn't been sent, so a day the trigger didn't
+ * run (quota, outage) delays a follow-up instead of skipping it forever.
+ * ISO 'YYYY-MM-DD' strings compare correctly as plain strings.
+ */
+function dueFollowUps_(closeIso, todayIso, handoffSent, lastChanceSent) {
+  var close = isoToDate_(closeIso);
+  if (!close) return null;
+  var handoffDate = fmtISO_(addDays_(close, 1));
+  var lastChanceDate = fmtISO_(addDays_(close, 56)); // close+56 = event+86
+  var deleteDate = fmtISO_(addDays_(close, 60)); // close+60 = event+90
+  return {
+    handoff: todayIso >= handoffDate && !handoffSent,
+    lastChance: todayIso >= lastChanceDate && !lastChanceSent,
+    deleteDate: deleteDate,
+  };
+}
+
 function dailyCheck() {
   var todayIso = fmtISO_(new Date());
-  var rows = getAllLogRows_();
   var actionable = [];
+
+  try {
+    var released = releaseHeldOrders();
+    if (released) actionable.push(released + ' held order(s) released');
+  } catch (err) {
+    logError_('dailyCheck/releaseHeldOrders', err);
+  }
+
+  var rows = getAllLogRows_();
 
   // Handoff fires at close+1 day (event_date+31) and last-chance at
   // close+56 (event_date+86); re-derived from closeDate rather than
   // storing every date, to keep the sheet schema small.
   rows.forEach(function (row) {
-    if (!row.closeDate) return;
-    var close = new Date(row.closeDate + 'T00:00:00');
-    var handoffDate = fmtISO_(addDays_(close, 1));
-    var lastChanceDate = fmtISO_(addDays_(close, 56)); // close+56 = event+86
-    var deleteDate = fmtISO_(addDays_(close, 60)); // close+60 = event+90
+    try {
+      var due = dueFollowUps_(cellIso_(row.closeDate), todayIso,
+        cellTrue_(row.handoffSent), cellTrue_(row.lastChanceSent));
+      if (!due) return;
 
-    if (handoffDate === todayIso && !row.handoffSent) {
-      handleHandoffDue_(row, deleteDate);
-      markLogFlag_(row.sessionId, 'handoffSent', true);
-      actionable.push('Handoff: ' + row.eventName);
-    }
-    if (lastChanceDate === todayIso && !row.lastChanceSent) {
-      handleLastChanceDue_(row, deleteDate);
-      markLogFlag_(row.sessionId, 'lastChanceSent', true);
-      actionable.push('Last-chance: ' + row.eventName);
+      if (due.handoff) {
+        handleHandoffDue_(row, due.deleteDate);
+        markLogFlag_(row.sessionId, 'handoffSent', true);
+        actionable.push('Handoff: ' + row.eventName);
+      }
+      if (due.lastChance) {
+        handleLastChanceDue_(row, due.deleteDate);
+        markLogFlag_(row.sessionId, 'lastChanceSent', true);
+        actionable.push('Last-chance: ' + row.eventName);
+      }
+    } catch (err) {
+      // One bad row must not stop the follow-ups for every other album.
+      logError_('dailyCheck row ' + row.sessionId, err);
     }
   });
 
@@ -44,8 +74,9 @@ function dailyCheck() {
 
 function handleHandoffDue_(row, deleteDateIso) {
   var cfg = CFG_();
-  var deleteDate = fmtLong_(new Date(deleteDateIso + 'T00:00:00'));
-  var subject = row.eventName + ' — your album is ready to keep forever';
+  var deleteDate = fmtLong_(isoToDate_(deleteDateIso));
+  // "KeepsakeDrop" in the subject so findKeepsakeDropDrafts_ nudges about it too.
+  var subject = row.eventName + ' — your KeepsakeDrop album is ready to keep forever';
   var html =
     '<div style="font-family:Georgia,\'Times New Roman\',serif;color:#1a1614;max-width:560px;line-height:1.6">' +
     '<p>Hi there,</p>' +
@@ -73,7 +104,7 @@ function handleHandoffDue_(row, deleteDateIso) {
 
 function handleLastChanceDue_(row, deleteDateIso) {
   var cfg = CFG_();
-  var deleteDate = fmtLong_(new Date(deleteDateIso + 'T00:00:00'));
+  var deleteDate = fmtLong_(isoToDate_(deleteDateIso));
   var cal = CalendarApp.getDefaultCalendar();
   var start = tomorrowAt_(8, 0, 'America/Chicago');
   start.setDate(start.getDate() - 1);
@@ -114,4 +145,44 @@ function notifyDraftsDue_(drafts) {
   var event = cal.createEvent('Send ' + drafts.length + ' KeepsakeDrop emails', start, end,
     { description: lines.join('\n') });
   event.addPopupReminder(0);
+}
+
+/**
+ * Fulfill held orders the owner has fixed on the "Held orders" tab (a
+ * readable fixedEventDate, and fixedEventName if the name was missing).
+ * Run it from the editor after fixing a row; dailyCheck also runs it.
+ * Returns how many orders were released.
+ */
+function releaseHeldOrders() {
+  var sheet = getHeldSheet_();
+  if (sheet.getLastRow() < 2) return 0;
+  var values = sheet.getRange(2, 1, sheet.getLastRow() - 1, HELD_HEADERS.length).getValues();
+  var col = function (name) { return HELD_HEADERS.indexOf(name); };
+  var released = 0;
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    values.forEach(function (row, i) {
+      if (row[col('status')] !== 'held') return;
+      var fixedDate = row[col('fixedEventDate')];
+      var date = isDate_(fixedDate) ? isoToDate_(fixedDate) : parseEventDate_(fixedDate);
+      if (!date) return;
+      var order = JSON.parse(row[col('orderJson')]);
+      var fixedName = String(row[col('fixedEventName')] || '').trim();
+      if (fixedName) { order.eventName = fixedName; order.eventNameProvided = true; }
+      if (!order.eventNameProvided) return;
+      order.eventDate = date;
+      var statusCell = sheet.getRange(i + 2, col('status') + 1);
+      if (isAlreadyFulfilled_(order)) {
+        statusCell.setValue('already fulfilled');
+        return;
+      }
+      fulfillOrder_(order);
+      statusCell.setValue('released ' + fmtISO_(new Date()));
+      released++;
+    });
+  } finally {
+    lock.releaseLock();
+  }
+  return released;
 }
