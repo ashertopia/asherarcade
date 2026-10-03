@@ -15,7 +15,8 @@
 //   accentHex:  6 hex chars, no '#' (required if theme === "custom")
 //   scriptUrl:  the guest-upload Apps Script /exec URL (required)
 //   folderId:   the Drive album folder ID (required)
-//   siteUrl:    override for the drop.html origin (default keepsakedrop.com)
+//   siteUrl:    override for the drop.html origin (default keepsakedrop.com;
+//               only keepsakedrop.com or SIGN_PDF_ALLOWED_ORIGINS are accepted)
 // }
 // Response: application/pdf bytes.
 
@@ -25,6 +26,13 @@ const puppeteer = require('puppeteer-core');
 const REQUIRED_FIELDS = ['eventName', 'eventType', 'scriptUrl', 'folderId'];
 const VALID_TYPES = ['wedding', 'graduation', 'event'];
 const VALID_THEMES = ['gold', 'blush', 'blue', 'sage', 'custom'];
+const DEFAULT_SITE = 'https://keepsakedrop.com';
+
+function allowedOrigins() {
+  const extra = String(process.env.SIGN_PDF_ALLOWED_ORIGINS || '')
+    .split(',').map((o) => o.trim().replace(/\/$/, '')).filter(Boolean);
+  return [DEFAULT_SITE].concat(extra);
+}
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -55,7 +63,14 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const siteUrl = (body.siteUrl || 'https://keepsakedrop.com').replace(/\/$/, '');
+  // The headless browser only ever opens our own drop.html. Extra origins
+  // (e.g. a preview deployment) can be allowed with SIGN_PDF_ALLOWED_ORIGINS,
+  // a comma-separated list like "https://my-preview.vercel.app".
+  const siteUrl = (body.siteUrl || DEFAULT_SITE).replace(/\/$/, '');
+  if (!allowedOrigins().includes(siteUrl)) {
+    res.status(400).json({ error: 'siteUrl must be one of: ' + allowedOrigins().join(', ') });
+    return;
+  }
 
   let browser;
   try {
