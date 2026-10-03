@@ -122,6 +122,61 @@ test('follow-ups fire on or after their day, once', () => {
   assert.strictEqual(F.dueFollowUps_('', '2026-10-16', false, false), null);
 });
 
+test('no follow-ups on or after the delete date (close + 60), even if never sent', () => {
+  const close = '2026-10-15'; // delete 12-14
+  let d = F.dueFollowUps_(close, '2026-12-13', false, false);
+  assert.ok(d.handoff && d.lastChance && !d.expired, 'day before delete: overdue ones still go out');
+  d = F.dueFollowUps_(close, '2026-12-14', false, false);
+  assert.ok(!d.handoff && !d.lastChance && d.expired, 'delete day');
+  d = F.dueFollowUps_('2026-01-01', '2026-10-03', false, false);
+  assert.ok(!d.handoff && !d.lastChance && d.expired, 'long-past row');
+  d = F.dueFollowUps_(close, '2026-11-20', false, false);
+  assert.ok(d.handoff && !d.lastChance, 'handoff a month late but before delete date: still sent');
+});
+
+test('releaseHeldOrders: one bad row does not block the others; owner is emailed', () => {
+  const H = load(['apps-script-fulfillment/Code.gs', 'apps-script-fulfillment/Fulfillment.gs',
+    'apps-script-fulfillment/Sheet.gs', 'apps-script-fulfillment/Digest.gs'], {
+    LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
+    PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => (k === 'OWNER_EMAIL' ? 'owner@example.com' : null) }) },
+    MailApp: { sendEmail(to, subject, body) { mails.push({ to, subject, body }); } },
+  });
+  const mails = [];
+  const hdr = H.HELD_HEADERS;
+  const mk = (sid, name, fixedDate, json, status) => hdr.map((h) => ({ sessionId: sid, eventName: name,
+    fixedEventDate: fixedDate, fixedEventName: '', status: status || 'held', orderJson: json })[h] || '');
+  const order = (sid, name) => JSON.stringify({ sessionId: sid, eventName: name, eventNameProvided: true });
+  const rows = [
+    mk('cs_a', 'A', '2027-06-06', order('cs_a', 'A')),
+    mk('cs_bad', 'Broken', '2027-06-07', '{not json'),
+    mk('cs_boom', 'Boom', '2027-06-08', order('cs_boom', 'Boom')),
+    mk('cs_c', 'C', '2027-06-09', order('cs_c', 'C')),
+    mk('cs_wait', 'Wait', '', order('cs_wait', 'Wait')),
+    mk('cs_done', 'Done', '2027-06-10', order('cs_done', 'Done'), 'released 2026-10-01'),
+  ];
+  const statusCol = hdr.indexOf('status') + 1;
+  const sheet = {
+    getLastRow: () => rows.length + 1,
+    getRange(r, c, n, m) {
+      if (n !== undefined) return { getValues: () => rows.slice(r - 2, r - 2 + n) };
+      assert.strictEqual(c, statusCol);
+      return { setValue: (v) => { rows[r - 2][c - 1] = v; } };
+    },
+  };
+  H.getHeldSheet_ = () => sheet;
+  H.isAlreadyFulfilled_ = () => false;
+  const fulfilled = [];
+  H.fulfillOrder_ = (o) => { if (o.sessionId === 'cs_boom') throw new Error('Drive hiccup'); fulfilled.push(o.sessionId + ':' + H.fmtISO_(o.eventDate)); };
+  assert.strictEqual(H.releaseHeldOrders(), 2);
+  assert.deepStrictEqual(fulfilled, ['cs_a:2027-06-06', 'cs_c:2027-06-09']);
+  const status = (i) => rows[i][statusCol - 1];
+  assert.ok(/^released /.test(status(0)) && /^released /.test(status(3)));
+  assert.ok(/^error: /.test(status(1)) && /^error: Drive hiccup/.test(status(2)));
+  assert.strictEqual(status(4), 'held', 'no fixed date yet: left alone');
+  assert.strictEqual(mails.length, 1);
+  assert.ok(/2 held order/.test(mails[0].subject) && /cs_bad/.test(mails[0].body) && /cs_boom/.test(mails[0].body));
+});
+
 test('logRowIndex_ on a header-only sheet returns -1 instead of throwing', () => {
   // Fake sheet that behaves like Apps Script: zero-row ranges throw.
   const sheet = {
@@ -168,6 +223,30 @@ test('server-side close never earlier than the guest page', () => {
   assert.strictEqual(U.isPastClose_('2026-10-15', new Date('2026-10-16T11:59:00Z')), false, 'still the 15th at UTC-12');
   assert.strictEqual(U.isPastClose_('2026-10-15', new Date('2026-10-16T12:00:00Z')), true);
   assert.strictEqual(U.isPastClose_('', new Date()), false);
+});
+
+test('guest allowlist: log Sheet close dates, EXTRA_FOLDERS overrides with a date only', () => {
+  const props = { LOG_SHEET_ID: 'SHEET', EXTRA_FOLDERS: 'LOGGED_A=2026-12-31, HANDMADE\nLOGGED_B , HANDMADE2=2026-11-01' };
+  const sheetRows = [['sessionId', 'folderId', 'closeDate'], ['cs1', 'LOGGED_A', '2026-10-15'], ['cs2', 'LOGGED_B', "'2026-10-20"], ['cs3', 'LOGGED_C', new Date(2026, 9, 25)]];
+  const store = {};
+  const A = load(['apps-script/Code.gs'], {
+    PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => props[k] || null }) },
+    CacheService: { getScriptCache: () => ({ get: (k) => store[k] || null, put: (k, v) => { store[k] = v; } }) },
+    Session: { getScriptTimeZone: () => 'America/Chicago' },
+    SpreadsheetApp: { openById: () => ({ getSheets: () => [{
+      getLastRow: () => sheetRows.length, getLastColumn: () => 3,
+      getRange: (r, c, n) => ({ getValues: () => sheetRows.slice(r - 1, r - 1 + n) }),
+    }] }) },
+  });
+  const look = (id) => JSON.parse(JSON.stringify(A.lookupFolder_(id)));
+  assert.deepStrictEqual(look('LOGGED_A'), { configured: true, found: true, closeDate: '2026-12-31' }, 'dated EXTRA entry overrides the Sheet');
+  assert.deepStrictEqual(look('LOGGED_B'), { configured: true, found: true, closeDate: '2026-10-20' }, 'bare EXTRA entry keeps the Sheet date');
+  assert.deepStrictEqual(look('LOGGED_C'), { configured: true, found: true, closeDate: '2026-10-25' }, 'Date cell');
+  assert.deepStrictEqual(look('HANDMADE'), { configured: true, found: true, closeDate: '' });
+  assert.deepStrictEqual(look('HANDMADE2'), { configured: true, found: true, closeDate: '2026-11-01' });
+  assert.deepStrictEqual(look('RANDOM'), { configured: true, found: false });
+  props.LOG_SHEET_ID = ''; props.EXTRA_FOLDERS = '';
+  assert.deepStrictEqual(look('ANY'), { configured: false }, 'unconfigured = old open behaviour');
 });
 
 // ── drop.html script URL allowlist ──
