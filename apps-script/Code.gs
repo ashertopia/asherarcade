@@ -26,6 +26,9 @@
  *                    accepted until the end of its closeDate.
  *   EXTRA_FOLDERS  — hand-made albums, comma or newline separated, each
  *                    "FOLDER_ID" (no close date) or "FOLDER_ID=YYYY-MM-DD".
+ *                    A dated entry also overrides a logged album's closeDate
+ *                    (e.g. to extend one event's window); a bare ID never
+ *                    removes a logged album's close date.
  * With neither set (and LOCKED_FOLDER_ID empty) the script behaves exactly as
  * before and accepts any folder ID — so deploying this version can't break a
  * live event link before the allowlist is configured.
@@ -204,11 +207,6 @@ function getAllowlist_(forceRefresh) {
   if (cached) return JSON.parse(cached);
 
   var list = {};
-  String(extra || '').split(/[\s,]+/).forEach(function (entry) {
-    if (!entry) return;
-    var parts = entry.split('=');
-    list[parts[0]] = parts[1] || '';
-  });
   if (sheetId) {
     var sheet = SpreadsheetApp.openById(sheetId).getSheets()[0];
     var lastRow = sheet.getLastRow();
@@ -226,6 +224,18 @@ function getAllowlist_(forceRefresh) {
       });
     }
   }
+  // EXTRA_FOLDERS is applied last, so it can extend or shorten a logged
+  // album's window: "ID=YYYY-MM-DD" overrides the Sheet's closeDate. A bare
+  // "ID" only adds a folder that isn't logged; it never removes a logged
+  // album's close date.
+  String(extra || '').split(/[\s,]+/).forEach(function (entry) {
+    if (!entry) return;
+    var parts = entry.split('=');
+    var id = parts[0];
+    var date = parts[1] || '';
+    if (date) list[id] = date;
+    else if (!Object.prototype.hasOwnProperty.call(list, id)) list[id] = '';
+  });
   var json = JSON.stringify(list);
   if (json.length < 90000) cache.put('allowlist_v1', json, 300);
   return list;

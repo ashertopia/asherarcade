@@ -46,7 +46,7 @@ albums and stops taking uploads after each album's close date:
 | Property | Value |
 |---|---|
 | `LOG_SHEET_ID` | the fulfillment script's `LOG_SHEET_ID` (the "KeepsakeDrop Fulfillment Log" Sheet). Every `folderId` in it is accepted through the end of its `closeDate` |
-| `EXTRA_FOLDERS` | optional, for albums made by hand: `FOLDER_ID` or `FOLDER_ID=YYYY-MM-DD`, comma or newline separated |
+| `EXTRA_FOLDERS` | optional, for albums made by hand: `FOLDER_ID` or `FOLDER_ID=YYYY-MM-DD`, comma or newline separated. A dated entry **overrides** the log Sheet's `closeDate` for that folder (use it to extend or shorten one event's window); a bare `FOLDER_ID` only adds an unlogged folder and never removes a logged close date |
 
 With neither set, the script accepts any folder ID as before. That keeps a
 redeploy from breaking a live event link, but the protection is off until you
