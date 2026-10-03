@@ -36,11 +36,33 @@ existing deployment ID so the URL — and printed QR codes — don't change).
 
 Follow the numbered steps in the comment at the top of `Code.gs`.
 
+## Which folders it accepts
+
+One deployment serves every KeepsakeDrop event, and each event's folder ID is
+in the QR code on its public table sign. Set these Script Properties
+(Project Settings → Script Properties) so the script only writes to known
+albums and stops taking uploads after each album's close date:
+
+| Property | Value |
+|---|---|
+| `LOG_SHEET_ID` | the fulfillment script's `LOG_SHEET_ID` (the "KeepsakeDrop Fulfillment Log" Sheet). Every `folderId` in it is accepted through the end of its `closeDate` |
+| `EXTRA_FOLDERS` | optional, for albums made by hand: `FOLDER_ID` or `FOLDER_ID=YYYY-MM-DD`, comma or newline separated. A dated entry **overrides** the log Sheet's `closeDate` for that folder (use it to extend or shorten one event's window); a bare `FOLDER_ID` only adds an unlogged folder and never removes a logged close date |
+
+With neither set, the script accepts any folder ID as before. That keeps a
+redeploy from breaking a live event link, but the protection is off until you
+set them. Uploads are also checked by their first bytes (JPEG, PNG, GIF,
+WebP, HEIC only) and rate-limited per folder; errors come back as short
+codes (`closed`, `unknown folder`, `unsupported file`, `rate limited`,
+`server error`) with details only in the execution log.
+
+The script now reads a Sheet, so the first run after redeploying asks for
+Google Sheets permission. Approve it from the editor (run any function once).
+
 ## After deploying (either option)
 
 1. Create a Drive folder for the event, copy its folder ID.
 2. For paid/done-for-you events, paste that ID into `LOCKED_FOLDER_ID` in
    `Code.gs` before deploying, so the script only ever writes to that folder.
-3. Open `keepsakedrop.html` with no URL parameters, enter the `/exec` URL and
-   folder ID, and generate the guest link + QR code.
+3. Open `https://keepsakedrop.com/drop.html` with no URL parameters, enter the
+   `/exec` URL and folder ID, and generate the guest link + QR code.
 4. Test end-to-end from a phone before the event.

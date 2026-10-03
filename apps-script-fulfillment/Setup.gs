@@ -33,6 +33,10 @@ function checkConfig() {
   } else {
     Logger.log('All required Script Properties are set.');
   }
+  Logger.log('PAYMENT_LINK_ID = ' + cfg.PAYMENT_LINK_ID + ' (must match the live Payment Link, or every order is ignored).');
+  Logger.log('AUTO_SHARE_ALBUM = ' + cfg.AUTO_SHARE_ALBUM + ' (set the property to true to share album folders automatically).');
+  Logger.log('LOG_SHEET_ID = ' + (cfg.LOG_SHEET_ID || '(not created yet; first order or testFulfillOrder creates it)') +
+    ' — copy this into the guest-upload script\'s Script Properties too.');
   return { ok: missing.length === 0, missing: missing };
 }
 
@@ -57,7 +61,7 @@ function testFulfillOrder() {
   };
   var order = extractOrder_(fakeSession);
   if (isAlreadyFulfilled_(order)) {
-    Logger.log('Already fulfilled (delete the "Fake Test Party — KeepsakeDrop Album" Drive folder to re-test).');
+    Logger.log('Already fulfilled (session ' + order.sessionId + ').');
     return;
   }
   var result = fulfillOrder_(order);
