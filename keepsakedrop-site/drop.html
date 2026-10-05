@@ -1343,7 +1343,7 @@ async function startUpload() {
     return;
   }
   if (uploaded === 0 && failed > 0) {
-    showError('Upload failed. Please check your connection and tap Retry.');
+    showError('Upload failed. Please check your connection and tap Retry.' + (lastUploadError ? ' (' + lastUploadError + ')' : ''));
     selectedFiles = failedFiles;
     btnSubmit.disabled = false;
     btnSubmit.textContent = `Retry ${failed} Photo${failed !== 1 ? 's' : ''}`;
@@ -1367,6 +1367,9 @@ async function startUpload() {
 // Wi-Fi hiccup shouldn't lose a wedding photo. Returns 'ok', 'closed',
 // 'rejected' (the server will never take it; don't retry) or 'failed'.
 const NO_RETRY = ['unknown folder', 'missing folder', 'unsupported file', 'bad request', 'request too large'];
+// Last reason an upload didn't go through, shown in small print on failure so
+// a guest's screenshot tells us what actually happened.
+let lastUploadError = '';
 async function sendPhoto(file, data, mime, guestName) {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -1379,11 +1382,16 @@ async function sendPhoto(file, data, mime, guestName) {
           photos: [{ filename: file.name, type: mime, data: data }]
         })
       });
-      const out = await res.json();
+      const text = await res.text();
+      let out = null;
+      try { out = JSON.parse(text); } catch (parseErr) {
+        lastUploadError = 'HTTP ' + res.status + ', not JSON: ' + text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
+      }
+      if (out && !(out.ok && out.saved > 0)) lastUploadError = out.error || 'saved 0';
       if (out && out.ok && out.saved > 0) return 'ok';
       if (out && out.error === 'closed') return 'closed'; // event over — retrying won't help
       if (out && (NO_RETRY.indexOf(out.error) !== -1 || (out.ok && !out.saved))) return 'rejected';
-    } catch(e) { /* network error — retry */ }
+    } catch(e) { lastUploadError = 'network: ' + (e && e.message || e); /* retry */ }
     if (attempt < 2) await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
   }
   return 'failed';
