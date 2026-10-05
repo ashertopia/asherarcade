@@ -180,6 +180,11 @@
     letter-spacing: 0.3em; text-transform: uppercase; text-decoration: none;
     cursor: pointer;
   }
+  .date-input {
+    width: 100%; padding: 13px 14px; border: 1px solid var(--border); border-radius: 2px;
+    background: var(--white); color: var(--ink); font-family: 'Jost', sans-serif; font-size: 16px;
+  }
+  .btn-checkout.disabled { opacity: 0.45; pointer-events: none; animation: none; }
   @keyframes shimmer { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
   .checkout-note {
     margin-top: 12px; text-align: center; font-size: 12px;
@@ -288,10 +293,16 @@
     <p class="preview-note">A letter-size sign like this — in your colors, with your names — comes print-ready with every booking.</p>
   </div>
 
-  <a class="btn-checkout" id="btn-checkout" href="#">Continue to Secure Checkout</a>
+  <div class="card">
+    <div class="step-label">3 &middot; Your event date</div>
+    <input type="date" class="date-input" id="event-date" required aria-label="Event date">
+    <p class="preview-note" id="date-note">Pick the day of your event — guests can keep sharing photos for 30 days after it.</p>
+  </div>
+
+  <a class="btn-checkout disabled" id="btn-checkout" href="#" aria-disabled="true">Continue to Secure Checkout</a>
   <p class="checkout-note">
-    Checkout is handled by Stripe. It will ask for your event name and date —
-    that&rsquo;s everything we need to build your KeepsakeDrop.
+    Checkout is handled by Stripe. It will ask for your event name &mdash;
+    that&rsquo;s everything else we need to build your KeepsakeDrop.
   </p>
 
   <p class="footer">KeepsakeDrop &middot; Asher Arcade &copy; 2026 &middot; a Scott Asher LLC business<br><br>
@@ -352,13 +363,19 @@ function refresh() {
   document.getElementById('ms-eyebrow').textContent = s.eyebrow;
   document.getElementById('ms-title').textContent   = s.title;
   document.getElementById('ms-sub').textContent     = s.sub;
-  // The color choice travels to Stripe in the checkout's reference ID,
-  // e.g. wedding_blush or wedding_c8E6A8A for a custom color.
+  // Color and date travel to Stripe in the checkout's reference ID, e.g.
+  // wedding_blush_20270606 or wedding_c8E6A8A_20270606 for a custom color.
+  // A picked date means the customer never has to type one at checkout.
   const code = theme === 'custom'
     ? eventType + '_c' + currentHex().slice(1).toUpperCase()
     : eventType + '_' + theme;
-  document.getElementById('btn-checkout').href =
-    STRIPE_LINK + '?client_reference_id=' + encodeURIComponent(code);
+  const date = document.getElementById('event-date').value; // YYYY-MM-DD or ''
+  const btn = document.getElementById('btn-checkout');
+  btn.classList.toggle('disabled', !date);
+  btn.setAttribute('aria-disabled', date ? 'false' : 'true');
+  btn.href = date
+    ? STRIPE_LINK + '?client_reference_id=' + encodeURIComponent(code + '_' + date.replace(/-/g, ''))
+    : '#';
 }
 
 // Draw a real QR (of the homepage) on the sign preview; if the QR library
@@ -417,6 +434,21 @@ document.getElementById('swatch-row').addEventListener('click', e => {
 });
 
 document.getElementById('custom-color').addEventListener('input', refresh);
+
+(function () {
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+  const input = document.getElementById('event-date');
+  input.min = local; // no past dates
+  input.addEventListener('input', refresh);
+  input.addEventListener('change', refresh);
+})();
+document.getElementById('btn-checkout').addEventListener('click', e => {
+  if (!document.getElementById('event-date').value) {
+    e.preventDefault();
+    document.getElementById('event-date').focus();
+  }
+});
 
 refresh();
 </script>
