@@ -1234,6 +1234,14 @@ function renderPreviews() {
   for (let i = 0; i < show; i++) {
     const img = document.createElement('img');
     img.className = 'thumb';
+    // Chrome/Firefox can't draw HEIC; show a plain photo tile instead of a
+    // broken-image icon (the photo itself still uploads).
+    img.onerror = () => {
+      const tile = document.createElement('div');
+      tile.className = 'thumb-count';
+      tile.textContent = '\uD83D\uDCF7';
+      img.replaceWith(tile);
+    };
     img.src = URL.createObjectURL(selectedFiles[i]);
     previewStrip.appendChild(img);
   }
@@ -1413,7 +1421,7 @@ function encodeScaled(img, max, quality) {
 // Browsers that can't decode HEIC (Chrome, Firefox) get the original file
 // sent as-is instead; the Apps Script checks it is really HEIC by its bytes,
 // and Drive previews it. Capped so the request stays under the script's limit.
-const MAX_RAW_HEIC_BYTES = 5.5 * 1024 * 1024;
+const MAX_RAW_HEIC_BYTES = 10 * 1024 * 1024; // the Apps Script accepts up to 16M base64 chars
 
 function readAsBase64(file) {
   return new Promise((resolve, reject) => {

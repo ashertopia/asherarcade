@@ -276,6 +276,7 @@ function holdOrder_(order, event) {
   var problems = [];
   if (!order.eventNameProvided) problems.push('no event name');
   if (!order.eventDate) problems.push('event date "' + order.eventDateRaw + '" could not be read');
+  if (order.eventDatePast) problems.push('event date ' + fmtLong_(order.eventDate) + ' is in the past (typo?)');
   MailApp.sendEmail(cfg.OWNER_EMAIL, 'KeepsakeDrop: order HELD — ' + problems.join(', '),
     'A paid KeepsakeDrop order was received but not fulfilled yet: ' + problems.join(', ') + '.\n\n' +
     'Event name: ' + order.eventName + '\n' +

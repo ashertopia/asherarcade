@@ -50,6 +50,7 @@ test('event date parsing: accepted formats', () => {
     'Sat Jun 6 2027': '2027-06-06', '6 June 2027': '2027-06-06', '6th of': null,
     '25/12/2026': '2026-12-25', '12/25/2026': '2026-12-25', ' 10/3/2026 ': '2026-10-03',
     'Dec. 31, 2026': '2026-12-31', '2/29/2028': '2028-02-29',
+    '11152026': '2026-11-15', '20261115': '2026-11-15', '10251975': null, '13152026': null,
   };
   for (const [input, want] of Object.entries(cases)) {
     const p = F.parseEventDateParts_(input);
@@ -63,6 +64,15 @@ test('event date parsing: rejected (order is held instead of guessed)', () => {
     '0/5/2026', '6/6/1999', 'June 31 2027', 'Octember 3 2026', '2027-13-01']) {
     assert.strictEqual(F.parseEventDateParts_(bad), null, JSON.stringify(bad));
   }
+});
+
+test('past event dates (more than a week ago) are flagged; recent and future are not', () => {
+  const now = new Date(2026, 9, 5, 15, 0);
+  assert.strictEqual(F.isPastEventDate_(new Date(2025, 10, 15), now), true);   // typo'd year
+  assert.strictEqual(F.isPastEventDate_(new Date(2026, 8, 27), now), true);    // 8 days ago
+  assert.strictEqual(F.isPastEventDate_(new Date(2026, 8, 28), now), false);   // 7 days ago
+  assert.strictEqual(F.isPastEventDate_(new Date(2026, 9, 5), now), false);    // today
+  assert.strictEqual(F.isPastEventDate_(new Date(2026, 10, 15), now), false);  // future
 });
 
 test('parseEventDate_ gives local midnight that formats back to the same day', () => {
