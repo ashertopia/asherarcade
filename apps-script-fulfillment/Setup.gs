@@ -80,3 +80,23 @@ function testFulfillOrder() {
   var result = fulfillOrder_(order);
   Logger.log(JSON.stringify(result, null, 2));
 }
+
+/**
+ * Re-render just the table sign into the "Fake Test Party" test folder,
+ * e.g. after a sign-pdf fix, without creating another fake order.
+ */
+function testSignPdf() {
+  var it = DriveApp.getFoldersByName(albumFolderName_('Fake Test Party'));
+  if (!it.hasNext()) throw new Error('Run testFulfillOrder first; no Fake Test Party folder found.');
+  var folder = it.next();
+  var order = extractOrder_({
+    id: 'cs_test_sign_only',
+    client_reference_id: 'event_blush',
+    custom_fields: [
+      { key: 'event_name', text: { value: 'Fake Test Party' } },
+      { key: 'event_date', text: { value: '12/31/2026' } },
+    ],
+  });
+  attachSignPdf_(folder, order, '');
+  Logger.log('Sign PDF added to ' + folder.getUrl());
+}

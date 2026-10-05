@@ -20,6 +20,16 @@
 // }
 // Response: application/pdf bytes.
 
+// @sparticuz/chromium only unpacks the shared libraries Chromium needs
+// (libnss3 and friends) when it recognises an AWS Lambda Node 20/22 runtime
+// from AWS_EXECUTION_ENV or AWS_LAMBDA_JS_RUNTIME. Vercel sets neither, so
+// without this the browser dies with "libnss3.so: cannot open shared object
+// file". Vercel functions run on Amazon Linux 2023, which is what the
+// 'nodejs22.x' hint selects. Must be set before the require below, because
+// the package configures LD_LIBRARY_PATH when it loads.
+if (!process.env.AWS_EXECUTION_ENV && !process.env.AWS_LAMBDA_JS_RUNTIME) {
+  process.env.AWS_LAMBDA_JS_RUNTIME = 'nodejs22.x';
+}
 const chromium = require('@sparticuz/chromium');
 const puppeteer = require('puppeteer-core');
 
