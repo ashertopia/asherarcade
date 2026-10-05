@@ -82,6 +82,21 @@ test('parseEventDate_ gives local midnight that formats back to the same day', (
 
 const LINK = 'plink_live';
 const ev = (type, s) => ({ id: 'evt_x', type, data: { object: Object.assign({ id: 'cs_1', payment_link: LINK, status: 'complete' }, s) } });
+test('extractOrder_: date picked on book.html (client_reference_id suffix) wins over typed text', () => {
+  const mk = (ref, typed) => F.extractOrder_({ id: 'cs', client_reference_id: ref, customer_details: { email: 'a@b.c' },
+    custom_fields: [{ key: 'event_name', text: { value: 'Emma & Jake' } }].concat(typed ? [{ key: 'event_date', text: { value: typed } }] : []) });
+  let o = mk('wedding_sage_20270606');
+  assert.strictEqual(F.fmtISO_(o.eventDate), '2027-06-06');
+  assert.strictEqual(o.type, 'wedding'); assert.strictEqual(o.theme, 'sage');
+  o = mk('event_cFCD1FF_20261115', '10251975');
+  assert.strictEqual(F.fmtISO_(o.eventDate), '2026-11-15');
+  assert.strictEqual(o.theme, 'custom'); assert.strictEqual(o.accentHex, 'FCD1FF');
+  o = mk('wedding_blush', '06/06/2027'); // old link, typed date still works
+  assert.strictEqual(F.fmtISO_(o.eventDate), '2027-06-06'); assert.strictEqual(o.theme, 'blush');
+  o = mk('wedding_blush'); // no date anywhere -> held
+  assert.strictEqual(o.eventDate, null);
+});
+
 test('Stripe event routing', () => {
   const c = (e) => F.classifyEvent_(e, LINK).action;
   assert.strictEqual(c(ev('checkout.session.completed', { payment_status: 'paid' })), 'fulfill');

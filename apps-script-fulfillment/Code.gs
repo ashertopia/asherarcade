@@ -204,12 +204,22 @@ function extractOrder_(session) {
   });
 
   var eventName = fields.event_name || 'Untitled Event';
-  var eventDateRaw = fields.event_date || '';
-  var eventDate = parseEventDate_(eventDateRaw);
+
+  // book.html appends the date picked on its calendar as _YYYYMMDD
+  // ("wedding_sage_20270606"). Prefer it: nothing typed, nothing to misread.
+  // The typed Stripe field is only a fallback for older checkout links.
+  var ref = session.client_reference_id || 'event_gold';
+  var refDate = null;
+  var dm = ref.match(/^(.+)_(\d{8})$/);
+  if (dm) {
+    refDate = parseEventDate_(dm[2]);
+    ref = dm[1];
+  }
+  var eventDateRaw = refDate ? dm[2] : (fields.event_date || '');
+  var eventDate = refDate || parseEventDate_(eventDateRaw);
   var customerEmail = (session.customer_details && session.customer_details.email) || session.customer_email || '';
   var albumEmail = fields.album_email || customerEmail;
 
-  var ref = session.client_reference_id || 'event_gold';
   var type, theme, accentHex;
   var customMatch = ref.match(/^([a-z]+)_c([0-9A-Fa-f]{6})$/);
   if (customMatch) {
