@@ -46,9 +46,11 @@ var LOCKED_FOLDER_ID = '';
 // close date from LOG_SHEET_ID / EXTRA_FOLDERS.
 var UPLOAD_CLOSE_DATE = '';
 
-// Reject any single request bigger than ~8 MB of base64 (one compressed
-// photo is typically 200-600 KB, so this is generous).
-var MAX_BODY_CHARS = 8 * 1024 * 1024;
+// Reject any single request bigger than 16M base64 chars (~12 MB of file).
+// Compressed JPEGs are 200-600 KB; the headroom is for HEIC Live/Motion
+// Photos that a non-Safari browser can't re-encode and sends as-is (the page
+// caps those at 10 MB).
+var MAX_BODY_CHARS = 16 * 1024 * 1024;
 
 // drop.html sends one photo per request; allow a few for older pages.
 var MAX_PHOTOS_PER_REQUEST = 10;
