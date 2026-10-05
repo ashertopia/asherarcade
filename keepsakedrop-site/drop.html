@@ -1205,8 +1205,17 @@ dropZone.addEventListener('drop', e => {
 
 const MAX_PHOTOS = 30;
 
+// HEIC/HEIF (iPhone and many Android cameras, including Live/Motion Photos)
+// often arrives with an empty file.type outside Safari, so fall back to the
+// file name rather than silently dropping the photo.
+const HEIC_RE = /\.(heic|heif)$/i;
+function isHeic(f) { return /image\/hei[cf]/i.test(f.type) || HEIC_RE.test(f.name || ''); }
+function isImageFile(f) {
+  return (f.type || '').startsWith('image/') || isHeic(f) || /\.(jpe?g|png|gif|webp)$/i.test(f.name || '');
+}
+
 function handleFiles(files) {
-  selectedFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+  selectedFiles = Array.from(files).filter(isImageFile);
   errorMsg.classList.remove('show');
   if (selectedFiles.length > MAX_PHOTOS) {
     selectedFiles = selectedFiles.slice(0, MAX_PHOTOS);
@@ -1302,7 +1311,7 @@ async function startUpload() {
       continue;
     }
 
-    const result = await sendPhoto(file, data, guestName);
+    const result = await sendPhoto(file, data.data, data.mime, guestName);
     if (result === 'ok') uploaded++;
     else if (result === 'closed') { closed = true; break; }   // event over: stop sending
     else if (result === 'rejected') skipped++;               // server refused this file
@@ -1358,7 +1367,7 @@ async function startUpload() {
 // Wi-Fi hiccup shouldn't lose a wedding photo. Returns 'ok', 'closed',
 // 'rejected' (the server will never take it; don't retry) or 'failed'.
 const NO_RETRY = ['unknown folder', 'missing folder', 'unsupported file', 'bad request', 'request too large'];
-async function sendPhoto(file, data, guestName) {
+async function sendPhoto(file, data, mime, guestName) {
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const res = await fetch(scriptUrl, {
@@ -1367,7 +1376,7 @@ async function sendPhoto(file, data, guestName) {
         body: JSON.stringify({
           folder: folderId,
           name:   guestName,
-          photos: [{ filename: file.name, type: 'image/jpeg', data: data }]
+          photos: [{ filename: file.name, type: mime, data: data }]
         })
       });
       const out = await res.json();
@@ -1393,6 +1402,21 @@ function encodeScaled(img, max, quality) {
   return canvas.toDataURL('image/jpeg', quality).split(',')[1];
 }
 
+// Browsers that can't decode HEIC (Chrome, Firefox) get the original file
+// sent as-is instead; the Apps Script checks it is really HEIC by its bytes,
+// and Drive previews it. Capped so the request stays under the script's limit.
+const MAX_RAW_HEIC_BYTES = 5.5 * 1024 * 1024;
+
+function readAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(String(r.result).split(',')[1]);
+    r.onerror = () => reject(new Error('unreadable file'));
+    r.readAsDataURL(file);
+  });
+}
+
+// Resolves { data: base64, mime }.
 function compressAndEncode(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -1402,9 +1426,16 @@ function compressAndEncode(file) {
       // ~700k base64 ≈ 520KB JPEG; anything bigger gets a second pass
       if (data.length > 700000) data = encodeScaled(img, 1280, 0.78);
       URL.revokeObjectURL(url);
-      resolve(data);
+      resolve({ data, mime: 'image/jpeg' });
     };
-    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('unreadable image')); };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      if (isHeic(file) && file.size <= MAX_RAW_HEIC_BYTES) {
+        readAsBase64(file).then(data => resolve({ data, mime: 'image/heic' }), reject);
+      } else {
+        reject(new Error('unreadable image'));
+      }
+    };
     img.src = url;
   });
 }
