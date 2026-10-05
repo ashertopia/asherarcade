@@ -175,13 +175,23 @@ function releaseHeldOrders() {
       // retried automatically, because fulfillOrder_ may already have made a
       // folder or draft; the owner checks, then sets it back to "held".
       try {
+        var asDate = function (v) { return isDate_(v) ? isoToDate_(v) : parseEventDate_(v); };
         var fixedDate = row[col('fixedEventDate')];
-        var date = isDate_(fixedDate) ? isoToDate_(fixedDate) : parseEventDate_(fixedDate);
-        if (!date) return;
+        var nameCell = row[col('fixedEventName')];
+        var date = asDate(fixedDate);
+        // A date typed one column over (into fixedEventName) is still a date.
+        if (!date && asDate(nameCell)) { date = asDate(nameCell); nameCell = ''; }
+        if (!date) {
+          console.log('Held order ' + row[col('sessionId')] + ' (' + row[col('eventName')] + ') skipped: no readable date in fixedEventDate.');
+          return;
+        }
         var order = JSON.parse(row[col('orderJson')]);
-        var fixedName = String(row[col('fixedEventName')] || '').trim();
+        var fixedName = String(nameCell || '').trim();
         if (fixedName) { order.eventName = fixedName; order.eventNameProvided = true; }
-        if (!order.eventNameProvided) return;
+        if (!order.eventNameProvided) {
+          console.log('Held order ' + row[col('sessionId')] + ' skipped: needs a name in fixedEventName.');
+          return;
+        }
         order.eventDate = date;
         if (isAlreadyFulfilled_(order)) {
           statusCell.setValue('already fulfilled');
