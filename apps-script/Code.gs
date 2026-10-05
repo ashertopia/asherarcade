@@ -135,7 +135,9 @@ function doPost(e) {
   } catch (err) {
     // Details go to the execution log, not to whoever sent the request.
     console.error('doPost: ' + (err && err.stack || err));
-    return jsonOut({ ok: false, error: 'server error' });
+    // The one-line message (no stack) is enough to diagnose from a guest's
+    // screenshot; drop.html shows it in brackets after "Upload failed".
+    return jsonOut({ ok: false, error: 'server error', detail: String(err && err.message || err).slice(0, 160) });
   }
 }
 

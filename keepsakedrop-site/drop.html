@@ -1387,7 +1387,7 @@ async function sendPhoto(file, data, mime, guestName) {
       try { out = JSON.parse(text); } catch (parseErr) {
         lastUploadError = 'HTTP ' + res.status + ', not JSON: ' + text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80);
       }
-      if (out && !(out.ok && out.saved > 0)) lastUploadError = out.error || 'saved 0';
+      if (out && !(out.ok && out.saved > 0)) lastUploadError = (out.error || 'saved 0') + (out.detail ? ': ' + out.detail : '');
       if (out && out.ok && out.saved > 0) return 'ok';
       if (out && out.error === 'closed') return 'closed'; // event over — retrying won't help
       if (out && (NO_RETRY.indexOf(out.error) !== -1 || (out.ok && !out.saved))) return 'rejected';
