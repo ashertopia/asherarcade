@@ -149,7 +149,10 @@ function handleStripeEvent_(event, cfg) {
     return { ok: true, ignored: 'already fulfilled', sessionId: order.sessionId };
   }
 
-  if (!order.eventDate || !order.eventNameProvided) {
+  // A date more than a week gone is almost always a typo'd year, and taking
+  // it would close the guest link before the event. Hold it for the owner.
+  order.eventDatePast = !!order.eventDate && isPastEventDate_(order.eventDate, new Date());
+  if (!order.eventDate || !order.eventNameProvided || order.eventDatePast) {
     holdOrder_(order, event);
     return { ok: true, held: true, sessionId: order.sessionId };
   }
@@ -264,6 +267,11 @@ function parseEventDateParts_(text) {
 
   if ((mt = s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})$/))) {
     y = +mt[1]; m = +mt[2]; d = +mt[3];
+  } else if ((mt = s.match(/^(\d{2})(\d{2})(\d{4})$/))) {
+    // Bare digits, typed on a phone keypad: MMDDYYYY, or YYYYMMDD when the
+    // first pair can't be a month ("20261115").
+    if (+mt[1] <= 12) { m = +mt[1]; d = +mt[2]; y = +mt[3]; }
+    else { y = +(mt[1] + mt[2]); m = +mt[3].slice(0, 2); d = +mt[3].slice(2); }
   } else if ((mt = s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2}|\d{4})$/))) {
     var a = +mt[1], b = +mt[2];
     y = +mt[3]; if (mt[3].length === 2) y += 2000;
@@ -291,6 +299,12 @@ function parseEventDateParts_(text) {
   var check = new Date(Date.UTC(y, m - 1, d));
   if (check.getUTCMonth() !== m - 1 || check.getUTCDate() !== d) return null; // e.g. Feb 30
   return { y: y, m: m, d: d };
+}
+
+/** More than 7 days before today. Pure — unit-tested. */
+function isPastEventDate_(eventDate, now) {
+  var cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  return eventDate.getTime() < cutoff.getTime();
 }
 
 /** Date (midnight, script time zone) or null. */
