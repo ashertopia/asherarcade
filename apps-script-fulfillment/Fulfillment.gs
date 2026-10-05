@@ -206,7 +206,8 @@ function escapeHtml_(s) {
 }
 
 function stripHtml_(html) {
-  return html.replace(/<[^>]+>/g, '').replace(/&#\d+;/g, '').replace(/\s+\n/g, '\n').trim();
+  return html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]+>/g, '').replace(/&#\d+;/g, '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
 function createTomorrowReminderEvent_(order, folder, dates, share) {
