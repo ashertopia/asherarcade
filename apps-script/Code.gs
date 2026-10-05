@@ -135,9 +135,7 @@ function doPost(e) {
   } catch (err) {
     // Details go to the execution log, not to whoever sent the request.
     console.error('doPost: ' + (err && err.stack || err));
-    // The one-line message (no stack) is enough to diagnose from a guest's
-    // screenshot; drop.html shows it in brackets after "Upload failed".
-    return jsonOut({ ok: false, error: 'server error', detail: String(err && err.message || err).slice(0, 160) });
+    return jsonOut({ ok: false, error: 'server error' });
   }
 }
 
@@ -183,16 +181,7 @@ function isPastClose_(closeIso, now) {
  */
 function lookupFolder_(folderId) {
   var has = function (l) { return Object.prototype.hasOwnProperty.call(l, folderId); };
-  var list;
-  try {
-    list = getAllowlist_(false);
-  } catch (err) {
-    // A bad LOG_SHEET_ID (typo, deleted Sheet, missing permission) must never
-    // cost a guest their upload: fail open, as if no allowlist were set, and
-    // leave the reason in the execution log for the owner.
-    console.error('allowlist unavailable, accepting upload: ' + (err && err.message || err));
-    return { configured: false };
-  }
+  var list = getAllowlist_(false);
   if (!list) return { configured: false };
   if (!has(list)) {
     // A just-fulfilled order may not be in the cached copy yet. Re-read the
@@ -200,7 +189,7 @@ function lookupFolder_(folderId) {
     var cache = CacheService.getScriptCache();
     if (!cache.get('allowlist_refreshed')) {
       cache.put('allowlist_refreshed', '1', 60);
-      try { list = getAllowlist_(true); } catch (err) { return { configured: false }; }
+      list = getAllowlist_(true);
     }
   }
   if (!has(list)) return { configured: true, found: false };
