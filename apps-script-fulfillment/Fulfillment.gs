@@ -60,7 +60,7 @@ function fulfillOrder_(order) {
 
   var share = shareAlbum_(folder, order);
 
-  var draft = createDeliveryDraft_(order, folder, guestUrl);
+  var draft = createDeliveryDraft_(order, folder, guestUrl, signPdfOk);
 
   createTomorrowReminderEvent_(order, folder, dates, share);
 
@@ -173,7 +173,7 @@ function attachSignPdf_(folder, order, guestUrl) {
   folder.createFile(blob);
 }
 
-function createDeliveryDraft_(order, folder, guestUrl) {
+function createDeliveryDraft_(order, folder, guestUrl, signPdfOk) {
   var folderUrl = 'https://drive.google.com/drive/folders/' + folder.getId();
   var subject = order.eventName + ' — your KeepsakeDrop album is ready 🎉';
   var html =
@@ -182,8 +182,12 @@ function createDeliveryDraft_(order, folder, guestUrl) {
     '<p>Thank you for booking KeepsakeDrop! Everything for <strong>' + escapeHtml_(order.eventName) + '</strong> is set up.</p>' +
     '<p style="font-size:12px;letter-spacing:2px;color:#b58aa5;margin-bottom:4px"><strong>YOUR ALBUM</strong></p>' +
     '<p style="margin-top:0"><a href="' + folderUrl + '" style="color:#b5478a"><strong>Open your photo album folder →</strong></a><br>' +
-    'Photos guests upload land here live. Inside you’ll also find your printable table sign (' +
-    '"PRINT ME — ' + escapeHtml_(order.eventName) + ' Table Sign.pdf") and your "Read Me" doc with how to keep the album forever.</p>' +
+    'Photos guests upload land here live. ' +
+    // Never tell the customer the sign is there when sign-pdf failed; the owner email covers that case.
+    (signPdfOk
+      ? 'Inside you’ll also find your printable table sign ("PRINT ME — ' + escapeHtml_(order.eventName) + ' Table Sign.pdf") and your "Read Me" doc with how to keep the album forever.'
+      : 'Inside you’ll also find your "Read Me" doc with how to keep the album forever, and your printable table sign will be added to the folder shortly.') +
+    '</p>' +
     '<p style="font-size:12px;letter-spacing:2px;color:#b58aa5;margin-bottom:4px"><strong>YOUR GUEST LINK</strong></p>' +
     '<p style="margin-top:0">Guests scan the QR code on the table sign (or tap this link) and their photos land straight in your album — no app, no accounts:<br>' +
     '<a href="' + guestUrl + '" style="color:#b5478a">' + guestUrl + '</a></p>' +
