@@ -3,6 +3,19 @@
  * (select the function in the toolbar dropdown, click Run) — see README.md.
  */
 
+/**
+ * One click after the two secret Script Properties are set: checks config,
+ * installs the 8 AM trigger, and runs a fake order end to end. Read the
+ * execution log, then check Drive for "Fake Test Party — KeepsakeDrop Album".
+ */
+function finishSetup() {
+  var cfg = checkConfig();
+  if (!cfg.ok) throw new Error('Set these Script Properties first: ' + cfg.missing.join(', '));
+  installDailyTrigger();
+  testFulfillOrder();
+  Logger.log('Setup finished. LOG_SHEET_ID = ' + PropertiesService.getScriptProperties().getProperty('LOG_SHEET_ID'));
+}
+
 /** Run once after deploying. Installs the daily 8 AM America/Chicago trigger. */
 function installDailyTrigger() {
   ScriptApp.getProjectTriggers().forEach(function (t) {

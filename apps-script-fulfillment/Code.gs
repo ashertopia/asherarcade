@@ -20,11 +20,16 @@ function CFG_() {
   return {
     WEBHOOK_TOKEN: p.getProperty('WEBHOOK_TOKEN'),
     PAYMENT_LINK_ID: p.getProperty('PAYMENT_LINK_ID') || 'plink_1U16AQRyTAXcMvg49vhhR39i',
-    SIGN_PDF_ENDPOINT: p.getProperty('SIGN_PDF_ENDPOINT'),
+    // Non-secret settings default to the live values, so only the two
+    // secrets (WEBHOOK_TOKEN, SIGN_PDF_API_KEY) have to be typed in.
+    SIGN_PDF_ENDPOINT: p.getProperty('SIGN_PDF_ENDPOINT') || 'https://keepsakedrop.com/api/sign-pdf',
     SIGN_PDF_API_KEY: p.getProperty('SIGN_PDF_API_KEY'),
-    GUEST_SCRIPT_EXEC_URL: p.getProperty('GUEST_SCRIPT_EXEC_URL'),
-    README_TEMPLATE_DOC_ID: p.getProperty('README_TEMPLATE_DOC_ID'),
-    OWNER_EMAIL: p.getProperty('OWNER_EMAIL'),
+    GUEST_SCRIPT_EXEC_URL: p.getProperty('GUEST_SCRIPT_EXEC_URL') ||
+      'https://script.google.com/macros/s/AKfycbwY6_iIkp9dr4Z7FDt0QHiAMMSoRCmaKQVLKhaDHpl6YzUYpg28Ewin6DsZqp1s0y7h/exec',
+    README_TEMPLATE_DOC_ID: p.getProperty('README_TEMPLATE_DOC_ID') || '1yw2HkRMhBbLqTnmH130NAwbceWZm0lmH5x_yq59rfp0',
+    // Defaults to the Google account the script runs as (the owner).
+    OWNER_EMAIL: p.getProperty('OWNER_EMAIL') ||
+      (typeof Session !== 'undefined' ? Session.getEffectiveUser().getEmail() : ''),
     LOG_SHEET_ID: p.getProperty('LOG_SHEET_ID'),
     SITE_URL: p.getProperty('SITE_URL') || 'https://keepsakedrop.com',
     // Opt-in: share the album folder with the customer's album email
