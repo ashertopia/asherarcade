@@ -175,7 +175,10 @@ function attachSignPdf_(folder, order, guestUrl) {
 
 function createDeliveryDraft_(order, folder, guestUrl, signPdfOk) {
   var folderUrl = 'https://drive.google.com/drive/folders/' + folder.getId();
-  var subject = order.eventName + ' — your KeepsakeDrop album is ready 🎉';
+  // No emoji in subjects: GmailApp.createDraft turns characters outside the
+  // Basic Multilingual Plane into mojibake ("������"). In the HTML body a
+  // numeric entity survives, so emoji go there as &#...; only.
+  var subject = order.eventName + ' — your KeepsakeDrop album is ready';
   var html =
     '<div style="font-family:Georgia,\'Times New Roman\',serif;color:#1a1614;max-width:560px;line-height:1.6">' +
     '<p>Hi there,</p>' +
@@ -191,7 +194,7 @@ function createDeliveryDraft_(order, folder, guestUrl, signPdfOk) {
     '<p style="font-size:12px;letter-spacing:2px;color:#b58aa5;margin-bottom:4px"><strong>YOUR GUEST LINK</strong></p>' +
     '<p style="margin-top:0">Guests scan the QR code on the table sign (or tap this link) and their photos land straight in your album — no app, no accounts:<br>' +
     '<a href="' + guestUrl + '" style="color:#b5478a">' + guestUrl + '</a></p>' +
-    '<p>Happy celebrating! 🎂</p>' +
+    '<p>Happy celebrating! &#127874;</p>' +
     '<p>Scott<br><span style="color:#8a827c">Asher Arcade · <a href="https://keepsakedrop.com" style="color:#b5478a">keepsakedrop.com</a><br>' +
     'Questions? Just reply to this email.</span></p></div>';
 
@@ -203,7 +206,7 @@ function escapeHtml_(s) {
 }
 
 function stripHtml_(html) {
-  return html.replace(/<[^>]+>/g, '').replace(/\s+\n/g, '\n').trim();
+  return html.replace(/<[^>]+>/g, '').replace(/&#\d+;/g, '').replace(/\s+\n/g, '\n').trim();
 }
 
 function createTomorrowReminderEvent_(order, folder, dates, share) {

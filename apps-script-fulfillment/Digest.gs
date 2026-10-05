@@ -138,7 +138,7 @@ function notifyDraftsDue_(drafts) {
     var msg = d.getMessage();
     return '- ' + msg.getSubject() + ' (to ' + msg.getTo() + ')';
   });
-  MailApp.sendEmail(cfg.OWNER_EMAIL, '📸 KeepsakeDrop: ' + drafts.length + ' email(s) waiting in your drafts',
+  MailApp.sendEmail(cfg.OWNER_EMAIL, 'KeepsakeDrop: ' + drafts.length + ' email(s) waiting in your drafts',
     lines.join('\n'));
 
   var cal = CalendarApp.getDefaultCalendar();
