@@ -28,14 +28,22 @@ function CFG_() {
       'https://script.google.com/macros/s/AKfycbwY6_iIkp9dr4Z7FDt0QHiAMMSoRCmaKQVLKhaDHpl6YzUYpg28Ewin6DsZqp1s0y7h/exec',
     README_TEMPLATE_DOC_ID: p.getProperty('README_TEMPLATE_DOC_ID') || '1yw2HkRMhBbLqTnmH130NAwbceWZm0lmH5x_yq59rfp0',
     // Defaults to the Google account the script runs as (the owner).
-    OWNER_EMAIL: p.getProperty('OWNER_EMAIL') ||
-      (typeof Session !== 'undefined' ? Session.getEffectiveUser().getEmail() : ''),
+    OWNER_EMAIL: p.getProperty('OWNER_EMAIL') || ownerEmailFromAccount_(),
     LOG_SHEET_ID: p.getProperty('LOG_SHEET_ID'),
     SITE_URL: p.getProperty('SITE_URL') || 'https://keepsakedrop.com',
     // Opt-in: share the album folder with the customer's album email
     // automatically. Off unless set to 'true' (sharing stays a manual step).
     AUTO_SHARE_ALBUM: p.getProperty('AUTO_SHARE_ALBUM') === 'true',
   };
+}
+
+/** The Google account the script runs as, or '' if it can't be read. */
+function ownerEmailFromAccount_() {
+  try {
+    return typeof Session !== 'undefined' ? Session.getEffectiveUser().getEmail() : '';
+  } catch (e) {
+    return ''; // checkConfig then reports OWNER_EMAIL as missing instead of crashing
+  }
 }
 
 function doGet(e) {
