@@ -1,0 +1,7 @@
+# GitHub Pages (Jekyll) settings for asherarcade.com.
+#
+# party-game-night/ is its own Vercel app. Its question packs must only be
+# served through its API (locked packs return just the free sample), so keep
+# the folder out of the Pages build entirely.
+exclude:
+  - party-game-night
