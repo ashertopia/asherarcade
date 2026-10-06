@@ -31,5 +31,6 @@ module.exports = async (req, res) => {
   const nonce = Array.from(h.subarray(0, 4), (b) => B32[b & 31]).join('');
   const code = mint(scope, secret, nonce);
   const unlocks = loadAll().packs.filter((p) => scopeCovers(scope.toUpperCase(), p)).map((p) => ({ id: p.id, title: p.title }));
-  json(res, 200, { code, unlocks });
+  const product = (session.metadata && session.metadata.product) || null;
+  json(res, 200, { code, unlocks, product });
 };

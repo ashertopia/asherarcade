@@ -112,11 +112,17 @@
       html += '</div></section>';
     }
     if (!H.packs.length) html += '<p class="center muted">No packs found.</p>';
-    html += '<div class="picker-foot"><button class="btn ghost" id="codeBtn">🎟 Have a purchase code?</button></div>';
+    const col = ((H.cfg && H.cfg.products) || []).find((x) => x.id === 'christmas');
+    if (H.packs.some((p) => !p.unlocked) && col) {
+      html += '<div class="picker-foot"><button class="btn primary" id="buyAllBtn">🎁 Get all four packs · ' + esc(col.price) + '</button><button class="btn ghost" id="codeBtn">🎟 Have a purchase code?</button></div>';
+    } else {
+      html += '<div class="picker-foot"><button class="btn ghost" id="codeBtn">🎟 Have a purchase code?</button></div>';
+    }
     stage.innerHTML = html;
 
     stage.querySelectorAll('[data-pack]').forEach((b) => b.addEventListener('click', () => openPack(b.dataset.pack)));
     on('#codeBtn', 'click', () => codeModal());
+    on('#buyAllBtn', 'click', buyModal);
     on('#resumeBtn', 'click', resumeSaved);
     on('#discardBtn', 'click', () => {
       store.del('pgn:host');
@@ -167,8 +173,8 @@
           '<p class="muted" style="font-size:.9em">Round one: classic multiple choice. Round two: the speed round. Then the all-in wager finale.</p>' +
           '<div class="actions"><button class="btn primary" id="goFull">' + (H.state ? 'Load this pack' : 'Open the room') + '</button><button class="btn ghost" data-close>Cancel</button></div>'
         : '<p>This pack is locked. Play a <b>free 5-question sample round</b> now, or unlock all ' + p.questionCount + ' questions, the speed round and the all-in finale.</p>' +
-          '<div class="actions"><button class="btn primary" id="goSample">Play the free sample</button>' +
-          (H.cfg && H.cfg.checkout ? '<button class="btn" id="buyBtn">Buy full pack' + (p.price && p.price.usd ? ' · $' + p.price.usd : '') + '</button>' : '') +
+          offersHTML(p) +
+          '<div class="actions"><button class="btn" id="goSample">Play the free sample</button>' +
           '<button class="btn ghost" id="haveCode">I have a code</button><button class="btn ghost" data-close>Cancel</button></div>');
     const m = modal(body);
     m.querySelectorAll('[data-len]').forEach((b) =>
@@ -181,7 +187,7 @@
     on('#goFull', 'click', () => { closeModal(); startWithPack(p.id, 'full', length); }, m);
     on('#goSample', 'click', () => { closeModal(); startWithPack(p.id, 'sample', 'short'); }, m);
     on('#haveCode', 'click', () => { closeModal(); codeModal(p.id); }, m);
-    on('#buyBtn', 'click', () => buy(p.id), m);
+    bindOffers(m, p.id);
   }
 
   // ---------------------------------------------------------------- codes + purchase
@@ -224,9 +230,51 @@
     store.set('pgn:codes', H.codes);
   }
 
-  async function buy(packId) {
+  // The three ways to buy, Collection first (it's the default). `pack` is the
+  // pack the host tapped, for the single-pack option; omit it to offer only
+  // the Collection and the Group License.
+  function offersHTML(pack) {
+    const products = (H.cfg && H.cfg.products) || [];
+    const by = (id) => products.find((x) => x.id === id);
+    const open = !!(H.cfg && H.cfg.checkout);
+    const dis = open ? '' : ' disabled';
+    const col = by('christmas');
+    const single = by('pack');
+    const group = by('group');
+    let html = '<div class="offers">';
+    if (col) {
+      html += '<div class="offer featured"><div class="offer-head"><span class="pill gold">Best value</span><b>' + esc(col.name) + '</b><span class="offer-price">' + esc(col.price) + '</span></div>' +
+        '<div class="muted">' + esc(col.blurb) + '</div>' +
+        '<button class="btn primary" data-buy="christmas"' + dis + '>Get the ' + esc(col.name) + ' · ' + esc(col.price) + '</button></div>';
+    }
+    if (single && pack) {
+      html += '<div class="offer"><div class="offer-head"><b>Just ' + esc(pack.title) + '</b><span class="offer-price">' + esc(single.price) + '</span></div>' +
+        '<button class="btn" data-buy="pack"' + dis + '>Buy this pack · ' + esc(single.price) + '</button></div>';
+    }
+    if (group) {
+      html += '<div class="offer"><div class="offer-head"><b>' + esc(group.name) + '</b><span class="offer-price">' + esc(group.price) + '</span></div>' +
+        '<div class="muted">' + esc(group.blurb) + '</div>' +
+        '<button class="btn" data-buy="group"' + dis + '>Get the ' + esc(group.name) + ' · ' + esc(group.price) + '</button></div>';
+    }
+    if (!open) html += '<p class="muted offer-note">Checkout opens soon. Already have a code? Tap “I have a code”.</p>';
+    return html + '</div>';
+  }
+
+  function bindOffers(root, packId) {
+    root.querySelectorAll('[data-buy]').forEach((b) => b.addEventListener('click', () => buy(b.dataset.buy, packId)));
+  }
+
+  function buyModal() {
+    const m = modal('<div class="eyebrow">Unlock everything</div><h2 class="display">Christmas Party Game Night</h2>' +
+      '<p>Every question in every pack, plus the speed round and the all-in finale.</p>' + offersHTML(null) +
+      '<div class="actions"><button class="btn ghost" id="haveCode">I have a code</button><button class="btn ghost" data-close>Close</button></div>');
+    bindOffers(m, null);
+    on('#haveCode', 'click', () => { closeModal(); codeModal(); }, m);
+  }
+
+  async function buy(product, packId) {
     try {
-      const r = await getJSON('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ packId }) });
+      const r = await getJSON('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product, packId }) });
       location.href = r.url;
     } catch (e) {
       toast(e.message);
@@ -738,9 +786,9 @@
         '<h1 class="winner-name">' + (tie ? 'It’s a tie: ' + esc(winners.join(' & ')) : esc(top[0] ? top[0].name : 'Nobody') + ' wins!') + '</h1>' +
         '<div class="podium">' + step(top[1], 'p2', 2) + step(top[0], 'p1', 1) + step(top[2], 'p3', 3) + '</div>' +
         (sorted.length > 3 ? '<div class="board cols">' + boardRows(s, { skip: 3 }) + '</div>' : '') +
-        (s.mode === 'sample' ? '<div class="unlock-cta">Liked the sample? The full <b>' + esc(s.pack.title) + '</b> pack has the speed round, the all-in finale, and every question.</div>' : '') +
+        (s.mode === 'sample' ? '<div class="unlock-cta">Liked the sample? The <b>Christmas Collection</b> unlocks all four packs, every question, the speed round and the all-in finale.</div>' : '') +
         '<div class="end-actions">' +
-        (s.mode === 'sample' ? '<button class="btn primary" id="unlockBtn">Unlock the full pack</button>' : '<button class="btn primary" id="againBtn">Play again (new questions)</button>') +
+        (s.mode === 'sample' ? '<button class="btn primary" id="unlockBtn">Get the Christmas Collection</button>' : '<button class="btn primary" id="againBtn">Play again (new questions)</button>') +
         '<button class="btn" id="newPackBtn">New pack</button></div></div>';
     },
   };

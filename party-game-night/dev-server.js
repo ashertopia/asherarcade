@@ -132,7 +132,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (p === '/api/config') {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
-      return res.end(JSON.stringify({ realtime: 'local', checkout: false, joinOrigin, dev: true }));
+      return res.end(JSON.stringify({ realtime: 'local', checkout: false, joinOrigin, dev: true, products: require('./lib/products').catalog() }));
     }
     if ((m = p.match(/^\/api\/([a-z0-9-]+)$/))) {
       const h = apiHandler(m[1]);

@@ -7,8 +7,9 @@ everyone answers on their phone, and nobody installs anything.
 - **Players (phones):** `/play`. Enter the code and a nickname, or scan the QR.
 - **Landing page:** `/`
 
-It's a standalone Vercel app inside the `asherarcade` repo. Nothing outside this
-folder is deployed with it, and it doesn't touch asherarcade.com or KeepsakeDrop.
+It's a standalone product and a standalone Vercel app inside the `asherarcade`
+repo. Nothing outside this folder is deployed with it, and it is sold on its
+own (no bundles with other Asher Arcade products).
 
 ## How a game plays
 
@@ -99,12 +100,12 @@ The end-to-end test does the following, and saves screenshots to `test/screensho
    | `UNLOCK_SECRET` | yes | Any long random string, e.g. `openssl rand -hex 32`. Signs unlock codes. |
    | `UNLOCK_CODES` | no | Hand-made codes, e.g. `MERRY2026=all, CAROLS=christmas-songs` |
    | `PUBLIC_ORIGIN` | no | Your public URL, e.g. `https://gamenight.asherarcade.com`. Used for the QR code and Stripe redirects. |
-   | `STRIPE_SECRET_KEY`, `STRIPE_PRICES` | later | Turns on the Buy button. See [Selling packs](#selling-packs). |
+   | `STRIPE_SECRET_KEY`, `STRIPE_PRICES` | later | Turns on the buy buttons ($9.99 pack, $24.99 Collection, $34.99 Group License). See [Selling packs](#selling-packs). |
 
 4. **Deploy.** Optionally add a domain like `gamenight.asherarcade.com` (Settings → Domains).
 5. **Mint yourself a code:** `UNLOCK_SECRET=<same value> npm run make-code -- all`
 
-This folder is not covered by the KeepsakeDrop deploy-branch workflow, so its
+None of the repo's existing deploy-branch workflows watch this folder, so its
 production branch can simply be `main`.
 
 ### Is Ably free?
@@ -175,7 +176,7 @@ That's it: the host's pack picker lists it on the next deploy. Copy
   "icon": "🕎",
   "audience": "Family-friendly",
   "order": 10,                      // sort position on the picker
-  "price": { "usd": 4.99 },         // display only; Stripe sets the real price
+  "price": { "usd": 9.99 },         // display only (single-pack price); Stripe sets the real price
   "free": false,                    // true = fully playable without a code
   "translation": "",                // e.g. "NIV" for scripture packs (shown on the card)
   "requireRefs": [],                // e.g. ["Scripture"]: every question must cite one
@@ -225,25 +226,63 @@ Each pack was written and then fact-checked separately, question by question, an
 
 ## Selling packs
 
-**How packs are gated now:**
+| Product | Price | What it unlocks | Code scope |
+|---|---|---|---|
+| **Free sample** | free | 5 questions from any locked pack, one classic round | none |
+| **Single pack** | **$9.99** | One pack: every question, all three rounds | the pack id, e.g. `NATIVITY` |
+| **Christmas Collection** (default) | **$24.99** | All four packs: Movies, Songs & Carols, The Nativity Story, Prophecies of Christ | `CHRISTMAS` |
+| **Group License** | **$34.99** | The same four packs, licensed for bigger gatherings (youth groups, Christmas programs, church and office parties): one code an organization's hosts can share for the season | `CHRISTMAS` |
+
+The Group License plays exactly like the Collection. It differs in its
+license copy and its own Stripe Price, not in a technical limit.
+
+The Collection is the default everywhere a buy button appears:
+- **Landing page (`/#pricing`):** three cards with the Collection featured.
+- **Host's locked-pack dialog:** "Get the Christmas Collection · $24.99" first, then "Buy this pack · $9.99", then the Group License.
+- **Pack picker:** a "🎁 Get all four packs · $24.99" button.
+- **End of a free sample:** "Get the Christmas Collection".
+
+Prices and blurbs live in one place, `lib/products.js`. The pages read them
+from `/api/config`, so changing a price there changes every button. The
+`price.usd` field in each pack's JSON is display-only and set to the
+single-pack price.
+
+**How packs are gated:**
 - **Locked by default:** every pack is locked unless `"free": true`.
-- **Free sample:** a locked pack offers a **free 5-question sample round** (the questions marked `"sample": true`). It plays as one classic round, then an end screen with an "Unlock the full pack" button.
-- **Server-side gating:** the gate is enforced on the server. `api/pack.js` only returns a locked pack's sample questions, and `packs/` isn't publicly served. So the full question set can't be scraped from the page.
+- **Free sample:** a locked pack offers a **free 5-question sample round** (the questions marked `"sample": true`). It plays as one classic round, then an end screen offering the Collection.
+- **Server-side gating:** `api/pack.js` only returns a locked pack's sample questions, and `packs/` isn't publicly served, so the full question set can't be scraped from the page.
 
 **Unlock codes** look like `CHRISTMAS-K7QX-3M9PTR8A`: scope, nonce, signature.
-- **Scope:** `ALL`, a collection (`CHRISTMAS`), or one pack id (`NATIVITY`).
+- **Scope:** one pack id (`NATIVITY`), the collection (`CHRISTMAS`), or `ALL`.
 - **Signature:** an HMAC under `UNLOCK_SECRET`, so codes need no database and can't be forged.
-- **Minting:** `npm run make-code -- <scope> [count]`, e.g. for Etsy sales, giveaways or church groups.
+- **Minting by hand:** `npm run make-code -- <scope> [count]`, e.g. `npm run make-code -- christmas 20` for 20 Collection codes (Etsy sales, giveaways, a church group).
 - **Where they're saved:** the host enters codes under **🎟 Have a purchase code?**, and they're kept in that browser.
+- **Sharing:** codes aren't tied to a device or a number of uses. Anyone with a code can unlock on any device, which is what lets a Group License be shared across an organization's hosts.
 
-**Connecting Stripe Checkout:** the spot is marked in `api/checkout.js` and `api/claim.js`.
-1. In Stripe, create a Product + Price for each thing you sell (one pack, a collection bundle, or "all").
-2. Set `STRIPE_SECRET_KEY` and `STRIPE_PRICES`, e.g. `{"christmas":"price_123","nativity":"price_456"}`. Keys are scopes.
-3. Redeploy. The locked-pack dialog now shows **Buy full pack**. Checkout returns the buyer to `/host?claim=<session>`, the server confirms with Stripe that it's paid, and it mints and saves their code. The code is shown so they can use it on another device. No webhook is needed.
+**Connecting Stripe Checkout** (the spot is marked in `api/checkout.js` and `api/claim.js`):
+1. In Stripe, create three Products, each with a one-time Price in USD:
+   - Single pack, $9.99
+   - Christmas Collection, $24.99
+   - Group License, $34.99
+2. Set these in Vercel:
+   - `STRIPE_SECRET_KEY`
+   - `STRIPE_PRICES`, e.g.
+     ```json
+     {"pack":"price_…","christmas":"price_…","group":"price_…"}
+     ```
+     `pack` is used for every single pack. To give one pack its own Price, add its id as a key, e.g. `"nativity":"price_…"`.
+3. Redeploy. The buy buttons switch on.
 
-Test with `sk_test_` keys first. Before taking real money, add the products to
-`policies.html` (refunds etc.), matching how `MONETIZATION.md` treats the other
-products.
+What happens at checkout:
+- **Default product:** a request with no product buys the Collection.
+- **The purchase:** Checkout records the product and its unlock scope on the Stripe session, then returns the buyer to `/host?claim=<session>`.
+- **The code:** the server confirms with Stripe that the session is paid, then mints and saves the matching code (pack id, or `CHRISTMAS` for the Collection and the Group License). The code is shown so it can be used on other devices. No webhook is needed.
+
+Until Stripe is set up, the buttons show the prices but stay disabled, with a
+"Checkout opens soon" note. Codes keep working the whole time.
+
+Test with `sk_test_` keys first. Before taking real money, add these products
+to `policies.html` (refunds etc.).
 
 ## Privacy and retention
 

@@ -281,3 +281,36 @@ test('checkout stays off until Stripe is configured', async () => {
   const r = await call(handler, '/api/checkout', { method: 'POST', body: { packId: 'nativity' } });
   assert.equal(r.status, 501);
 });
+
+test('products: prices, Collection is the default, scopes still unlock the right packs', () => {
+  const products = require('../lib/products');
+  const byId = Object.fromEntries(products.catalog().map((p) => [p.id, p]));
+  assert.equal(byId.pack.price, '$9.99');
+  assert.equal(byId.christmas.price, '$24.99');
+  assert.equal(byId.group.price, '$34.99');
+  assert.ok(byId.christmas.default);
+  for (const p of packs.loadAll().packs) assert.equal(p.price.usd, 9.99, p.id + ' shows the single-pack price');
+
+  const prices = { pack: 'price_pack', christmas: 'price_col', group: 'price_grp' };
+  const get = packs.getPack;
+  assert.deepEqual(products.resolvePurchase({}, prices, get), { product: 'christmas', scope: 'christmas', priceId: 'price_col' }, 'no product = Collection');
+  assert.deepEqual(products.resolvePurchase({ product: 'group' }, prices, get), { product: 'group', scope: 'christmas', priceId: 'price_grp' }, 'Group License unlocks the same four packs');
+  assert.deepEqual(products.resolvePurchase({ product: 'pack', packId: 'nativity' }, prices, get), { product: 'pack', scope: 'nativity', priceId: 'price_pack' });
+  assert.equal(products.resolvePurchase({ product: 'pack', packId: 'nativity' }, Object.assign({ nativity: 'price_nat' }, prices), get).priceId, 'price_nat', 'a per-pack Price overrides "pack"');
+  assert.ok(products.resolvePurchase({ product: 'pack' }, prices, get).error, 'single pack needs a packId');
+  assert.ok(products.resolvePurchase({ product: 'bundle-x' }, prices, get).error, 'unknown products are refused');
+  assert.ok(products.resolvePurchase({ product: 'group' }, { christmas: 'p' }, get).error, 'no Price configured = not for sale');
+
+  // The codes those purchases mint unlock what was paid for.
+  const col = codes.mint('christmas', 's');
+  const env = { UNLOCK_SECRET: 's' };
+  assert.equal(packs.loadAll().packs.filter((p) => codes.isUnlocked(p, codes.scopesFrom(col, env))).length, 4);
+  const one = codes.mint('nativity', 's');
+  assert.deepEqual(packs.loadAll().packs.filter((p) => codes.isUnlocked(p, codes.scopesFrom(one, env))).map((p) => p.id), ['nativity']);
+});
+
+test('api/config lists the products for the buy buttons', async () => {
+  const r = await call(require('../api/config.js'), '/api/config');
+  assert.deepEqual(r.body.products.map((p) => p.id + ' ' + p.price), ['pack $9.99', 'christmas $24.99', 'group $34.99']);
+  assert.equal(r.body.checkout, false);
+});

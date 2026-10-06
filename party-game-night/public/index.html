@@ -28,9 +28,77 @@
     <div class="card"><b>2.</b> Guests scan the QR code or type the room code.</div>
     <div class="card"><b>3.</b> Three rounds: classic, the speed round, and an all-in wager finale.</div>
   </div>
+  <section class="pricing" id="pricing" aria-labelledby="pricingTitle">
+    <div class="eyebrow">Pricing</div>
+    <h2 class="display" id="pricingTitle">Every pack has a free sample round</h2>
+    <p class="lede">Try five questions from any pack for free. Unlock the full game when you’re ready.</p>
+    <div class="price-grid" id="priceGrid">
+      <div class="price-card featured" data-product="christmas">
+        <span class="pill gold">Best value</span>
+        <div class="pname">Christmas Collection</div>
+        <div class="pprice" data-price>$24.99</div>
+        <div class="muted" data-blurb>All four packs: Movies, Songs &amp; Carols, The Nativity Story and Prophecies of Christ.</div>
+        <button class="btn primary" data-buy="christmas">Get the Collection</button>
+      </div>
+      <div class="price-card" data-product="pack">
+        <div class="pname">Single pack</div>
+        <div class="pprice" data-price>$9.99</div>
+        <div class="muted" data-blurb>One pack, every question, all three rounds.</div>
+        <label class="sr-only" for="packPick">Which pack</label>
+        <select class="input" id="packPick"></select>
+        <button class="btn" data-buy="pack">Buy this pack</button>
+      </div>
+      <div class="price-card" data-product="group">
+        <div class="pname">Group License</div>
+        <div class="pprice" data-price>$34.99</div>
+        <div class="muted" data-blurb>The full Christmas Collection for bigger gatherings: youth groups, Christmas programs, church and office parties. One code your organization’s hosts can share all season.</div>
+        <button class="btn" data-buy="group">Get the Group License</button>
+      </div>
+    </div>
+    <p class="muted" id="checkoutNote" hidden>Checkout opens soon. Already have a code? Enter it on the <a href="/host">host screen</a>.</p>
+  </section>
   <footer class="small">Only nicknames are shared, and rooms vanish after 24 hours. · <a href="https://www.asherarcade.com/">asherarcade.com</a></footer>
 </main>
 <script src="/js/common.js"></script>
-<script>PGN.lights(document.getElementById('lights')); PGN.snow(document.getElementById('snow'));</script>
+<script>
+PGN.lights(document.getElementById('lights'));
+PGN.snow(document.getElementById('snow'));
+(async function () {
+  // Prices come from the server's product list (lib/products.js) so they never drift.
+  let cfg = {};
+  try { cfg = await PGN.getJSON('/api/config'); } catch (e) {}
+  for (const p of cfg.products || []) {
+    const card = document.querySelector('[data-product="' + p.id + '"]');
+    if (!card) continue;
+    card.querySelector('[data-price]').textContent = p.price;
+    card.querySelector('[data-blurb]').textContent = p.blurb;
+  }
+  const pick = document.getElementById('packPick');
+  try {
+    const r = await PGN.getJSON('/api/packs');
+    pick.innerHTML = r.packs.map((p) => '<option value="' + PGN.esc(p.id) + '">' + PGN.esc(p.icon + ' ' + p.title) + '</option>').join('');
+  } catch (e) {}
+  const buttons = document.querySelectorAll('[data-buy]');
+  if (!cfg.checkout) {
+    buttons.forEach((b) => (b.disabled = true));
+    document.getElementById('checkoutNote').hidden = false;
+    return;
+  }
+  buttons.forEach((b) => b.addEventListener('click', async () => {
+    b.disabled = true;
+    try {
+      const r = await PGN.getJSON('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product: b.dataset.buy, packId: b.dataset.buy === 'pack' ? pick.value : undefined, from: 'landing' }),
+      });
+      location.href = r.url;
+    } catch (e) {
+      PGN.toast(e.message);
+      b.disabled = false;
+    }
+  }));
+})();
+</script>
 </body>
 </html>

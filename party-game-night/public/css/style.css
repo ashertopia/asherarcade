@@ -392,3 +392,28 @@ footer.small a { color: var(--ink-soft); }
 .place-card .v span { font-size: 16px; color: var(--muted); font-weight: 600; }
 .gap-dots { text-align: center; color: var(--muted); line-height: 0.8; }
 .players.many { -webkit-mask-image: linear-gradient(180deg, #000 85%, transparent); mask-image: linear-gradient(180deg, #000 85%, transparent); }
+
+/* Buy options (host unlock dialog, landing page) */
+.offers { display: grid; gap: 10px; margin-top: 14px; }
+.offer { padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: rgba(0, 0, 0, 0.2); display: grid; gap: 8px; }
+.offer.featured { border-color: rgba(242, 196, 109, 0.6); background: rgba(242, 196, 109, 0.1); box-shadow: 0 0 0 1px rgba(242, 196, 109, 0.2); }
+.offer-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.offer-head b { font-size: 1.05em; }
+.offer-price { margin-left: auto; font-family: var(--display); font-weight: 800; font-size: 1.3em; color: var(--gold); }
+.offer .btn { justify-self: start; }
+.offer .muted { font-size: 0.92em; }
+.offer-note { font-size: 0.9em; margin: 4px 0 0; }
+
+.pricing { margin-top: 56px; }
+.pricing h2 { font-size: clamp(28px, 4.4vw, 44px); margin: 0.2em 0; }
+.price-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; text-align: left; margin-top: 8px; }
+.price-card { display: flex; flex-direction: column; gap: 10px; padding: 24px; border-radius: 22px; background: var(--card); border: 1px solid var(--line); }
+.price-card.featured { border-color: rgba(242, 196, 109, 0.65); background: rgba(242, 196, 109, 0.09); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); }
+.price-card .pill { align-self: flex-start; }
+.price-card .pname { font-family: var(--display); font-size: 24px; font-weight: 700; }
+.price-card .pprice { font-family: var(--display); font-size: 40px; font-weight: 800; color: var(--gold); line-height: 1; }
+.price-card .muted { flex: 1; }
+.price-card .btn { width: 100%; }
+.price-card select.input { font-size: 16px; padding: 0.6em 0.8em; }
+#checkoutNote { margin-top: 14px; }
+#checkoutNote a { color: var(--ink-soft); }
