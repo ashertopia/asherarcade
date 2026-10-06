@@ -1,0 +1,19 @@
+{
+  "name": "party-game-night",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Christmas Party Game Night: a host-on-the-TV, players-on-their-phones party trivia game.",
+  "scripts": {
+    "dev": "node dev-server.js",
+    "test": "node --test test/unit.test.js",
+    "e2e": "node test/e2e.js",
+    "validate": "node scripts/validate-packs.js",
+    "make-code": "node scripts/make-code.js"
+  },
+  "dependencies": {
+    "ably": "^2.29.0"
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

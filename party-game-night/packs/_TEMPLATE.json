@@ -1,0 +1,28 @@
+{
+  "id": "my-new-pack",
+  "title": "My New Pack",
+  "tagline": "One short line for the pack card.",
+  "description": "A sentence or two shown when the host taps the pack.",
+  "collection": "Christmas",
+  "theme": "christmas",
+  "icon": "★",
+  "audience": "Family-friendly",
+  "order": 10,
+  "price": { "usd": 4.99 },
+  "free": false,
+  "translation": "",
+  "requireRefs": [],
+  "questions": [
+    {
+      "id": "mynew-01",
+      "difficulty": "easy",
+      "category": "Optional short topic",
+      "q": "The question, under ~140 characters?",
+      "choices": ["Right answer", "Wrong answer", "Wrong answer", "Wrong answer"],
+      "answer": 0,
+      "reveal": "One or two sentences shown after the answer: the fun fact or the why.",
+      "refs": [{ "label": "Source", "ref": "Where it comes from" }],
+      "sample": true
+    }
+  ]
+}

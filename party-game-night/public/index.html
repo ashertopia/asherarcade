@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Christmas Party Game Night</title>
+<meta name="description" content="A fast, funny Christmas trivia game for your party. The questions go on the TV, everyone answers on their phone. No app, no accounts.">
+<meta name="theme-color" content="#0b1714">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-theme="christmas">
+<canvas id="snow"></canvas>
+<div class="lights" id="lights" aria-hidden="true"></div>
+<main class="app landing">
+  <div class="eyebrow">Asher Arcade presents</div>
+  <h1 class="display">Christmas <em>Party</em> Game Night</h1>
+  <p class="lede">Fast, funny trivia for the whole room. Questions go up on the TV, everyone answers on their phone. No app, no accounts.</p>
+  <div class="choices">
+    <a class="choice" href="/host"><div class="eyebrow">On the TV or laptop</div><div class="big">Host a game 📺</div><div class="muted">Pick a question pack and get a room code.</div></a>
+    <a class="choice" href="/play"><div class="eyebrow">On your phone</div><div class="big">Join a game 📱</div><div class="muted">Enter the 4-letter code from the TV.</div></a>
+  </div>
+  <div class="steps">
+    <div class="card"><b>1.</b> Open this page on the TV and tap <i>Host</i>.</div>
+    <div class="card"><b>2.</b> Guests scan the QR code or type the room code.</div>
+    <div class="card"><b>3.</b> Three rounds: classic, the speed round, and an all-in wager finale.</div>
+  </div>
+  <footer class="small">Only nicknames are shared, and rooms vanish after 24 hours. · <a href="https://www.asherarcade.com/">asherarcade.com</a></footer>
+</main>
+<script src="/js/common.js"></script>
+<script>PGN.lights(document.getElementById('lights')); PGN.snow(document.getElementById('snow'));</script>
+</body>
+</html>

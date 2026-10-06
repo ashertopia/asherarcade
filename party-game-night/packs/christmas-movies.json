@@ -1,0 +1,624 @@
+{
+  "id": "christmas-movies",
+  "title": "Christmas Movies",
+  "tagline": "Lights, camera, tinsel!",
+  "description": "From Rudolph to Kevin McCallister, test your knowledge of the family holiday classics. Grab the cocoa and prove you’re more than a cotton-headed ninny muggins.",
+  "collection": "Christmas",
+  "theme": "christmas",
+  "icon": "🎬",
+  "audience": "Family-friendly",
+  "order": 1,
+  "price": {
+    "usd": 4.99
+  },
+  "free": false,
+  "translation": "",
+  "requireRefs": [],
+  "questions": [
+    {
+      "id": "movies-01",
+      "difficulty": "easy",
+      "category": "Home Alone",
+      "q": "In the first Home Alone, the McCallisters jet off and leave Kevin behind. Where’s the rest of the family headed?",
+      "choices": [
+        "London",
+        "Rome",
+        "Paris",
+        "Miami"
+      ],
+      "answer": 2,
+      "reveal": "Paris! Meanwhile Kevin gets the whole house and a cheese pizza all to himself. (Miami is the sequel: Kevin boards the wrong plane to New York.)",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Home Alone (1990)"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "movies-02",
+      "difficulty": "easy",
+      "category": "Elf",
+      "q": "Buddy the Elf swears by four main food groups. Which of these is NOT one of them?",
+      "choices": [
+        "Candy canes",
+        "Gingerbread",
+        "Candy corns",
+        "Syrup"
+      ],
+      "answer": 1,
+      "reveal": "The official four: candy, candy canes, candy corns and syrup. Gingerbread didn’t make the cut. Your dentist weeps.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Elf (2003)"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "movies-03",
+      "difficulty": "easy",
+      "category": "A Christmas Story",
+      "q": "What does Ralphie want for Christmas more than anything in the known universe?",
+      "choices": [
+        "A Red Ryder BB gun",
+        "A Radio Flyer wagon",
+        "A Lionel train set",
+        "A Daisy Duck plush"
+      ],
+      "answer": 0,
+      "reveal": "The Red Ryder BB gun — and every grown-up in Indiana warns him he’ll shoot his eye out. Spoiler: the glasses take one for the team.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "A Christmas Story (1983)"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "movies-04",
+      "difficulty": "easy",
+      "category": "How the Grinch Stole Christmas",
+      "q": "The Grinch straps fake antlers on his loyal dog and makes him pull the sleigh. What’s the poor pup’s name?",
+      "choices": [
+        "Rex",
+        "Buddy",
+        "Spot",
+        "Max"
+      ],
+      "answer": 3,
+      "reveal": "Max! One antler, one very heavy sleigh, zero complaints. Best boy in Whoville history.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "How the Grinch Stole Christmas! (1966)"
+        }
+      ]
+    },
+    {
+      "id": "movies-05",
+      "difficulty": "easy",
+      "category": "Rudolph the Red-Nosed Reindeer",
+      "q": "Hermey the misfit elf doesn’t want to make toys. What does he dream of becoming instead?",
+      "choices": [
+        "A baker",
+        "A sailor",
+        "A dentist",
+        "A reindeer trainer"
+      ],
+      "answer": 2,
+      "reveal": "A dentist! Which comes in handy when the Abominable Snow Monster needs a little… dental work. The special first aired on NBC in 1964.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Rudolph the Red-Nosed Reindeer (1964)"
+        }
+      ]
+    },
+    {
+      "id": "movies-06",
+      "difficulty": "easy",
+      "category": "Frosty the Snowman",
+      "q": "What brings Frosty the Snowman to life in the classic 1969 special?",
+      "choices": [
+        "A magic hat",
+        "A wishing star",
+        "A snow globe",
+        "A sprinkle of elf dust"
+      ],
+      "answer": 0,
+      "reveal": "A magic hat tossed out by a lousy magician named Professor Hinkle. One “Happy Birthday!” later, Frosty’s up and walking.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Frosty the Snowman (1969)"
+        }
+      ]
+    },
+    {
+      "id": "movies-07",
+      "difficulty": "easy",
+      "category": "The Polar Express",
+      "q": "On the Polar Express, Santa offers the boy the first gift of Christmas. What does he pick?",
+      "choices": [
+        "A golden ticket",
+        "A bell from Santa’s sleigh",
+        "A toy train",
+        "A snow globe"
+      ],
+      "answer": 1,
+      "reveal": "A silver sleigh bell — and only people who truly believe can hear it ring. He loses it through a hole in his pocket, then finds it under the tree.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "The Polar Express (2004)"
+        }
+      ]
+    },
+    {
+      "id": "movies-08",
+      "difficulty": "easy",
+      "category": "The Nightmare Before Christmas",
+      "q": "Jack Skellington is the beloved Pumpkin King of which spooky town?",
+      "choices": [
+        "Shiver Town",
+        "Pumpkin Hollow",
+        "Graveyard Gulch",
+        "Halloween Town"
+      ],
+      "answer": 3,
+      "reveal": "Halloween Town! Jack gets bored of scaring, stumbles into Christmas Town, and decides he can totally run Christmas. He cannot.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "The Nightmare Before Christmas (1993)"
+        }
+      ]
+    },
+    {
+      "id": "movies-09",
+      "difficulty": "easy",
+      "category": "It’s a Wonderful Life",
+      "q": "What’s the name of the guardian angel sent to save George Bailey?",
+      "choices": [
+        "Clarence",
+        "Gabriel",
+        "Harold",
+        "Bernard"
+      ],
+      "answer": 0,
+      "reveal": "Clarence! He shows George what Bedford Falls would be like without him — and finally earns the wings he’s been waiting for.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "It's a Wonderful Life (1946)"
+        }
+      ]
+    },
+    {
+      "id": "movies-10",
+      "difficulty": "easy",
+      "category": "The Muppet Christmas Carol",
+      "q": "In The Muppet Christmas Carol, which Muppet plays Scrooge’s underpaid clerk, Bob Cratchit?",
+      "choices": [
+        "Fozzie Bear",
+        "Gonzo",
+        "Kermit the Frog",
+        "Rowlf the Dog"
+      ],
+      "answer": 2,
+      "reveal": "Kermit! And yes, Miss Piggy plays his wife, Mrs. Cratchit. Fozzie, meanwhile, shows up as “Fozziwig.” Wocka wocka.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "The Muppet Christmas Carol (1992)"
+        }
+      ]
+    },
+    {
+      "id": "movies-11",
+      "difficulty": "medium",
+      "category": "Home Alone",
+      "q": "What name do Harry and Marv give themselves, thanks to their habit of leaving the water running?",
+      "choices": [
+        "The Soggy Bandits",
+        "The Wet Bandits",
+        "The Leaky Burglars",
+        "The Drip Brothers"
+      ],
+      "answer": 1,
+      "reveal": "The Wet Bandits — Marv’s calling card is flooding every house they rob. Kevin turns their crime spree into a slapstick obstacle course.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Home Alone (1990)"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "movies-12",
+      "difficulty": "medium",
+      "category": "Home Alone 2: Lost in New York",
+      "q": "Kevin checks himself into which famous New York hotel with his dad’s credit card?",
+      "choices": [
+        "The Waldorf-Astoria",
+        "The Ritz-Carlton",
+        "The Four Seasons",
+        "The Plaza Hotel"
+      ],
+      "answer": 3,
+      "reveal": "The Plaza! Tim Curry plays the suspicious concierge who just can’t figure out this “Mr. McCallister” situation.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Home Alone 2: Lost in New York (1992)"
+        }
+      ]
+    },
+    {
+      "id": "movies-13",
+      "difficulty": "medium",
+      "category": "Elf",
+      "q": "Which comedy legend plays Papa Elf, the North Pole elf who raises Buddy?",
+      "choices": [
+        "Bob Newhart",
+        "Steve Martin",
+        "Dick Van Dyke",
+        "Bill Murray"
+      ],
+      "answer": 0,
+      "reveal": "Bob Newhart! The deadpan king plays Buddy’s adoptive elf dad, who finally breaks the news that Buddy is, in fact, a human.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Elf (2003)"
+        }
+      ]
+    },
+    {
+      "id": "movies-14",
+      "difficulty": "medium",
+      "category": "Miracle on 34th Street",
+      "q": "In the 1947 classic, Kris Kringle gets a job as the Santa at which real New York department store?",
+      "choices": [
+        "Gimbels",
+        "Bloomingdale’s",
+        "Macy’s",
+        "Saks Fifth Avenue"
+      ],
+      "answer": 2,
+      "reveal": "Macy’s! The film opens at Macy’s Thanksgiving Day Parade, and Edmund Gwenn won an Oscar for playing Kris. Some say he really was Santa.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Miracle on 34th Street (1947)"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "movies-15",
+      "difficulty": "medium",
+      "category": "The Santa Clause",
+      "q": "Tim Allen’s Scott Calvin becomes Santa after Santa falls off his roof. What legally seals the deal?",
+      "choices": [
+        "He eats Santa’s cookies",
+        "He puts on Santa’s suit",
+        "He rides in the sleigh",
+        "He signs a contract"
+      ],
+      "answer": 1,
+      "reveal": "He puts on the suit — that’s the fine print of “the Santa Clause.” Cue a sudden beard, a growing belly and a very confused ex-wife.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "The Santa Clause (1994)"
+        }
+      ]
+    },
+    {
+      "id": "movies-16",
+      "difficulty": "medium",
+      "category": "The Year Without a Santa Claus",
+      "q": "Feuding brothers Heat Miser and Snow Miser are both the sons of which powerful figure?",
+      "choices": [
+        "Father Time",
+        "Old Man Winter",
+        "Jack Frost",
+        "Mother Nature"
+      ],
+      "answer": 3,
+      "reveal": "Mother Nature! Mrs. Claus pays her a visit to get the boys to stop bickering long enough to let it snow in Southtown.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "The Year Without a Santa Claus (1974)"
+        }
+      ]
+    },
+    {
+      "id": "movies-17",
+      "difficulty": "medium",
+      "category": "A Charlie Brown Christmas",
+      "q": "Lucy recruits Charlie Brown to cure his holiday blues by doing what?",
+      "choices": [
+        "Directing the Christmas play",
+        "Building a snowman",
+        "Running a lemonade stand",
+        "Coaching the hockey team"
+      ],
+      "answer": 0,
+      "reveal": "Directing the Christmas pageant — which goes about as well as kicking a football Lucy is holding. The jazzy score is by the Vince Guaraldi Trio.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "A Charlie Brown Christmas (1965)"
+        }
+      ]
+    },
+    {
+      "id": "movies-18",
+      "difficulty": "medium",
+      "category": "Klaus",
+      "q": "In Netflix’s Klaus, spoiled postman Jesper is exiled to which grumpy frozen island town?",
+      "choices": [
+        "Frostenholm",
+        "Grimsby Bay",
+        "Smeerensburg",
+        "Coldwater Cove"
+      ],
+      "answer": 2,
+      "reveal": "Smeerensburg, where two families have feuded for centuries. Klaus earned an Oscar nomination for Best Animated Feature.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Klaus (2019)"
+        }
+      ]
+    },
+    {
+      "id": "movies-19",
+      "difficulty": "medium",
+      "category": "White Christmas",
+      "q": "Bing Crosby and Danny Kaye rescue their old general’s struggling inn. In what state is it?",
+      "choices": [
+        "Maine",
+        "Vermont",
+        "New Hampshire",
+        "Colorado"
+      ],
+      "answer": 1,
+      "reveal": "Vermont — which, awkwardly, has no snow when they arrive. The flakes finally fall during the big “White Christmas” finale.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "White Christmas (1954)"
+        }
+      ]
+    },
+    {
+      "id": "movies-20",
+      "difficulty": "medium",
+      "category": "Holiday Inn",
+      "q": "The song “White Christmas” debuted in Holiday Inn. Who co-stars with Bing Crosby in that film?",
+      "choices": [
+        "Gene Kelly",
+        "Danny Kaye",
+        "Frank Sinatra",
+        "Fred Astaire"
+      ],
+      "answer": 3,
+      "reveal": "Fred Astaire! And “White Christmas” won the Oscar for Best Original Song — 12 years before it got its own movie.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Holiday Inn (1942)"
+        }
+      ]
+    },
+    {
+      "id": "movies-21",
+      "difficulty": "medium",
+      "category": "How the Grinch Stole Christmas",
+      "q": "Jim Carrey went green for the 2000 live-action Grinch. Who directed it?",
+      "choices": [
+        "Ron Howard",
+        "Chris Columbus",
+        "Tim Burton",
+        "Robert Zemeckis"
+      ],
+      "answer": 0,
+      "reveal": "Ron Howard! The film won the Oscar for Best Makeup — Carrey spent hours in the chair getting Grinched every day.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "How the Grinch Stole Christmas (2000)"
+        }
+      ]
+    },
+    {
+      "id": "movies-22",
+      "difficulty": "medium",
+      "category": "It’s a Wonderful Life",
+      "q": "George Bailey’s hometown becomes “Pottersville” in his nightmare vision. What’s its real name?",
+      "choices": [
+        "Hadleyville",
+        "Stars Hollow",
+        "Bedford Falls",
+        "Pleasantville"
+      ],
+      "answer": 2,
+      "reveal": "Bedford Falls! Without George, greedy Mr. Potter takes over and renames the place after himself. Rude.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "It's a Wonderful Life (1946)"
+        }
+      ]
+    },
+    {
+      "id": "movies-23",
+      "difficulty": "hard",
+      "category": "How the Grinch Stole Christmas",
+      "q": "Which horror-movie legend narrates AND voices the Grinch in the 1966 animated special?",
+      "choices": [
+        "Vincent Price",
+        "Boris Karloff",
+        "Bela Lugosi",
+        "Peter Lorre"
+      ],
+      "answer": 1,
+      "reveal": "Boris Karloff — Frankenstein’s monster himself! He didn’t sing “You’re a Mean One, Mr. Grinch,” though; that was Thurl Ravenscroft.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "How the Grinch Stole Christmas! (1966)"
+        }
+      ]
+    },
+    {
+      "id": "movies-24",
+      "difficulty": "hard",
+      "category": "The Nightmare Before Christmas",
+      "q": "Tim Burton’s name is on the poster, but who actually directed The Nightmare Before Christmas?",
+      "choices": [
+        "Danny Elfman",
+        "Chris Columbus",
+        "Mike Johnson",
+        "Henry Selick"
+      ],
+      "answer": 3,
+      "reveal": "Henry Selick! Burton came up with the story and produced. Danny Elfman wrote the songs and provided Jack’s singing voice.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "The Nightmare Before Christmas (1993)"
+        }
+      ]
+    },
+    {
+      "id": "movies-25",
+      "difficulty": "hard",
+      "category": "A Christmas Story",
+      "q": "Ralphie finally decodes the Little Orphan Annie secret message. What does it say?",
+      "choices": [
+        "Be sure to drink your Ovaltine",
+        "Merry Christmas from Annie",
+        "Leapin’ lizards, it works!",
+        "Eat your Wheaties daily"
+      ],
+      "answer": 0,
+      "reveal": "“Be sure to drink your Ovaltine.” A crummy commercial! Ralphie learns about advertising the hard way.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "A Christmas Story (1983)"
+        }
+      ]
+    },
+    {
+      "id": "movies-26",
+      "difficulty": "hard",
+      "category": "Frosty the Snowman",
+      "q": "Which beloved entertainer, famous for his big nose, narrates the 1969 Frosty special?",
+      "choices": [
+        "Burl Ives",
+        "Fred Astaire",
+        "Jimmy Durante",
+        "Danny Kaye"
+      ],
+      "answer": 2,
+      "reveal": "Jimmy “The Schnozz” Durante! Frosty himself is voiced by comedian Jackie Vernon.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Frosty the Snowman (1969)"
+        }
+      ]
+    },
+    {
+      "id": "movies-27",
+      "difficulty": "hard",
+      "category": "Rudolph the Red-Nosed Reindeer",
+      "q": "Which folk singer voices Sam the Snowman, the narrator of Rankin/Bass’s Rudolph?",
+      "choices": [
+        "Bing Crosby",
+        "Burl Ives",
+        "Gene Autry",
+        "Perry Como"
+      ],
+      "answer": 1,
+      "reveal": "Burl Ives! Sam also sings “A Holly Jolly Christmas” and “Silver and Gold” in the special.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Rudolph the Red-Nosed Reindeer (1964)"
+        }
+      ]
+    },
+    {
+      "id": "movies-28",
+      "difficulty": "hard",
+      "category": "Miracle on 34th Street",
+      "q": "Which future movie star played little Susan Walker, the girl who doesn’t believe in Santa, in 1947?",
+      "choices": [
+        "Shirley Temple",
+        "Judy Garland",
+        "Elizabeth Taylor",
+        "Natalie Wood"
+      ],
+      "answer": 3,
+      "reveal": "Natalie Wood, still just a kid! She’d later earn three Oscar nominations — but first she had to learn to believe.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Miracle on 34th Street (1947)"
+        }
+      ]
+    },
+    {
+      "id": "movies-29",
+      "difficulty": "hard",
+      "category": "It’s a Wonderful Life",
+      "q": "Clarence hasn’t earned his wings yet. What’s his official rank in heaven?",
+      "choices": [
+        "Angel Second Class",
+        "Junior Cherub",
+        "Apprentice Seraph",
+        "Guardian Third Grade"
+      ],
+      "answer": 0,
+      "reveal": "Angel Second Class — “AS2” for short. He’s waited about 200 years to earn his wings. And remember: every time a bell rings, an angel gets his wings!",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "It's a Wonderful Life (1946)"
+        }
+      ]
+    },
+    {
+      "id": "movies-30",
+      "difficulty": "hard",
+      "category": "Arthur Christmas",
+      "q": "Which actor voices Arthur, Santa’s clumsy, Christmas-crazy younger son, in Aardman’s Arthur Christmas?",
+      "choices": [
+        "Hugh Laurie",
+        "James McAvoy",
+        "Martin Freeman",
+        "Eddie Redmayne"
+      ],
+      "answer": 1,
+      "reveal": "James McAvoy! Hugh Laurie voices his big brother Steve, Jim Broadbent plays Santa and Bill Nighy steals scenes as Grandsanta.",
+      "refs": [
+        {
+          "label": "Film",
+          "ref": "Arthur Christmas (2011)"
+        }
+      ]
+    }
+  ]
+}
