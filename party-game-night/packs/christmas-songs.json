@@ -1,0 +1,624 @@
+{
+  "id": "christmas-songs",
+  "title": "Christmas Songs & Carols",
+  "tagline": "Fa la la la… WRONG. Try again.",
+  "description": "From candlelit carols to jukebox jingles: thirty questions on the songs everyone hums and nobody actually knows. Warm up those vocal cords.",
+  "collection": "Christmas",
+  "theme": "christmas",
+  "icon": "🎶",
+  "audience": "Family-friendly",
+  "order": 2,
+  "price": {
+    "usd": 9.99
+  },
+  "free": false,
+  "translation": "",
+  "requireRefs": [],
+  "questions": [
+    {
+      "id": "songs-01",
+      "difficulty": "easy",
+      "category": "Silent Night",
+      "q": "“Silent Night” was first written in which language?",
+      "choices": [
+        "English",
+        "German",
+        "Latin",
+        "French"
+      ],
+      "answer": 1,
+      "reveal": "Ja! It’s “Stille Nacht”: words by Joseph Mohr, music by Franz Xaver Gruber, first sung in Oberndorf, Austria, on Christmas Eve 1818.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Silent Night — Joseph Mohr & Franz Xaver Gruber, 1818"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "songs-02",
+      "difficulty": "easy",
+      "category": "Jingle Bells",
+      "q": "In “Jingle Bells,” how many horses are pulling that open sleigh?",
+      "choices": [
+        "One",
+        "Two",
+        "Four",
+        "Eight"
+      ],
+      "answer": 0,
+      "reveal": "Just one, folks. James Lord Pierpont published it in 1857 as “The One Horse Open Sleigh.” Budget sleigh, maximum jingle.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Jingle Bells — James Lord Pierpont, 1857"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "songs-03",
+      "difficulty": "easy",
+      "category": "The Twelve Days of Christmas",
+      "q": "On the fifth day of Christmas, my true love gave to me… what?",
+      "choices": [
+        "Calling birds",
+        "French hens",
+        "Gold rings",
+        "Geese a-laying"
+      ],
+      "answer": 2,
+      "reveal": "Five gold rings! The big, stretched-out “fiiive gold rings” comes from Frederic Austin’s 1909 arrangement. Belt it like you mean it.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "The Twelve Days of Christmas — traditional, arr. Frederic Austin, 1909"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "songs-04",
+      "difficulty": "easy",
+      "category": "Rudolph the Red-Nosed Reindeer",
+      "q": "Which name is NOT among the reindeer rattled off at the start of “Rudolph the Red-Nosed Reindeer”?",
+      "choices": [
+        "Comet",
+        "Cupid",
+        "Vixen",
+        "Blinky"
+      ],
+      "answer": 3,
+      "reveal": "Blinky never made the team. The roll call: Dasher, Dancer, Prancer, Vixen, Comet, Cupid, Donner and Blitzen. Then, of course, Rudolph.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Rudolph the Red-Nosed Reindeer — Johnny Marks, 1949"
+        }
+      ]
+    },
+    {
+      "id": "songs-05",
+      "difficulty": "easy",
+      "category": "Deck the Halls",
+      "q": "“Deck the halls with boughs of…” what?",
+      "choices": [
+        "Ivy",
+        "Holly",
+        "Mistletoe",
+        "Pine"
+      ],
+      "answer": 1,
+      "reveal": "Holly! Fa la la la la. The tune is the old Welsh New Year’s song “Nos Galan”; Thomas Oliphant’s English words date from 1862.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Deck the Hall — Welsh tune “Nos Galan”, English words Thomas Oliphant, 1862"
+        }
+      ]
+    },
+    {
+      "id": "songs-06",
+      "difficulty": "easy",
+      "category": "Feliz Navidad",
+      "q": "Who wrote and sang “Feliz Navidad,” the bilingual hit from 1970?",
+      "choices": [
+        "José Feliciano",
+        "Ricky Martin",
+        "Julio Iglesias",
+        "Marc Anthony"
+      ],
+      "answer": 0,
+      "reveal": "José Feliciano! Spanish verse, English verse, and a chorus nobody can resist. Próspero año y felicidad, indeed.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Feliz Navidad — José Feliciano, 1970"
+        }
+      ]
+    },
+    {
+      "id": "songs-07",
+      "difficulty": "easy",
+      "category": "All I Want for Christmas Is You",
+      "q": "Who sings the 1994 smash “All I Want for Christmas Is You”?",
+      "choices": [
+        "Whitney Houston",
+        "Celine Dion",
+        "Christina Aguilera",
+        "Mariah Carey"
+      ],
+      "answer": 3,
+      "reveal": "Mariah Carey, who co-wrote it with Walter Afanasieff. It finally hit No. 1 on the Billboard Hot 100 in December 2019, 25 years later.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "All I Want for Christmas Is You — Mariah Carey & Walter Afanasieff, 1994"
+        }
+      ]
+    },
+    {
+      "id": "songs-08",
+      "difficulty": "easy",
+      "category": "White Christmas",
+      "q": "Irving Berlin’s “White Christmas” debuted in the 1942 film Holiday Inn. Who sang it there?",
+      "choices": [
+        "Frank Sinatra",
+        "Dean Martin",
+        "Bing Crosby",
+        "Elvis Presley"
+      ],
+      "answer": 2,
+      "reveal": "Bing Crosby! Guinness lists his recording as the best-selling single of all time. Not bad for a song about weather.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "White Christmas — Irving Berlin, 1942"
+        }
+      ]
+    },
+    {
+      "id": "songs-09",
+      "difficulty": "easy",
+      "category": "The Little Drummer Boy",
+      "q": "Finish the famous drum refrain of “The Little Drummer Boy”:",
+      "choices": [
+        "Fa la la la la",
+        "Pa rum pum pum pum",
+        "Ding dong ding dong",
+        "Ho ho ho ho"
+      ],
+      "answer": 1,
+      "reveal": "Pa rum pum pum pum! Katherine K. Davis wrote it in 1941 as “Carol of the Drum.” The Harry Simeone Chorale made it a hit in 1958.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "The Little Drummer Boy — Katherine K. Davis, Henry Onorati & Harry Simeone, 1941"
+        }
+      ]
+    },
+    {
+      "id": "songs-10",
+      "difficulty": "easy",
+      "category": "Santa Claus Is Comin’ to Town",
+      "q": "Santa’s making a list and checking it… how often?",
+      "choices": [
+        "Once",
+        "Daily",
+        "With elves",
+        "Twice"
+      ],
+      "answer": 3,
+      "reveal": "Twice! J. Fred Coots and Haven Gillespie wrote it in 1934. Santa’s quality control is frankly better than most companies’.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Santa Claus Is Comin’ to Town — J. Fred Coots & Haven Gillespie, 1934"
+        }
+      ]
+    },
+    {
+      "id": "songs-11",
+      "difficulty": "medium",
+      "category": "Rudolph the Red-Nosed Reindeer",
+      "q": "Rudolph first appeared in a 1939 giveaway booklet from which retailer?",
+      "choices": [
+        "Montgomery Ward",
+        "Sears",
+        "Macy’s",
+        "Woolworth"
+      ],
+      "answer": 0,
+      "reveal": "Montgomery Ward! Robert L. May created Rudolph; his brother-in-law Johnny Marks wrote the song, and Gene Autry made it a hit in 1949.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Rudolph the Red-Nosed Reindeer — Johnny Marks, 1949"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "songs-12",
+      "difficulty": "medium",
+      "category": "Let It Snow!",
+      "q": "Which of these holiday standards never actually mentions Christmas?",
+      "choices": [
+        "White Christmas",
+        "The Christmas Song",
+        "Let It Snow!",
+        "I’ll Be Home for Christmas"
+      ],
+      "answer": 2,
+      "reveal": "“Let It Snow!” is all about weather, a fire and a cozy evening. Sammy Cahn and Jule Styne wrote it in 1945. Christmas: zero mentions.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Let It Snow! Let It Snow! Let It Snow! — Sammy Cahn & Jule Styne, 1945"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "songs-13",
+      "difficulty": "medium",
+      "category": "Have Yourself a Merry Little Christmas",
+      "q": "Judy Garland introduced “Have Yourself a Merry Little Christmas” in which 1944 film?",
+      "choices": [
+        "The Wizard of Oz",
+        "Easter Parade",
+        "A Star Is Born",
+        "Meet Me in St. Louis"
+      ],
+      "answer": 3,
+      "reveal": "Meet Me in St. Louis! Hugh Martin and Ralph Blane wrote it, and an early, gloomier draft of the lyric got brightened up before filming.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Have Yourself a Merry Little Christmas — Hugh Martin & Ralph Blane, 1944"
+        }
+      ]
+    },
+    {
+      "id": "songs-14",
+      "difficulty": "medium",
+      "category": "Rockin’ Around the Christmas Tree",
+      "q": "How old was Brenda Lee when she recorded “Rockin’ Around the Christmas Tree” in 1958?",
+      "choices": [
+        "10",
+        "13",
+        "17",
+        "21"
+      ],
+      "answer": 1,
+      "reveal": "Thirteen! And in December 2023 the song finally hit No. 1 on the Billboard Hot 100. Johnny Marks (yes, the Rudolph guy) wrote it.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Rockin’ Around the Christmas Tree — Johnny Marks, 1958"
+        }
+      ]
+    },
+    {
+      "id": "songs-15",
+      "difficulty": "medium",
+      "category": "O Holy Night",
+      "q": "“O Holy Night” began life in which language?",
+      "choices": [
+        "French",
+        "German",
+        "Italian",
+        "Latin"
+      ],
+      "answer": 0,
+      "reveal": "French! Adolphe Adam set Placide Cappeau’s poem “Minuit, chrétiens” in 1847. John Sullivan Dwight wrote the familiar English version.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Minuit, chrétiens (O Holy Night) — Adolphe Adam & Placide Cappeau, 1847"
+        }
+      ]
+    },
+    {
+      "id": "songs-16",
+      "difficulty": "medium",
+      "category": "O Come, All Ye Faithful",
+      "q": "“O Come, All Ye Faithful” is a translation of which Latin hymn?",
+      "choices": [
+        "Gloria Patri",
+        "Agnus Dei",
+        "Adeste Fideles",
+        "Ave Maria"
+      ],
+      "answer": 2,
+      "reveal": "Adeste Fideles! The Latin hymn is usually credited to John Francis Wade; Frederick Oakeley’s English translation came in 1841.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "O Come, All Ye Faithful — English trans. Frederick Oakeley, 1841"
+        }
+      ]
+    },
+    {
+      "id": "songs-17",
+      "difficulty": "medium",
+      "category": "Good King Wenceslas",
+      "q": "Good King Wenceslas looked out on the Feast of… whom?",
+      "choices": [
+        "Saint Nick",
+        "Saint Patrick",
+        "Saint Lucy",
+        "Stephen"
+      ],
+      "answer": 3,
+      "reveal": "Stephen! That’s December 26. John Mason Neale wrote the words in 1853. Fun twist: the real Wenceslas was a duke of Bohemia, only named king after his death.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Good King Wenceslas — John Mason Neale, 1853"
+        }
+      ]
+    },
+    {
+      "id": "songs-18",
+      "difficulty": "medium",
+      "category": "What Child Is This?",
+      "q": "“What Child Is This?” is sung to which old English tune?",
+      "choices": [
+        "Scarborough Fair",
+        "Greensleeves",
+        "Danny Boy",
+        "Auld Lang Syne"
+      ],
+      "answer": 1,
+      "reveal": "Greensleeves! William Chatterton Dix wrote the words in 1865 and borrowed one of England’s most famous melodies.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "What Child Is This? — William Chatterton Dix, 1865"
+        }
+      ]
+    },
+    {
+      "id": "songs-19",
+      "difficulty": "medium",
+      "category": "Sleigh Ride",
+      "q": "Leroy Anderson’s “Sleigh Ride” ends with a trumpet imitating what?",
+      "choices": [
+        "A horse’s whinny",
+        "A train whistle",
+        "A rooster",
+        "Santa laughing"
+      ],
+      "answer": 0,
+      "reveal": "A horse whinny! Anderson finished the instrumental in 1948; Mitchell Parish added the lyrics in 1950. Giddy-yap, giddy-yap!",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Sleigh Ride — Leroy Anderson, 1948; lyrics Mitchell Parish, 1950"
+        }
+      ]
+    },
+    {
+      "id": "songs-20",
+      "difficulty": "medium",
+      "category": "Winter Wonderland",
+      "q": "In “Winter Wonderland,” who do the lovebirds pretend their snowman is?",
+      "choices": [
+        "Frosty",
+        "Old King Cole",
+        "Parson Brown",
+        "Jack Frost"
+      ],
+      "answer": 2,
+      "reveal": "Parson Brown, a country preacher who could marry them. Felix Bernard and Richard B. Smith wrote it in 1934. Snowman ordination: unclear.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Winter Wonderland — Felix Bernard & Richard B. Smith, 1934"
+        }
+      ]
+    },
+    {
+      "id": "songs-21",
+      "difficulty": "medium",
+      "category": "Angels We Have Heard on High",
+      "q": "The long refrain “Gloria in excelsis Deo” is in which language?",
+      "choices": [
+        "Greek",
+        "Italian",
+        "French",
+        "Latin"
+      ],
+      "answer": 3,
+      "reveal": "Latin, for “Glory to God in the highest.” The carol itself comes from the French “Les Anges dans nos campagnes.” Hold that Glooo-ria!",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Angels We Have Heard on High — French carol “Les Anges dans nos campagnes”"
+        }
+      ]
+    },
+    {
+      "id": "songs-22",
+      "difficulty": "medium",
+      "category": "I Heard the Bells on Christmas Day",
+      "q": "“I Heard the Bells on Christmas Day” comes from a Civil War-era poem by which American poet?",
+      "choices": [
+        "Henry Wadsworth Longfellow",
+        "Walt Whitman",
+        "Emily Dickinson",
+        "Robert Frost"
+      ],
+      "answer": 0,
+      "reveal": "Longfellow! He wrote “Christmas Bells” in 1863, in the middle of the Civil War. That’s why it wrestles with peace on earth.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Christmas Bells — Henry Wadsworth Longfellow, 1863"
+        }
+      ]
+    },
+    {
+      "id": "songs-23",
+      "difficulty": "hard",
+      "category": "Carol of the Bells",
+      "q": "“Carol of the Bells” began as the Ukrainian New Year’s song “Shchedryk.” What bird is its hero?",
+      "choices": [
+        "Robin",
+        "Swallow",
+        "Nightingale",
+        "Dove"
+      ],
+      "answer": 1,
+      "reveal": "A swallow, who promises a family a prosperous year. Mykola Leontovych arranged it; Peter J. Wilhousky wrote the English words in 1936.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Carol of the Bells — Mykola Leontovych; English lyrics Peter J. Wilhousky, 1936"
+        }
+      ]
+    },
+    {
+      "id": "songs-24",
+      "difficulty": "hard",
+      "category": "Hark! The Herald Angels Sing",
+      "q": "The tune of “Hark! The Herald Angels Sing” comes from a cantata by which composer?",
+      "choices": [
+        "Bach",
+        "Handel",
+        "Mendelssohn",
+        "Mozart"
+      ],
+      "answer": 2,
+      "reveal": "Mendelssohn (1840). Charles Wesley’s 1739 words originally opened “Hark how all the welkin rings.” Catchy? Not quite.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Hark! The Herald Angels Sing — Charles Wesley, 1739; music Felix Mendelssohn, 1840"
+        }
+      ]
+    },
+    {
+      "id": "songs-25",
+      "difficulty": "hard",
+      "category": "Handel’s Messiah",
+      "q": "Handel’s Messiah, now a Christmas favorite, premiered in 1742 in which city?",
+      "choices": [
+        "London",
+        "Vienna",
+        "Edinburgh",
+        "Dublin"
+      ],
+      "answer": 3,
+      "reveal": "Dublin, on April 13, 1742. That’s right: it premiered in spring, just after Easter, not at Christmas. Hallelujah anyway!",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Messiah — George Frideric Handel, 1741"
+        }
+      ]
+    },
+    {
+      "id": "songs-26",
+      "difficulty": "hard",
+      "category": "The Twelve Days of Christmas",
+      "q": "Add up every gift in all twelve verses of “The Twelve Days of Christmas.” How many gifts in total?",
+      "choices": [
+        "364",
+        "78",
+        "144",
+        "12"
+      ],
+      "answer": 0,
+      "reveal": "364! Each day repeats all the earlier gifts, so it piles up fast. One for almost every day of the year. Hope your true love has storage.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "The Twelve Days of Christmas — traditional, arr. Frederic Austin, 1909"
+        }
+      ]
+    },
+    {
+      "id": "songs-27",
+      "difficulty": "hard",
+      "category": "O Little Town of Bethlehem",
+      "q": "Phillips Brooks wrote “O Little Town of Bethlehem” in 1868 while a rector in which US city?",
+      "choices": [
+        "Chicago",
+        "Philadelphia",
+        "Baltimore",
+        "Richmond"
+      ],
+      "answer": 1,
+      "reveal": "Philadelphia! Brooks had visited Bethlehem a few years earlier. His church organist, Lewis Redner, wrote the American tune.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "O Little Town of Bethlehem — Phillips Brooks & Lewis Redner, 1868"
+        }
+      ]
+    },
+    {
+      "id": "songs-28",
+      "difficulty": "hard",
+      "category": "Joy to the World",
+      "q": "Isaac Watts based the words of “Joy to the World” on which psalm?",
+      "choices": [
+        "Psalm 23",
+        "Psalm 51",
+        "Psalm 98",
+        "Psalm 150"
+      ],
+      "answer": 2,
+      "reveal": "Psalm 98, “Make a joyful noise unto the Lord.” Watts published it in 1719. Joyful noise: achieved.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Joy to the World — Isaac Watts, 1719"
+        }
+      ]
+    },
+    {
+      "id": "songs-29",
+      "difficulty": "hard",
+      "category": "Silver Bells",
+      "q": "“Silver Bells” was written for which Bob Hope movie?",
+      "choices": [
+        "Road to Rio",
+        "Holiday Inn",
+        "White Christmas",
+        "The Lemon Drop Kid"
+      ],
+      "answer": 3,
+      "reveal": "The Lemon Drop Kid (1951)! Jay Livingston and Ray Evans wrote it. Holiday Inn and White Christmas were Bing’s territory.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Silver Bells — Jay Livingston & Ray Evans, 1950"
+        }
+      ]
+    },
+    {
+      "id": "songs-30",
+      "difficulty": "hard",
+      "category": "Do You Hear What I Hear?",
+      "q": "Its writers said “Do You Hear What I Hear?” (1962) was a plea for peace during what event?",
+      "choices": [
+        "Cuban Missile Crisis",
+        "Moon landing",
+        "Berlin Airlift",
+        "Korean War armistice"
+      ],
+      "answer": 0,
+      "reveal": "The Cuban Missile Crisis, October 1962. Married songwriters Noël Regney and Gloria Shayne wrote it as a prayer for peace. Heavy stuff for a song that starts with a lamb.",
+      "refs": [
+        {
+          "label": "Song",
+          "ref": "Do You Hear What I Hear? — Noël Regney & Gloria Shayne, 1962"
+        }
+      ]
+    }
+  ]
+}

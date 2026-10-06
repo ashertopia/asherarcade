@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Christmas Party Game Night</title>
+<meta name="description" content="A fast, funny Christmas trivia game for your party. The questions go on the TV, everyone answers on their phone. No app, no accounts.">
+<meta name="theme-color" content="#0b1714">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-theme="christmas">
+<canvas id="snow"></canvas>
+<div class="lights" id="lights" aria-hidden="true"></div>
+<main class="app landing">
+  <div class="eyebrow">Asher Arcade presents</div>
+  <h1 class="display">Christmas <em>Party</em> Game Night</h1>
+  <p class="lede">Fast, funny trivia for the whole room. Questions go up on the TV, everyone answers on their phone. No app, no accounts.</p>
+  <div class="choices">
+    <a class="choice" href="/host"><div class="eyebrow">On the TV or laptop</div><div class="big">Host a game 📺</div><div class="muted">Pick a question pack and get a room code.</div></a>
+    <a class="choice" href="/play"><div class="eyebrow">On your phone</div><div class="big">Join a game 📱</div><div class="muted">Enter the 4-letter code from the TV.</div></a>
+  </div>
+  <div class="steps">
+    <div class="card"><b>1.</b> Open this page on the TV and tap <i>Host</i>.</div>
+    <div class="card"><b>2.</b> Guests scan the QR code or type the room code.</div>
+    <div class="card"><b>3.</b> Three rounds: classic, the speed round, and an all-in wager finale.</div>
+  </div>
+  <section class="pricing" id="pricing" aria-labelledby="pricingTitle">
+    <div class="eyebrow">Pricing</div>
+    <h2 class="display" id="pricingTitle">Every pack has a free sample round</h2>
+    <p class="lede">Try five questions from any pack for free. Unlock the full game when you’re ready.</p>
+    <div class="price-grid" id="priceGrid">
+      <div class="price-card featured" data-product="christmas">
+        <span class="pill gold">Best value</span>
+        <div class="pname">Christmas Collection</div>
+        <div class="pprice" data-price>$24.99</div>
+        <div class="muted" data-blurb>All four packs: Movies, Songs &amp; Carols, The Nativity Story and Prophecies of Christ.</div>
+        <button class="btn primary" data-buy="christmas">Get the Collection</button>
+      </div>
+      <div class="price-card" data-product="pack">
+        <div class="pname">Single pack</div>
+        <div class="pprice" data-price>$9.99</div>
+        <div class="muted" data-blurb>One pack, every question, all three rounds.</div>
+        <label class="sr-only" for="packPick">Which pack</label>
+        <select class="input" id="packPick"></select>
+        <button class="btn" data-buy="pack">Buy this pack</button>
+      </div>
+      <div class="price-card" data-product="group">
+        <div class="pname">Group License</div>
+        <div class="pprice" data-price>$34.99</div>
+        <div class="muted" data-blurb>The full Christmas Collection for bigger gatherings: youth groups, Christmas programs, church and office parties. One code your organization’s hosts can share all season.</div>
+        <button class="btn" data-buy="group">Get the Group License</button>
+      </div>
+    </div>
+    <p class="muted" id="checkoutNote" hidden>Checkout opens soon. Already have a code? Enter it on the <a href="/host">host screen</a>.</p>
+  </section>
+  <footer class="small">Only nicknames are shared, and rooms vanish after 24 hours. · <a href="https://www.asherarcade.com/">asherarcade.com</a></footer>
+</main>
+<script src="/js/common.js"></script>
+<script>
+PGN.lights(document.getElementById('lights'));
+PGN.snow(document.getElementById('snow'));
+(async function () {
+  // Prices come from the server's product list (lib/products.js) so they never drift.
+  let cfg = {};
+  try { cfg = await PGN.getJSON('/api/config'); } catch (e) {}
+  for (const p of cfg.products || []) {
+    const card = document.querySelector('[data-product="' + p.id + '"]');
+    if (!card) continue;
+    card.querySelector('[data-price]').textContent = p.price;
+    card.querySelector('[data-blurb]').textContent = p.blurb;
+  }
+  const pick = document.getElementById('packPick');
+  try {
+    const r = await PGN.getJSON('/api/packs');
+    pick.innerHTML = r.packs.map((p) => '<option value="' + PGN.esc(p.id) + '">' + PGN.esc(p.icon + ' ' + p.title) + '</option>').join('');
+  } catch (e) {}
+  const buttons = document.querySelectorAll('[data-buy]');
+  if (!cfg.checkout) {
+    buttons.forEach((b) => (b.disabled = true));
+    document.getElementById('checkoutNote').hidden = false;
+    return;
+  }
+  buttons.forEach((b) => b.addEventListener('click', async () => {
+    b.disabled = true;
+    try {
+      const r = await PGN.getJSON('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product: b.dataset.buy, packId: b.dataset.buy === 'pack' ? pick.value : undefined, from: 'landing' }),
+      });
+      location.href = r.url;
+    } catch (e) {
+      PGN.toast(e.message);
+      b.disabled = false;
+    }
+  }));
+})();
+</script>
+</body>
+</html>

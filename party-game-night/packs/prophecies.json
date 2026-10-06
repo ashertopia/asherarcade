@@ -1,0 +1,747 @@
+{
+  "id": "prophecies",
+  "title": "Prophecies of Christ",
+  "tagline": "Hard mode: from the prophets’ promises to the Gospels’ fulfillment.",
+  "description": "Old Testament prophecies paired with their New Testament fulfillment, drawn from the NIV. Hard mode: know your prophets, psalms and chapter-and-verse.",
+  "collection": "Christmas",
+  "theme": "christmas",
+  "icon": "📜",
+  "audience": "Hard mode · Bible",
+  "order": 4,
+  "price": {
+    "usd": 9.99
+  },
+  "free": false,
+  "translation": "NIV",
+  "requireRefs": [
+    "Prophecy",
+    "Fulfillment"
+  ],
+  "questions": [
+    {
+      "id": "prophecy-01",
+      "difficulty": "easy",
+      "category": "His Birthplace",
+      "q": "Which prophet foretold that a ruler over Israel would come from little Bethlehem?",
+      "choices": [
+        "Jonah",
+        "Micah",
+        "Nahum",
+        "Amos"
+      ],
+      "answer": 1,
+      "reveal": "Micah 5:2 names Bethlehem as the ruler’s hometown — and in Matthew 2, Herod’s scholars quote it to point the way to the newborn King.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Micah 5:2"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 2:4–6"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "prophecy-02",
+      "difficulty": "hard",
+      "category": "His Birthplace",
+      "q": "In Matthew 2, when Herod asks where the Messiah will be born, who answers by quoting Micah?",
+      "choices": [
+        "The Magi from the east",
+        "Joseph and Mary",
+        "Simeon and Anna",
+        "Chief priests and teachers of the law"
+      ],
+      "answer": 3,
+      "reveal": "Herod gathered the chief priests and teachers of the law. They answered “In Bethlehem in Judea” and cited Micah 5:2. It was the Magi who then made the trip.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Micah 5:2"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 2:4–6"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-03",
+      "difficulty": "easy",
+      "category": "His Birth",
+      "q": "Isaiah foretold a virgin’s son called Immanuel. What does Matthew say “Immanuel” means?",
+      "choices": [
+        "Prince of Peace",
+        "The Lord saves",
+        "God with us",
+        "Son of David"
+      ],
+      "answer": 2,
+      "reveal": "Matthew 1:22–23 quotes Isaiah 7:14 and explains the name: Immanuel means “God with us.” That’s the heart of Christmas in two words.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 7:14"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 1:22–23"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "prophecy-04",
+      "difficulty": "hard",
+      "category": "Son of David",
+      "q": "Gabriel told Mary her son would reign on David’s throne forever, echoing God’s promise to David through which prophet?",
+      "choices": [
+        "Nathan",
+        "Gad",
+        "Samuel",
+        "Elijah"
+      ],
+      "answer": 0,
+      "reveal": "In 2 Samuel 7, God spoke through Nathan to promise David an offspring whose throne and kingdom would endure forever. Gabriel’s words to Mary in Luke 1:32–33 echo that promise.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "2 Samuel 7:12–16"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Luke 1:31–33"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-05",
+      "difficulty": "medium",
+      "category": "Flight to Egypt",
+      "q": "Matthew says the Holy Family’s return from Egypt fulfilled “Out of Egypt I called my son.” Which prophet wrote it?",
+      "choices": [
+        "Joel",
+        "Amos",
+        "Hosea",
+        "Obadiah"
+      ],
+      "answer": 2,
+      "reveal": "Hosea 11:1 recalls God calling Israel out of Egypt. Matthew 2:15 sees Jesus, God’s true Son, retracing Israel’s story.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Hosea 11:1"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 2:14–15"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-06",
+      "difficulty": "hard",
+      "category": "Herod’s Massacre",
+      "q": "Matthew links Herod’s killing of Bethlehem’s boys to Rachel weeping for her children. In what town is her voice heard?",
+      "choices": [
+        "Bethel",
+        "Ramah",
+        "Hebron",
+        "Shiloh"
+      ],
+      "answer": 1,
+      "reveal": "Jeremiah 31:15: “A voice is heard in Ramah… Rachel weeping for her children” (NIV). Matthew 2:17–18 quotes it over the grief Herod caused.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Jeremiah 31:15"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 2:16–18"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-07",
+      "difficulty": "easy",
+      "category": "The Forerunner",
+      "q": "Isaiah foresaw a voice in the wilderness preparing the way for the Lord. Whom do the Gospels identify as that voice?",
+      "choices": [
+        "Peter",
+        "Elijah",
+        "Zechariah",
+        "John the Baptist"
+      ],
+      "answer": 3,
+      "reveal": "Matthew 3:3 applies Isaiah 40:3 to John the Baptist, and in John 1:23 John uses the words to describe himself.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 40:3"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 3:1–3; John 1:23"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-08",
+      "difficulty": "hard",
+      "category": "The Forerunner",
+      "q": "Mark 1:2–3 says “as it is written in Isaiah,” but its first line, about God sending a messenger, comes from which book?",
+      "choices": [
+        "Malachi",
+        "Haggai",
+        "Habakkuk",
+        "Nahum"
+      ],
+      "answer": 0,
+      "reveal": "Mark blends Malachi 3:1 (“I will send my messenger”) with Isaiah 40:3 under Isaiah’s name. Jesus applies Malachi 3:1 to John the Baptist in Matthew 11:10.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Malachi 3:1"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Mark 1:2–4; Matthew 11:10"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-09",
+      "difficulty": "medium",
+      "category": "The Forerunner",
+      "q": "Malachi promised God would send which prophet before the great day of the Lord, someone Jesus said came in John the Baptist?",
+      "choices": [
+        "Elisha",
+        "Elijah",
+        "Samuel",
+        "Jeremiah"
+      ],
+      "answer": 1,
+      "reveal": "Malachi 4:5 promises Elijah’s return. Jesus said of John, “he is the Elijah who was to come” (Matthew 11:14, NIV), and Luke 1:17 says John came in Elijah’s spirit and power.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Malachi 4:5"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 11:13–14; Luke 1:17"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "prophecy-10",
+      "difficulty": "hard",
+      "category": "Light in Galilee",
+      "q": "When Jesus settled in Capernaum, Matthew quoted Isaiah’s promise of light dawning on which two tribal lands?",
+      "choices": [
+        "Ephraim and Manasseh",
+        "Judah and Benjamin",
+        "Zebulun and Naphtali",
+        "Reuben and Gad"
+      ],
+      "answer": 2,
+      "reveal": "Isaiah 9:1–2 promises that the people of Zebulun and Naphtali, who walked in darkness, would see a great light. Matthew 4:13–16 says it dawned when Jesus made his home in Capernaum.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 9:1–2"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 4:13–16"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-11",
+      "difficulty": "medium",
+      "category": "His Mission",
+      "q": "In which town’s synagogue did Jesus read Isaiah 61 and announce, “Today this scripture is fulfilled in your hearing”?",
+      "choices": [
+        "Capernaum",
+        "Bethlehem",
+        "Jerusalem",
+        "Nazareth"
+      ],
+      "answer": 3,
+      "reveal": "In Luke 4:16–21, back in Nazareth where he grew up, Jesus read Isaiah 61:1–2: good news for the poor, freedom for prisoners, sight for the blind. Then he said it was fulfilled that day.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 61:1–2"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Luke 4:16–21"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-12",
+      "difficulty": "hard",
+      "category": "The Suffering Servant",
+      "q": "Matthew 8:17 cites Isaiah 53:4, “He took up our infirmities,” right after Jesus does what?",
+      "choices": [
+        "Heals many sick one evening",
+        "Calms a storm at sea",
+        "Feeds the five thousand",
+        "Raises Lazarus"
+      ],
+      "answer": 0,
+      "reveal": "One evening at Capernaum, Jesus drove out spirits and healed all the sick who were brought to him. Matthew 8:16–17 says this fulfilled Isaiah 53:4.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 53:4"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 8:16–17"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-13",
+      "difficulty": "hard",
+      "category": "The Gentle Servant",
+      "q": "Matthew 12 quotes Isaiah 42: God’s servant won’t break a bruised reed or snuff out what?",
+      "choices": [
+        "A fading flower",
+        "A smoldering wick",
+        "A broken lamp",
+        "A dimly lit star"
+      ],
+      "answer": 1,
+      "reveal": "Isaiah 42:3 pictures a Servant so gentle he won’t snuff out a smoldering wick. Matthew 12:17–21 applies the whole passage to Jesus’ quiet, compassionate ministry.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 42:1–4"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 12:15–21"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-14",
+      "difficulty": "medium",
+      "category": "Signs and Shadows",
+      "q": "Jesus said no sign would be given except the sign of which prophet, who spent three days and nights in a huge fish?",
+      "choices": [
+        "Elijah",
+        "Daniel",
+        "Jonah",
+        "Ezekiel"
+      ],
+      "answer": 2,
+      "reveal": "Jonah 1:17 records three days and three nights in the fish. In Matthew 12:39–40, Jesus himself draws the parallel: the Son of Man will spend three days and three nights in the heart of the earth.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Jonah 1:17"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 12:39–40"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-15",
+      "difficulty": "hard",
+      "category": "His Teaching",
+      "q": "Matthew 13:35’s “I will open my mouth in parables” quotes Psalm 78. Whose name appears in that psalm’s title?",
+      "choices": [
+        "David",
+        "Moses",
+        "Solomon",
+        "Asaph"
+      ],
+      "answer": 3,
+      "reveal": "Psalm 78 is titled “A maskil of Asaph.” Matthew says the words were spoken “through the prophet” and sees them fulfilled as Jesus taught the crowds in parables.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Psalm 78:2"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 13:34–35"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-16",
+      "difficulty": "medium",
+      "category": "Signs and Shadows",
+      "q": "Jesus told Nicodemus the Son of Man must be lifted up just as Moses lifted up what in the wilderness?",
+      "choices": [
+        "The bronze snake",
+        "The stone tablets",
+        "His staff over the sea",
+        "The ark of the covenant"
+      ],
+      "answer": 0,
+      "reveal": "In Numbers 21:8–9, anyone bitten who looked at the bronze snake on its pole lived. In John 3:14–15, Jesus himself makes the comparison: whoever believes in the lifted-up Son of Man has eternal life.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Numbers 21:8–9"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "John 3:14–15"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-17",
+      "difficulty": "medium",
+      "category": "Prophet, Priest, King",
+      "q": "In Acts 3:22, Peter quotes the promise of “a prophet like me” and applies it to Jesus. Who first said it?",
+      "choices": [
+        "Elijah",
+        "Samuel",
+        "Moses",
+        "Isaiah"
+      ],
+      "answer": 2,
+      "reveal": "In Deuteronomy 18:15, Moses promised that God would raise up a prophet like him from among the people. Peter tells the crowd at the temple that Jesus is that Prophet.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Deuteronomy 18:15"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Acts 3:22–23"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-18",
+      "difficulty": "easy",
+      "category": "The Triumphal Entry",
+      "q": "Zechariah told Daughter Zion that her king would come lowly and riding on what?",
+      "choices": [
+        "A donkey",
+        "A white horse",
+        "A royal chariot",
+        "A camel"
+      ],
+      "answer": 0,
+      "reveal": "Zechariah 9:9 describes a humble king on a donkey, on a colt, the foal of a donkey. Matthew 21:4–5 and John 12:14–15 quote it as Jesus rides into Jerusalem.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Zechariah 9:9"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 21:4–5; John 12:14–15"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "prophecy-19",
+      "difficulty": "medium",
+      "category": "The Rejected Stone",
+      "q": "“The stone the builders rejected has become the cornerstone.” Jesus quotes this line from which psalm?",
+      "choices": [
+        "Psalm 23",
+        "Psalm 2",
+        "Psalm 100",
+        "Psalm 118"
+      ],
+      "answer": 3,
+      "reveal": "Jesus quotes Psalm 118:22 to the temple leaders in Matthew 21:42. Peter later uses the same verse before the Sanhedrin in Acts 4:11.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Psalm 118:22–23"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 21:42; Acts 4:10–11"
+        }
+      ],
+      "sample": true
+    },
+    {
+      "id": "prophecy-20",
+      "difficulty": "medium",
+      "category": "David’s Lord",
+      "q": "Jesus asked the Pharisees how the Messiah could be David’s son if David calls him “Lord.” Which psalm did he quote?",
+      "choices": [
+        "Psalm 1",
+        "Psalm 110",
+        "Psalm 46",
+        "Psalm 119"
+      ],
+      "answer": 1,
+      "reveal": "Psalm 110:1: “The LORD says to my lord: ‘Sit at my right hand’” (NIV). In Matthew 22:41–46, no one could answer Jesus. Peter quotes the same verse at Pentecost (Acts 2:34–35).",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Psalm 110:1"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 22:41–46; Acts 2:34–36"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-21",
+      "difficulty": "hard",
+      "category": "The Betrayal",
+      "q": "In John 13:18 Jesus applies Psalm 41:9 to his betrayer, a trusted friend who had shared what with him?",
+      "choices": [
+        "His cloak",
+        "His sandals",
+        "His bread",
+        "His tent"
+      ],
+      "answer": 2,
+      "reveal": "Psalm 41:9 grieves a close friend who shared my bread and then turned against me. At the Last Supper, Jesus says the verse is being fulfilled, and Judas soon leaves.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Psalm 41:9"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "John 13:18–30"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-22",
+      "difficulty": "hard",
+      "category": "The Betrayal",
+      "q": "After the Last Supper, Jesus quoted “I will strike the shepherd, and the sheep of the flock will be scattered.” Which prophet?",
+      "choices": [
+        "Joel",
+        "Obadiah",
+        "Nahum",
+        "Zechariah"
+      ],
+      "answer": 3,
+      "reveal": "Jesus quotes Zechariah 13:7 in Matthew 26:31, warning that all the disciples would fall away that night. They scattered at his arrest (Matthew 26:56).",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Zechariah 13:7"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 26:31, 56"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-23",
+      "difficulty": "hard",
+      "category": "The Suffering Servant",
+      "q": "At the Last Supper, Jesus said a line from Isaiah 53 “must be fulfilled in me.” Which line?",
+      "choices": [
+        "Numbered with the transgressors",
+        "Pierced for our transgressions",
+        "Led like a lamb to the slaughter",
+        "Despised and rejected by mankind"
+      ],
+      "answer": 0,
+      "reveal": "In Luke 22:37, Jesus quotes Isaiah 53:12, “And he was numbered with the transgressors” (NIV). Hours later he was crucified between two criminals.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 53:12"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Luke 22:37"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-24",
+      "difficulty": "hard",
+      "category": "Thirty Pieces of Silver",
+      "q": "Matthew 27:9 says the thirty silver coins and potter’s field fulfilled words of a prophet. Which prophet does Matthew name?",
+      "choices": [
+        "Isaiah",
+        "Jeremiah",
+        "Daniel",
+        "Malachi"
+      ],
+      "answer": 1,
+      "reveal": "Matthew names Jeremiah, though the wording most closely matches Zechariah 11:12–13 (thirty silver thrown to the potter). Many see it blended with Jeremiah’s field purchase (Jer 32) and potter (Jer 18–19).",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Zechariah 11:12–13; Jeremiah 32:6–9"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 27:3–10"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-25",
+      "difficulty": "hard",
+      "category": "The Trial",
+      "q": "Under oath before Caiaphas, Jesus echoed Daniel 7: the Son of Man coming on what?",
+      "choices": [
+        "A white horse",
+        "Chariots of fire",
+        "The clouds of heaven",
+        "The wings of the dawn"
+      ],
+      "answer": 2,
+      "reveal": "Daniel 7:13 sees “one like a son of man, coming with the clouds of heaven” (NIV). When Jesus claimed those words in Matthew 26:64, the high priest tore his clothes and charged blasphemy.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Daniel 7:13–14"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 26:63–65"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-26",
+      "difficulty": "easy",
+      "category": "The Cross",
+      "q": "Psalm 22:18 foretold what would happen to the sufferer’s clothing. What did the soldiers at the cross do?",
+      "choices": [
+        "Burned it",
+        "Cast lots for it",
+        "Gave it to his mother",
+        "Returned it to Pilate"
+      ],
+      "answer": 1,
+      "reveal": "The soldiers divided Jesus’ clothes and cast lots for his seamless undergarment. John 19:23–24 says this fulfilled Psalm 22:18.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Psalm 22:18"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "John 19:23–24"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-27",
+      "difficulty": "medium",
+      "category": "The Cross",
+      "q": "From the cross Jesus cried, “My God, my God, why have you forsaken me?” These words open which psalm?",
+      "choices": [
+        "Psalm 23",
+        "Psalm 51",
+        "Psalm 91",
+        "Psalm 22"
+      ],
+      "answer": 3,
+      "reveal": "Jesus prayed the first line of Psalm 22, which moves from anguish to praise and describes mocking, thirst and divided clothes. See Matthew 27:46.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Psalm 22:1"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Matthew 27:46"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-28",
+      "difficulty": "hard",
+      "category": "The Cross",
+      "q": "After a soldier’s spear, John 19:37 quotes “They will look on the one they have pierced.” Which prophet wrote it?",
+      "choices": [
+        "Zechariah",
+        "Ezekiel",
+        "Amos",
+        "Joel"
+      ],
+      "answer": 0,
+      "reveal": "Zechariah 12:10 foresees Jerusalem looking on “the one they have pierced” (NIV) and mourning. John cites it right after the soldier pierced Jesus’ side.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Zechariah 12:10"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "John 19:34–37"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-29",
+      "difficulty": "hard",
+      "category": "The Resurrection",
+      "q": "At Pentecost, Peter said Psalm 16’s holy one who would not see decay couldn’t be David himself. Why not?",
+      "choices": [
+        "David never wrote Psalm 16",
+        "David was taken up like Elijah",
+        "David’s tomb was still there",
+        "The psalm was about Solomon"
+      ],
+      "answer": 2,
+      "reveal": "Peter noted that David died and was buried, and his tomb was still there. So Psalm 16:10 foretold the Messiah, whom God raised before his body saw decay (Acts 2:27–31).",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Psalm 16:8–11"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Acts 2:25–32"
+        }
+      ]
+    },
+    {
+      "id": "prophecy-30",
+      "difficulty": "medium",
+      "category": "The Suffering Servant",
+      "q": "Philip met a traveler in a chariot reading Isaiah 53, “led like a sheep to the slaughter.” Who was he?",
+      "choices": [
+        "A Roman centurion",
+        "An Ethiopian official",
+        "Nicodemus the Pharisee",
+        "A tax collector"
+      ],
+      "answer": 1,
+      "reveal": "In Acts 8, Philip started from Isaiah 53:7–8 and told the Ethiopian treasury official the good news about Jesus. The man was baptized that same day.",
+      "refs": [
+        {
+          "label": "Prophecy",
+          "ref": "Isaiah 53:7–8"
+        },
+        {
+          "label": "Fulfillment",
+          "ref": "Acts 8:27–38"
+        }
+      ]
+    }
+  ]
+}
