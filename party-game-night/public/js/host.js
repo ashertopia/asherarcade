@@ -33,6 +33,7 @@
     lastTickSec: null,
     probing: false,
     collision: false,
+    stats: { broadcasts: 0, maxBytes: 0 }, // for the load test
   };
   window.__pgnHost = H; // handy in the console and for tests
 
@@ -150,9 +151,10 @@
   function openPack(id) {
     const p = H.packs.find((x) => x.id === id);
     if (!p) return;
-    let length = store.get('pgn:length', 'standard');
+    let length = store.get('pgn:length', 'short');
+    if (!E.LENGTHS[length]) length = 'short';
     const lengthSeg = Object.entries(E.LENGTHS)
-      .map(([k, v]) => '<button data-len="' + k + '" class="' + (k === length ? 'on' : '') + '">' + v.label + ' <span class="muted">' + v.minutes + '</span></button>')
+      .map(([k, v]) => '<button data-len="' + k + '" class="' + (k === length ? 'on' : '') + '">' + v.label + ' · ' + v.questions + ' questions <span class="muted">' + v.minutes + '</span></button>')
       .join('');
     const d = p.difficulty;
     const body =
@@ -177,7 +179,7 @@
       })
     );
     on('#goFull', 'click', () => { closeModal(); startWithPack(p.id, 'full', length); }, m);
-    on('#goSample', 'click', () => { closeModal(); startWithPack(p.id, 'sample', 'quick'); }, m);
+    on('#goSample', 'click', () => { closeModal(); startWithPack(p.id, 'sample', 'short'); }, m);
     on('#haveCode', 'click', () => { closeModal(); codeModal(p.id); }, m);
     on('#buyBtn', 'click', () => buy(p.id), m);
   }
@@ -315,6 +317,7 @@
     if (H.rt) H.rt.close();
     H.rt = await window.PGNRealtime.connect({
       mode: H.cfg.realtime,
+      role: 'host',
       room,
       clientId: H.hostId,
       onMessage,
@@ -352,16 +355,21 @@
       case 'join': {
         const known = !!s.players[data.pid];
         const res = E.join(s, data, t);
-        H.rt.publish('joinResult', { pid: data.pid, ok: res.ok, reason: res.reason || null, room: s.room });
-        if (res.ok) {
+        // Success needs no reply of its own: the phone sees itself in the next
+        // state broadcast. Only a refusal gets a message (it goes to every phone,
+        // and with 100 of them a reply per join would add up).
+        if (!res.ok) H.rt.publish('joinResult', { pid: data.pid, ok: false, reason: res.reason || null, room: s.room });
+        else {
           if (!known) A.sfx.join();
           changed();
         }
         break;
       }
       case 'hello':
-        // A phone (or a host probing for a free code) asking for the current state.
-        broadcast();
+        // Another TV probing for a free code needs an answer now; anything else
+        // waits for the next (throttled) broadcast.
+        if (data.probe) broadcast();
+        else scheduleBroadcast();
         break;
       case 'answer':
         if (E.answer(s, data, t)) {
@@ -383,13 +391,24 @@
 
   // ---------------------------------------------------------------- state changes
 
+  // Phase changes go out at once. Joins, answers and wagers are folded into
+  // at most one broadcast every BROADCAST_GAP_MS: each broadcast is delivered
+  // to every phone, so with 100 players this is what keeps a game at a few
+  // thousand Ably messages instead of tens of thousands.
+  const BROADCAST_GAP_MS = 1500;
   let bTimer = null;
+  let lastBroadcast = 0;
   function changed(immediate) {
     persist();
-    clearTimeout(bTimer);
     if (immediate) broadcast();
-    else bTimer = setTimeout(broadcast, 120); // coalesce bursts of answers
+    else scheduleBroadcast();
     render();
+  }
+
+  function scheduleBroadcast() {
+    if (bTimer) return;
+    const wait = Math.max(150, BROADCAST_GAP_MS - (Date.now() - lastBroadcast));
+    bTimer = setTimeout(broadcast, wait);
   }
 
   function persist() {
@@ -398,7 +417,14 @@
 
   function broadcast() {
     clearTimeout(bTimer);
-    if (H.rt && H.state) H.rt.publish('state', viewForPhones());
+    bTimer = null;
+    lastBroadcast = Date.now();
+    if (H.rt && H.state) {
+      const v = viewForPhones();
+      H.stats.broadcasts++;
+      H.stats.maxBytes = Math.max(H.stats.maxBytes, JSON.stringify(v).length);
+      H.rt.publish('state', v);
+    }
   }
 
   function viewForPhones() {
@@ -493,7 +519,7 @@
   }
 
   function playAgain() {
-    startWithPack(H.state.pack.id, H.state.mode, H.state.length || 'standard');
+    startWithPack(H.state.pack.id, H.state.mode, H.state.length || 'short');
   }
 
   function newPack() {
@@ -587,7 +613,8 @@
 
   function playersHTML(s) {
     if (!s.order.length) return '<div class="empty-players">Waiting for the first brave soul…</div>';
-    return s.order.map((id) => {
+    // Newest first, so a big crowd can still spot their own name pop in.
+    return s.order.slice().reverse().map((id) => {
       const p = s.players[id];
       return '<span class="pchip">' + avatar(p.name, id) + esc(p.name) +
         '<button class="x" data-kick="' + esc(id) + '" title="Remove ' + esc(p.name) + '" aria-label="Remove ' + esc(p.name) + '">✕</button></span>';
@@ -611,6 +638,10 @@
 
   function lockedRowHTML(s, key) {
     const got = s.order.filter((id) => (key === 'wager' ? s.wagers[id] != null : !!s.answers[id])).length;
+    if (s.order.length > 16) {
+      // Too many faces for one row: a progress bar instead.
+      return '<div class="lockbar"><i style="width:' + (got / s.order.length) * 100 + '%"></i></div><span>' + got + ' of ' + s.order.length + ' locked in</span>';
+    }
     return s.order.map((id) => {
       const done = key === 'wager' ? s.wagers[id] != null : !!s.answers[id];
       return avatar(s.players[id].name, id).replace('class="avatar"', 'class="avatar' + (done ? '' : ' wait') + '" title="' + esc(s.players[id].name) + '"');
@@ -634,8 +665,9 @@
 
   function boardRows(s, opts) {
     const { sorted, rank } = E.ranks(s);
-    let list = opts && opts.skip ? sorted.slice(opts.skip) : sorted;
-    if (opts && opts.limit) list = list.slice(0, opts.limit);
+    const limit = (opts && opts.limit) || E.TOP_N;
+    let list = sorted.slice(0, limit);
+    if (opts && opts.skip) list = list.slice(opts.skip);
     return list.map((id, i) => {
       const p = s.players[id];
       const res = opts && opts.results && s.results ? s.results[id] : null;
@@ -644,7 +676,7 @@
       const dl = res ? '<span class="dl ' + (res.points > 0 ? 'up' : res.points < 0 ? 'down' : 'zero') + '">' + (res.points ? signed(res.points) : '—') + '</span>' : '<span></span>';
       return '<div class="row' + (rank[id] === 1 ? ' first' : '') + '" style="animation-delay:' + i * 0.05 + 's"><span class="rank">' + rank[id] + '</span>' +
         avatar(p.name, id) + '<span class="nm">' + esc(p.name) + ' ' + mv + '</span>' + dl + '<span class="sc">' + fmt(p.score) + '</span></div>';
-    }).join('');
+    }).join('') + (sorted.length > limit ? '<div class="more-row">…and ' + (sorted.length - limit) + ' more. Everyone’s place is on their phone.</div>' : '');
   }
 
   const VIEWS = {
@@ -658,7 +690,7 @@
         '<div class="qr" title="Scan to join">' + qrSVG(url) + '</div><div class="muted">or scan to join</div></div>' +
         '<div class="lobby-right"><div class="eyebrow">' + esc(s.pack.icon) + ' ' + esc(s.pack.title) + (s.mode === 'sample' ? ' · Free sample round' : ' · ' + esc((E.LENGTHS[s.length] || {}).label || '') + ' game') + '</div>' +
         '<h2 class="display">Who’s playing?</h2><div class="sub" id="pcount">' + countLine(s) + '</div>' +
-        '<div class="players" id="players">' + playersHTML(s) + '</div>' +
+        '<div class="players' + (s.order.length > 24 ? ' many' : '') + '" id="players">' + playersHTML(s) + '</div>' +
         '<div class="lobby-actions"><button class="btn primary" id="startBtn"' + (s.order.length ? '' : ' disabled') + '>Start the game ▶</button>' +
         '<button class="btn ghost" id="changePack">Change pack</button></div></div></div>';
     },
@@ -720,6 +752,7 @@
       const ids = s.order.join(',');
       if (el.dataset.ids !== ids) {
         el.dataset.ids = ids;
+        el.classList.toggle('many', s.order.length > 24);
         el.innerHTML = playersHTML(s);
         bindStage();
       }

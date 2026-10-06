@@ -82,8 +82,13 @@ async function relayPublish(req, res, room) {
   const members = rooms.get(room);
   const line = 'data: ' + JSON.stringify({ name: msg.name, data: msg.data, clientId: msg.clientId }) + '\n\n';
   if (members) {
-    // Like Ably with echoMessages:false, the sender doesn't hear itself.
-    for (const [id, r] of members) if (id !== msg.clientId) r.write(line);
+    // Same routing as the Ably channels: the TV's messages reach everyone,
+    // a phone's messages reach only TVs. Nobody hears their own messages.
+    const fromHost = msg.role === 'host';
+    for (const [id, r] of members) {
+      if (id === msg.clientId) continue;
+      if (fromHost || id.startsWith('host-')) r.write(line);
+    }
   }
   res.writeHead(204).end();
 }

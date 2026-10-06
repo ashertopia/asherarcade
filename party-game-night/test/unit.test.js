@@ -15,8 +15,8 @@ function newGame(opts) {
   const rng = seeded(7);
   const pack = packs.getPack('christmas-movies');
   const st = E.createRoom({ room: 'BCDF', hostId: 'host-1', now: 0 });
-  const rounds = E.buildRounds(pack.questions, { mode: (opts && opts.mode) || 'full', length: 'quick', rng });
-  E.setupGame(st, { pack: packs.meta(pack), mode: (opts && opts.mode) || 'full', length: 'quick', rounds, now: 0, rng });
+  const rounds = E.buildRounds(pack.questions, { mode: (opts && opts.mode) || 'full', length: 'short', rng });
+  E.setupGame(st, { pack: packs.meta(pack), mode: (opts && opts.mode) || 'full', length: 'short', rounds, now: 0, rng });
   return { st, rng };
 }
 
@@ -40,7 +40,8 @@ test('scripture packs cite their references on every question', () => {
 test('full game: classic, speed, then a final with one hard question', () => {
   const { st } = newGame();
   assert.deepEqual(st.rounds.map((r) => r.type), ['classic', 'speed', 'final']);
-  assert.equal(st.rounds[0].questions.length, 4);
+  assert.equal(st.rounds[0].questions.length, 5);
+  assert.equal(st.rounds.reduce((n, r) => n + r.questions.length, 0), 10, 'the Short game is 10 questions');
   assert.equal(st.rounds[2].questions[0].difficulty, 'hard');
   const ids = st.rounds.flatMap((r) => r.questions.map((q) => q.id));
   assert.equal(new Set(ids).size, ids.length, 'no repeated questions');
@@ -64,7 +65,7 @@ test('join rules: unique names, rejoin by id, bans, size limit, expiry', () => {
   assert.equal(E.join(st, { pid: 'c', name: 'Again' }, 3).reason, 'removed');
   E.kick(st, 'a', false); // a player leaving on their own can come back
   assert.equal(E.join(st, { pid: 'a', name: 'Ann' }, 3).ok, true);
-  for (let i = 0; i < 30; i++) E.join(st, { pid: 'p' + i, name: 'P' + i }, 4);
+  for (let i = 0; i < 130; i++) E.join(st, { pid: 'p' + i, name: 'P' + i }, 4);
   assert.equal(st.order.length, E.MAX_PLAYERS);
   assert.equal(E.join(st, { pid: 'late', name: 'Late' }, E.ROOM_TTL_MS + 1).reason, 'expired');
 });
@@ -223,19 +224,56 @@ test('api/redeem reports what a code unlocks', async () => {
   assert.equal(bad.body.valid, false);
 });
 
-test('api/ably-token signs a room-scoped token request without exposing the key', async () => {
+test('api/ably-token: phones can only read the broadcast and write their own inbox', async () => {
   process.env.ABLY_API_KEY = 'appid.keyid:keysecret';
   const handler = require('../api/ably-token.js');
   const r = await call(handler, '/api/ably-token?clientId=player123&room=BCDF');
   assert.equal(r.status, 200);
   assert.equal(r.body.keyName, 'appid.keyid');
   assert.equal(r.body.clientId, 'player123');
-  assert.deepEqual(JSON.parse(r.body.capability), { 'pgn:BCDF': ['publish', 'subscribe'] });
+  const shard = handler.shardOf('player123');
+  assert.deepEqual(JSON.parse(r.body.capability), { 'pgn:BCDF': ['subscribe'], ['pgn:BCDF:in' + shard]: ['publish'] });
   assert.ok(r.body.mac);
   assert.ok(!JSON.stringify(r.body).includes('keysecret'));
+  const host = await call(handler, '/api/ably-token?clientId=host-abc123&room=BCDF');
+  const cap = JSON.parse(host.body.capability);
+  assert.deepEqual(cap['pgn:BCDF'], ['publish', 'subscribe']);
+  assert.deepEqual(cap['pgn:BCDF:in3'], ['subscribe']);
   const bad = await call(handler, '/api/ably-token?clientId=player123&room=bad!');
   assert.equal(bad.status, 400);
   delete process.env.ABLY_API_KEY;
+});
+
+test('100 players: every broadcast stays under one 5 KiB Ably billing unit', () => {
+  const { st, rng } = newGame();
+  const ids = [];
+  for (let i = 0; i < 120; i++) {
+    const pid = 'p' + Math.random().toString(36).slice(2, 9);
+    if (E.join(st, { pid, name: 'Player Name ' + i }, 0).ok) ids.push(pid);
+  }
+  assert.equal(st.order.length, 100, 'capped at 100');
+  E.start(st, 0, rng);
+  let t = 0;
+  let biggest = 0;
+  let phases = 0;
+  while (st.phase !== 'gameover' && phases < 200) {
+    if (st.phase === 'question') {
+      for (const pid of ids) E.answer(st, { pid, qkey: E.questionKey(st), choice: Math.floor(rng() * 4) }, st.phaseStartedAt + 2000);
+    }
+    if (st.phase === 'wager') for (const pid of ids) E.wager(st, { pid, amount: 500 }, t);
+    biggest = Math.max(biggest, JSON.stringify(E.publicView(st, t)).length);
+    t = st.phaseEndsAt;
+    E.tick(st, t, rng);
+    phases++;
+  }
+  assert.equal(st.phase, 'gameover');
+  assert.ok(biggest < 5 * 1024, 'largest broadcast was ' + biggest + ' bytes');
+  const v = E.publicView(st, t);
+  assert.equal(v.top.length, 10);
+  assert.equal(Object.keys(v.scores).length, 100);
+  // Each phone's place matches the TV's ranking.
+  const { rank } = E.ranks(st);
+  for (const pid of ids) assert.equal(E.placeOf(v.scores, pid), rank[pid]);
 });
 
 test('checkout stays off until Stripe is configured', async () => {

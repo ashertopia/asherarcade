@@ -37,7 +37,7 @@
   const REASONS = {
     'name-taken': 'Someone in this room already has that name. Try another!',
     'name-required': 'Pick a nickname first.',
-    full: 'That room is full (20 players max).',
+    full: 'That room is full (100 players max).',
     expired: 'That room has expired. Ask the host for a new code.',
     removed: 'The host removed you from this game.',
     'bad-request': 'Something went wrong. Try again?',
@@ -106,7 +106,7 @@
       const prev = store.get(SESSION_KEY, null);
       P.room = r;
       P.name = n;
-      P.pid = prev && prev.room === r && Date.now() - prev.at < SESSION_TTL ? prev.pid : uid('p');
+      P.pid = prev && prev.room === r && Date.now() - prev.at < SESSION_TTL ? prev.pid : uid('p', 7);
       $('#joinBtn').disabled = true;
       $('#joinBtn').textContent = 'Joining…';
       connect(false);
@@ -120,6 +120,7 @@
     try {
       P.rt = await window.PGNRealtime.connect({
         mode: P.cfg.realtime,
+        role: 'player',
         room: P.room,
         clientId: P.pid,
         onMessage,
@@ -186,15 +187,7 @@
       clearTimeout(P.joinTimer);
       clearInterval(P.joinTimer);
       if (data.ok) {
-        const first = !P.joined;
-        P.joined = true;
-        store.set(SESSION_KEY, { room: P.room, pid: P.pid, name: P.name, at: (store.get(SESSION_KEY, {}) || {}).at || Date.now() });
-        $('#banner').hidden = true;
-        if (first) {
-          A.sfx.tap();
-          vibrate(30);
-          if (!P.view) showWaiting('You’re in! Watch the TV.');
-        }
+        markJoined();
       } else {
         P.joined = false;
         if (data.reason === 'removed') store.del(SESSION_KEY);
@@ -226,10 +219,24 @@
     }
   }
 
+  // The TV doesn't send a "welcome": seeing our own id in a broadcast is the
+  // confirmation (one fewer message per join, times 100 phones).
+  function markJoined() {
+    clearTimeout(P.joinTimer);
+    clearInterval(P.joinTimer);
+    $('#banner').hidden = true;
+    if (P.joined) return;
+    P.joined = true;
+    store.set(SESSION_KEY, { room: P.room, pid: P.pid, name: P.name, at: (store.get(SESSION_KEY, {}) || {}).at || Date.now() });
+    A.sfx.tap();
+    vibrate(30);
+  }
+
   function onState(v) {
     P.view = v;
-    const me = v.players.find((p) => p.id === P.pid);
-    if (P.joined && !me && Date.now() - P.lastJoinSent > 3000) sendJoin(); // host lost us (e.g. it reloaded)
+    const me = currentMe();
+    if (me) markJoined();
+    else if (P.joined && Date.now() - P.lastJoinSent > 3000) sendJoin(); // host lost us (e.g. it reloaded)
     if (!P.joined) return;
     if (v.pack && v.pack.theme) document.body.dataset.theme = v.pack.theme;
 
@@ -245,7 +252,7 @@
         P.qSeenAt = performance.now();
       }
       // Our answer didn't arrive? Send it again.
-      if (P.answer && P.answer.key === P.qKey && me && !me.answered && Date.now() - P.answer.sentAt > 2500) sendAnswer();
+      if (P.answer && P.answer.key === P.qKey && me && !me.answered && P.answer.sentAt && Date.now() - P.answer.sentAt > 3500) sendAnswer();
     }
     if (v.phase === 'wager' && !P.wager) P.wager = { amount: 0, locked: false };
     if (v.phase !== 'wager' && v.phase !== 'question') P.wager = v.phase === 'reveal' ? P.wager : null;
@@ -259,7 +266,11 @@
     if (!v || v.phase !== 'question' || v.paused) return;
     if (P.answer && P.answer.key === v.question.key) return;
     P.answer = { key: v.question.key, choice: i, ms: Math.round(performance.now() - P.qSeenAt), sentAt: 0 };
-    sendAnswer();
+    // In a big room, spread the burst of taps over a few hundred ms so the
+    // inbox channels stay under Ably's rate limit. The answer time was
+    // measured at the tap, so the delay costs no points.
+    const jitter = v.count > 20 ? Math.random() * 400 : 0;
+    setTimeout(sendAnswer, jitter);
     A.sfx.tap();
     vibrate(20);
     render(currentMe());
@@ -278,7 +289,17 @@
     render(currentMe());
   }
 
-  const currentMe = () => (P.view ? P.view.players.find((p) => p.id === P.pid) : null);
+  // Our own row, unpacked from the compact scores map (see engine publicView).
+  function currentMe() {
+    const v = P.view;
+    const a = v && v.scores ? v.scores[P.pid] : null;
+    if (!a) return null;
+    const me = { id: P.pid, name: P.name, score: a[0], rank: window.PGNPlace(v.scores, P.pid) };
+    if (v.phase === 'question') me.answered = !!a[1];
+    if (v.phase === 'wager') me.wagered = !!a[1];
+    if (v.phase === 'reveal' && a.length >= 4) me.result = { points: a[1], choice: a[2] < 0 ? null : a[2], correct: !!a[3] };
+    return me;
+  }
   const vibrate = (ms) => navigator.vibrate && navigator.vibrate(ms);
 
   // ---------------------------------------------------------------- render
@@ -296,9 +317,10 @@
     $('#top').hidden = false;
     $('#meAvatar').innerHTML = avatar(P.name, P.pid);
     $('#meName').textContent = P.name;
-    const place = me && v.players.length > 1 && v.phase !== 'lobby' ? ' · ' + ordinal(me.rank) + ' of ' + v.players.length : '';
-    $('#meSub').textContent = 'Room ' + P.room + place;
+    $('#meSub').textContent = 'Room ' + P.room + ' · ' + v.count + ' playing';
     $('#meScore').textContent = me ? fmt(me.score) : '0';
+    const started = v.phase !== 'lobby' || (me && me.score !== 0);
+    $('#mePlace').textContent = me && started ? ordinal(me.rank) + ' of ' + v.count : 'pts';
   }
 
   function render(me) {
@@ -318,11 +340,22 @@
     return '<div class="p-timer" id="ptimer"><i></i></div>';
   }
 
+  // Top N, plus our own row underneath if we're further down.
   function miniBoard(v, n) {
-    return '<div class="board mini-board">' + v.players.slice(0, n).map((p) =>
+    const row = (p) =>
       '<div class="row' + (p.rank === 1 ? ' first' : '') + '"' + (p.id === P.pid ? ' style="border-color:var(--gold)"' : '') + '><span class="rank">' + p.rank + '</span>' + avatar(p.name, p.id) +
-      '<span class="nm">' + esc(p.name) + '</span><span></span><span class="sc">' + fmt(p.score) + '</span></div>'
-    ).join('') + '</div>';
+      '<span class="nm">' + esc(p.name) + '</span><span></span><span class="sc">' + fmt(p.score) + '</span></div>';
+    const top = v.top.slice(0, n);
+    const me = currentMe();
+    let html = top.map(row).join('');
+    if (me && !top.some((p) => p.id === P.pid)) html += '<div class="gap-dots">⋮</div>' + row(me);
+    return '<div class="board mini-board">' + html + '</div>';
+  }
+
+  function placeCard(me, v) {
+    if (!me) return '';
+    return '<div class="place-card"><div><div class="k">Your place</div><div class="v">' + ordinal(me.rank) + ' <span>of ' + v.count + '</span></div></div>' +
+      '<div><div class="k">Score</div><div class="v">' + fmt(me.score) + '</div></div></div>';
   }
 
   const VIEWS = {
@@ -330,7 +363,7 @@
       if (!v.pack) return '<div class="wait-art">🎁</div><h1 class="center">You’re in!</h1><p class="lede center">The host is picking a question pack…</p>' + leaveBtn();
       return '<div class="wait-art">' + esc(v.pack.icon || '🎄') + '</div><h1 class="center">You’re in!</h1>' +
         '<p class="lede center">' + esc(v.pack.title) + (v.mode === 'sample' ? ' · free sample' : '') + '</p>' +
-        '<p class="center muted">' + v.players.length + ' player' + (v.players.length === 1 ? '' : 's') + ' so far. Eyes on the TV: the host starts when everyone’s here.</p>' + leaveBtn();
+        '<p class="center muted">' + v.count + ' player' + (v.count === 1 ? '' : 's') + ' so far. Eyes on the TV: the host starts when everyone’s here.</p>' + leaveBtn();
     },
     roundIntro(v) {
       return '<div class="eyebrow center">' + (v.round.type === 'final' ? 'Final round' : 'Round ' + (v.round.idx + 1)) + '</div>' +
@@ -374,17 +407,17 @@
       else if (res.correct) html = '<div class="verdict good"><div class="big">Correct!</div><div class="pts">' + signed(res.points) + '</div></div>';
       else if (res.choice == null && v.round.type !== 'final') html = '<div class="verdict none"><div class="big">Too slow!</div><div class="pts">' + (res.points ? signed(res.points) : '+0') + '</div><div class="was">It was ' + right + '</div></div>';
       else html = '<div class="verdict bad"><div class="big">Nope!</div><div class="pts">' + (res.points ? signed(res.points) : '+0') + '</div><div class="was">It was ' + right + '</div></div>';
-      return html + (me ? '<p class="center lede">You’re in <b>' + ordinal(me.rank) + '</b> place with ' + fmt(me.score) + '.</p>' : '');
+      return html + placeCard(me, v);
     },
     standings(v, me) {
-      return '<div class="eyebrow center">Standings</div><h1 class="center">' + (me ? ordinal(me.rank) + ' place' : '') + '</h1>' + miniBoard(v, 5);
+      return '<div class="eyebrow center">Standings</div>' + placeCard(me, v) + miniBoard(v, 5);
     },
     gameover(v, me) {
       const first = me && me.rank === 1;
       if (first && P.resultKey !== 'gameover') { P.resultKey = 'gameover'; A.sfx.fanfare(); vibrate([40, 60, 40, 60, 80]); }
       return '<div class="wait-art">' + (first ? '🏆' : '🎄') + '</div><h1 class="center">' +
         (me ? (first ? 'You won!' : 'You finished ' + ordinal(me.rank)) : 'Game over') + '</h1>' +
-        (me ? '<p class="lede center">' + fmt(me.score) + ' points</p>' : '') + miniBoard(v, 8) +
+        placeCard(me, v) + miniBoard(v, 5) +
         '<p class="center muted">Stay here: the host can start another game.</p>' + leaveBtn();
     },
   };

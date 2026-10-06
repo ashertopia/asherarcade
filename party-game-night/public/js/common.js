@@ -27,10 +27,10 @@
     },
   };
 
-  function uid(prefix) {
+  function uid(prefix, len) {
     const a = new Uint8Array(9);
     crypto.getRandomValues(a);
-    return (prefix || '') + Array.from(a, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, 14);
+    return (prefix || '') + Array.from(a, (b) => b.toString(36).padStart(2, '0')).join('').slice(0, len || 14);
   }
 
   // A shape per answer, so colour is never the only cue.
@@ -156,6 +156,16 @@
     if (!r.ok) throw Object.assign(new Error(body.error || 'Request failed (' + r.status + ')'), { status: r.status, body });
     return body;
   }
+
+  // A player's place from the broadcast's scores map (same rule as the TV:
+  // 1 + number of higher scores, so ties share a place).
+  window.PGNPlace = function (scores, pid) {
+    const mine = scores[pid];
+    if (!mine) return null;
+    let higher = 0;
+    for (const k in scores) if (scores[k][0] > mine[0]) higher++;
+    return higher + 1;
+  };
 
   window.PGN = { esc, store, uid, shape, LETTERS, avatar, fmt, signed, ordinal, lights, snow, confetti, toast, getJSON };
 })();

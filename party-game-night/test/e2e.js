@@ -66,9 +66,9 @@ async function main() {
     await host.waitForFunction(() => document.querySelectorAll('.pill.lock').length === 0);
     assert(true, 'purchase code unlocks every pack');
 
-    // Pick the Nativity pack, quick game.
+    // Pick the Nativity pack, Short game (10 questions).
     await host.click('[data-pack="nativity"]');
-    await host.click('[data-len="quick"]');
+    await host.click('[data-len="short"]');
     await host.screenshot({ path: path.join(SHOTS, '02-host-pack-modal.png') });
     await host.click('#goFull');
     await host.waitForSelector('.code-big');
@@ -93,7 +93,7 @@ async function main() {
     }
     await host.waitForFunction(() => window.__pgnHost.state.order.length === 3);
     const chips = await host.$$eval('.pchip', (els) => els.map((e) => e.textContent.replace('✕', '').trim().slice(1)));
-    assert(chips.join(',') === names.join(','), 'host lobby shows all 3 players live: ' + chips.join(', '));
+    assert(chips.slice().reverse().join(',') === names.join(','), 'host lobby shows all 3 players live (newest first): ' + chips.join(', '));
 
     // A duplicate name is turned away politely.
     const dupCtx = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -114,6 +114,7 @@ async function main() {
     const answered = {};
     const wagered = {};
     const seenPhases = new Set();
+    const questionsPlayed = new Set();
     const shots = {};
     let droppedOnce = false;
     let recovered = false;
@@ -126,6 +127,7 @@ async function main() {
         return { phase: s.phase, r: s.r, q: s.q, type: (s.rounds[s.r] || {}).type, key: window.PGNEngine.questionKey(s), correct: q ? q.correct : null };
       });
       seenPhases.add(hs.phase + (hs.type ? ':' + hs.type : ''));
+      if (hs.phase === 'question') questionsPlayed.add(hs.key);
       const shotKey = hs.phase + ':' + hs.type;
       if (!shots[shotKey] && ['question', 'reveal', 'standings', 'wager', 'roundIntro'].includes(hs.phase)) {
         shots[shotKey] = true;
@@ -150,7 +152,7 @@ async function main() {
         const seqBefore = await players[1].page.evaluate(() => window.__pgnPlayer.view.seq);
         await players[1].page.evaluate(() => window.dispatchEvent(new Event('online')));
         await players[1].page.waitForFunction((s) => window.__pgnPlayer.joined && window.__pgnPlayer.rt.alive() && window.__pgnPlayer.view.seq > s, seqBefore, { timeout: 10000 });
-        recovered = await players[1].page.evaluate(() => window.__pgnPlayer.name === 'Joseph' && window.__pgnPlayer.view.players.length === 3);
+        recovered = await players[1].page.evaluate(() => window.__pgnPlayer.name === 'Joseph' && window.__pgnPlayer.view.count === 3);
         log('… Joseph’s phone is back: rejoined=' + recovered);
       }
 
@@ -181,6 +183,7 @@ async function main() {
     assert(seenPhases.has('question:speed'), 'played the speed round');
     assert(seenPhases.has('wager:final') && seenPhases.has('question:final'), 'played the all-in wager finale');
     assert(seenPhases.has('reveal:classic') && seenPhases.has('standings:classic'), 'showed reveals and standings');
+    assert(questionsPlayed.size === 10, 'the Short game was exactly 10 questions (' + questionsPlayed.size + ')');
     assert(recovered, 'a phone that dropped offline rejoined the same seat');
 
     await host.waitForSelector('.winner-name');
@@ -195,11 +198,13 @@ async function main() {
     log('Final scores: ' + hostScores.map(([n, s]) => n + ' ' + s).join(', '));
     for (const p of players) {
       await p.page.waitForFunction(() => window.__pgnPlayer.view && window.__pgnPlayer.view.phase === 'gameover');
-      const phoneScores = await p.page.evaluate(() => window.__pgnPlayer.view.players.map((x) => [x.name, x.score]));
+      const phoneScores = await p.page.evaluate(() => window.__pgnPlayer.view.top.map((x) => [x.name, x.score]));
       const sortedHost = hostScores.slice().sort((a, b) => a[0].localeCompare(b[0])).join('|');
       const sortedPhone = phoneScores.slice().sort((a, b) => a[0].localeCompare(b[0])).join('|');
       assert(sortedHost === sortedPhone, p.name + '’s phone shows the same final scores as the TV');
     }
+    const place = await players[2].page.evaluate(() => [document.querySelector('#meScore').textContent, document.querySelector('#mePlace').textContent]);
+    assert(/of 3$/.test(place[1]), 'each phone shows its own score and place: ' + place.join(' · '));
     const winner = await host.textContent('.winner-name');
     assert(/Mary/.test(winner), 'the player who knew every answer won: "' + winner.trim() + '"');
     await players[0].page.screenshot({ path: path.join(SHOTS, '21-phone-winner.png') });

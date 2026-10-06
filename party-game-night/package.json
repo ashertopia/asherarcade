@@ -7,6 +7,7 @@
     "dev": "node dev-server.js",
     "test": "node --test test/unit.test.js",
     "e2e": "node test/e2e.js",
+    "load": "node test/load.js",
     "validate": "node scripts/validate-packs.js",
     "make-code": "node scripts/make-code.js"
   },

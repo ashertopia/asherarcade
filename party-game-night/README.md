@@ -20,7 +20,7 @@ folder is deployed with it, and it doesn't touch asherarcade.com or KeepsakeDrop
 
 - **Reveal:** after every question the TV shows the right answer, how many people picked each choice, the explanation (with scripture references in the Bible packs), and the live leaderboard with points earned and rank moves.
 - **Standings:** shown after rounds 1 and 2.
-- **Game length:** Quick (4+4+1 questions), Standard (6+6+1) or Marathon (9+8+1).
+- **Game length:** **Short, 10 questions** (5 classic + 4 speed + the finale, about 8 minutes; the default), Standard (13) or Marathon (18). Every pack can be played at every length.
 - **End screen:** confetti, a podium and the full standings, then **Play again** (same pack, questions nobody has seen yet) or **New pack**. Players keep their seats either way.
 
 **Host controls:**
@@ -30,6 +30,12 @@ folder is deployed with it, and it doesn't touch asherarcade.com or KeepsakeDrop
 - **Full screen:** F
 - **Remove a player:** the ✕ on their name in the lobby
 - **Narrator:** the 🗣 button turns on the browser's text-to-speech, which reads the host lines and questions aloud.
+
+**Rooms of up to 100 players.** The TV shows the top 10 (with "…and 90 more");
+every phone always shows that player's own **score and place** ("28th of
+100") in its header, plus a place/score card after each question and their own
+row under the top 5 on the phone's mini leaderboard. With more than 16
+players, the TV shows a "57 of 100 locked in" progress bar instead of faces.
 
 **Phones:** big tap targets, and each answer has its own color *and* shape. A
 countdown bar and haptics on correct/wrong. If a phone sleeps, loses signal or
@@ -66,6 +72,7 @@ Dev unlock code (all packs): ALL-DEV1-XXXXXXXX
 npm test          # unit tests: rules, scoring, wagers, codes, API gating (16 tests)
 npm run validate  # checks every pack (structure, 25+ questions, refs, lengths)
 npm run e2e       # a full game: 1 TV + 3 phones in headless Chromium
+npm run load      # a full 10-question game with 100 players (99 bots + 1 real phone)
 ```
 
 The end-to-end test does the following, and saves screenshots to `test/screenshots/` (gitignored):
@@ -99,6 +106,38 @@ The end-to-end test does the following, and saves screenshots to `test/screensho
 
 This folder is not covered by the KeepsakeDrop deploy-branch workflow, so its
 production branch can simply be `main`.
+
+### Is Ably free?
+
+Yes, for this. Ably's free plan (no credit card) allows **6 million messages a
+month, 200 concurrent connections, 200 channels, 500 messages/second app-wide,
+50 messages/second per channel**, and messages up to 64 KiB, billed in 5 KiB
+chunks. Ably counts one message for each publish **and one for each phone it's
+delivered to**, so the game is built around that:
+
+- **Phones never hear each other.** The TV broadcasts on `pgn:ROOM`; phones send
+  answers on four inbox channels (`pgn:ROOM:in0`–`in3`) that only the TV reads.
+  An answer costs 2 messages, not 101.
+- **TV updates are throttled.** Phase changes go out at once; joins, answers and
+  wagers are folded into one update at most every 1.5 seconds.
+- **Every update fits in one 5 KiB unit.** It carries names only for the top 10,
+  plus a tiny `[score, …]` array per player, from which each phone works out its
+  own place. With 100 players the largest update measured 4 KB.
+- **100 near-simultaneous taps** are split across the four inboxes (about 25 per
+  channel, under the 50/s limit), spread over a few hundred milliseconds, and
+  retried if Ably pushes back. The delay costs no points: the answer time is
+  measured on the phone at the tap.
+
+**What a game costs:** a 10-question game with 100 players uses roughly
+15,000 messages at normal speed (the load test measured about 7,000 with its
+clock running 3× fast). That's about **400 full 100-player games a month**
+on the free plan, and far more with smaller groups. A 20-person party uses
+around 2,500.
+
+**Limits to keep in mind:** 200 concurrent connections means one 100-player room
+at a time is comfortable (phones that reload briefly hold two). Two big parties
+running at the same moment could hit the cap. If that ever happens, Ably's paid
+plans raise the limits; see [ably.com/pricing](https://ably.com/pricing).
 
 ### Why Ably for realtime
 
@@ -225,7 +264,7 @@ party-game-night/
     js/engine.js     game rules: rounds, scoring, wagers (pure; also runs in Node tests)
     js/host.js       TV controller: owns state, broadcasts, renders
     js/player.js     phone controller: join, answer, wager, reconnect
-    js/realtime.js   Ably (prod) / local relay (dev) behind one interface
+    js/realtime.js   Ably (prod) / local relay (dev) behind one interface; channel layout
     js/audio.js      synthesized sound effects, lobby music, narrator
     js/common.js     shared helpers: snow, lights, confetti, avatars
     vendor/          ably.min.js, qrcode.js (MIT)
@@ -233,12 +272,12 @@ party-game-night/
   lib/               pack loading/validation, unlock codes, HTTP helpers
   packs/             the question packs (not publicly served)
   scripts/           make-code.js, validate-packs.js
-  test/              unit.test.js, e2e.js
+  test/              unit.test.js, e2e.js, load.js (100 players)
   dev-server.js      local server + realtime relay
 ```
 
 ## Known limits
 
-- **Max players:** 20 per room. The TV layouts are tuned for that.
+- **Max players:** 100 per room. The TV shows the top 10; everyone's own place is on their phone.
 - **Who controls the game:** the host browser is the authority. Closing the TV tab pauses the game until it's reopened and resumed.
 - **Ably untested here:** Ably itself couldn't be reached from the sandbox this was built in. The production transport was checked against Ably's documented API, and its token endpoint is unit-tested, but the first real run on Vercel is the first live Ably test. Do one practice game before the party.

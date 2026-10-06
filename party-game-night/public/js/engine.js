@@ -14,7 +14,9 @@
   'use strict';
 
   const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
-  const MAX_PLAYERS = 20;
+  const MAX_PLAYERS = 100;
+  // The TV leaderboard and the phones' mini-board show this many rows.
+  const TOP_N = 10;
   const NAME_MAX = 14;
   const SAMPLE_SIZE = 5;
   // Answers that arrive this long after the buzzer still count: the phone
@@ -59,9 +61,9 @@
   };
 
   const LENGTHS = {
-    quick: { label: 'Quick', classic: 4, speed: 4, minutes: '~10 min' },
-    standard: { label: 'Standard', classic: 6, speed: 6, minutes: '~15 min' },
-    long: { label: 'Marathon', classic: 9, speed: 8, minutes: '~22 min' },
+    short: { label: 'Short', classic: 5, speed: 4, questions: 10, minutes: '~8 min' },
+    standard: { label: 'Standard', classic: 6, speed: 6, questions: 13, minutes: '~12 min' },
+    long: { label: 'Marathon', classic: 9, speed: 8, questions: 18, minutes: '~18 min' },
   };
 
   const DIFF_ORDER = { easy: 0, medium: 1, hard: 2 };
@@ -122,7 +124,7 @@
    * Build the rounds for a game.
    *   questions: the pack's questions (full pack, or just its sample)
    *   opts.mode: 'full' | 'sample'
-   *   opts.length: 'quick' | 'standard' | 'long'
+   *   opts.length: 'short' (10 questions) | 'standard' | 'long'
    *   opts.used: Set of question ids played recently (picked last)
    */
   function buildRounds(questions, opts) {
@@ -135,7 +137,7 @@
       return [makeRound('sample', byDifficulty(pool), rng)];
     }
 
-    const len = LENGTHS[opts.length] || LENGTHS.standard;
+    const len = LENGTHS[opts.length] || LENGTHS.short;
     // Unused questions first, random within each group.
     let pool = shuffle(questions, rng).sort((a, b) => (used.has(a.id) ? 1 : 0) - (used.has(b.id) ? 1 : 0));
 
@@ -514,30 +516,38 @@
   /**
    * What gets broadcast to every phone. The correct answer only appears once
    * the question has closed.
+   *
+   * Sized for 100 players: Ably bills in 5 KiB chunks and delivers each
+   * broadcast to every phone, so the view carries full rows (names) only for
+   * the top TOP_N, plus one tiny array per player under `scores`:
+   *   question: [score, answered 0|1]
+   *   wager:    [score, wagered 0|1]
+   *   reveal:   [score, points, choice (-1 = none), correct 0|1]
+   *   other:    [score]
+   * A phone finds its own entry by player id and works out its place as
+   * 1 + (number of higher scores), the same tie rule the TV uses.
    */
   function publicView(state, now) {
     const round = currentRound(state);
     const q = currentQuestion(state);
     const rk = ranks(state);
     const inQ = state.phase === 'question' || state.phase === 'reveal';
-    const showWagers = state.phase === 'reveal' && round && round.type === 'final';
 
-    const players = rk.sorted.map((id) => {
+    const top = rk.sorted.slice(0, TOP_N).map((id) => {
       const p = state.players[id];
-      const res = state.results && state.phase === 'reveal' ? state.results[id] : null;
-      return {
-        id,
-        name: p.name,
-        score: p.score,
-        rank: rk.rank[id],
-        prevRank: state.prevRanks[id] || null,
-        streak: p.streak || 0,
-        answered: state.phase === 'question' ? !!state.answers[id] : undefined,
-        wagered: state.phase === 'wager' ? state.wagers[id] != null : undefined,
-        wager: showWagers ? state.wagers[id] || 0 : undefined,
-        result: res || undefined,
-      };
+      return { id, name: p.name, score: p.score, rank: rk.rank[id], prevRank: state.prevRanks[id] || null };
     });
+
+    const scores = {};
+    for (const id of state.order) {
+      const sc = state.players[id].score;
+      if (state.phase === 'question') scores[id] = [sc, state.answers[id] ? 1 : 0];
+      else if (state.phase === 'wager') scores[id] = [sc, state.wagers[id] != null ? 1 : 0];
+      else if (state.phase === 'reveal' && state.results && state.results[id]) {
+        const r = state.results[id];
+        scores[id] = [sc, r.points, r.choice == null ? -1 : r.choice, r.correct ? 1 : 0];
+      } else scores[id] = [sc];
+    }
 
     let remainingMs = null;
     if (state.paused) remainingMs = state.pausedRemaining;
@@ -551,14 +561,14 @@
       paused: state.paused,
       remainingMs,
       durationMs: state.phaseEndsAt != null ? state.phaseEndsAt - state.phaseStartedAt : null,
-      pack: state.pack,
+      pack: state.pack ? { id: state.pack.id, title: state.pack.title, icon: state.pack.icon, theme: state.pack.theme } : null,
       mode: state.mode,
-      line: state.line,
-      players,
+      count: state.order.length,
+      top,
+      scores,
       round: round && state.phase !== 'lobby' && state.phase !== 'gameover'
-        ? { idx: state.r, count: state.rounds.length, type: round.type, title: round.title, blurb: round.blurb, qCount: round.questions.length, limitMs: round.limitMs }
+        ? { idx: state.r, count: state.rounds.length, type: round.type, title: round.title, blurb: round.blurb }
         : null,
-      qIdx: state.q,
       question: null,
     };
 
@@ -566,27 +576,19 @@
       view.question = { category: q.category || state.pack.title, difficulty: q.difficulty };
     }
     if (inQ && q) {
-      view.question = {
-        key: questionKey(state),
-        text: q.text,
-        choices: q.choices,
-        difficulty: q.difficulty,
-        category: q.category,
-        answeredCount: Object.keys(state.answers).length,
-      };
-      if (state.phase === 'reveal') {
-        view.question.correct = q.correct;
-        view.question.reveal = q.reveal;
-        view.question.refs = q.refs;
-        const counts = q.choices.map(() => 0);
-        for (const id of state.order) {
-          const r = state.results[id];
-          if (r && r.choice != null) counts[r.choice]++;
-        }
-        view.question.counts = counts;
-      }
+      view.question = { key: questionKey(state), text: q.text, choices: q.choices };
+      if (state.phase === 'reveal') view.question.correct = q.correct;
     }
     return view;
+  }
+
+  /** A phone's place, from the scores map: 1 + how many scored higher. */
+  function placeOf(scores, pid) {
+    const mine = scores[pid];
+    if (!mine) return null;
+    let higher = 0;
+    for (const k in scores) if (scores[k][0] > mine[0]) higher++;
+    return higher + 1;
   }
 
   // ---------------------------------------------------------------- the host's voice
@@ -652,6 +654,8 @@
   return {
     ROOM_TTL_MS,
     MAX_PLAYERS,
+    TOP_N,
+    placeOf,
     NAME_MAX,
     TIMING,
     ROUND_TYPES,
