@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Join · Christmas Party Game Night</title>
+<meta name="description" content="Join a Christmas Party Game Night room from your phone. Enter the code on the TV.">
+<meta name="theme-color" content="#0b1714">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-theme="christmas">
+<canvas id="snow"></canvas>
+<div class="lights" id="lights" aria-hidden="true"></div>
+<div class="banner" id="banner" hidden>Reconnecting…</div>
+
+<div class="app phone">
+  <header class="phone-top" id="top" hidden>
+    <span id="meAvatar"></span>
+    <div class="me"><div class="n" id="meName"></div><div class="s" id="meSub"></div></div>
+    <div class="score-box"><div class="score" id="meScore">0</div><div class="place" id="mePlace">pts</div></div>
+    <button class="icon-btn" data-mute title="Mute">🔊</button>
+  </header>
+  <main class="phone-main" id="main" aria-live="polite"></main>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/audio.js"></script>
+<script src="/js/realtime.js"></script>
+<script src="/js/player.js"></script>
+</body>
+</html>

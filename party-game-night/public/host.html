@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Host · Christmas Party Game Night</title>
+<meta name="description" content="Host a Christmas party trivia game on your TV. Everyone plays on their phone, no app needed.">
+<meta name="theme-color" content="#0b1714">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎄</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;0,9..144,800;1,9..144,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body data-theme="christmas">
+<canvas id="snow"></canvas>
+<div class="lights" id="lights" aria-hidden="true"></div>
+<canvas id="confetti"></canvas>
+
+<div class="app host">
+  <header class="host-top">
+    <div class="brand">Christmas <em>Party</em> Game Night</div>
+    <div class="spacer"></div>
+    <div class="room-chip" id="roomChip" hidden></div>
+    <button class="icon-btn" data-narrator title="Narrator voice (reads the host lines aloud)" aria-label="Narrator voice">🗣</button>
+    <button class="icon-btn" data-mute title="Mute (M)">🔊</button>
+    <button class="icon-btn" id="fsBtn" title="Full screen (F)" aria-label="Full screen">⛶</button>
+  </header>
+  <main class="stage" id="stage" aria-live="polite"></main>
+  <footer class="host-foot">
+    <div class="host-line" id="line"></div>
+    <div class="controls" id="controls"></div>
+  </footer>
+</div>
+<div class="autobar" id="autobar" hidden></div>
+<div id="modalRoot"></div>
+
+<script src="/vendor/qrcode.js"></script>
+<script src="/js/common.js"></script>
+<script src="/js/audio.js"></script>
+<script src="/js/engine.js"></script>
+<script src="/js/realtime.js"></script>
+<script src="/js/host.js"></script>
+</body>
+</html>

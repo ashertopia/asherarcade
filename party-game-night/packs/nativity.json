@@ -1,0 +1,322 @@
+{
+  "id": "nativity",
+  "title": "The Nativity Story",
+  "tagline": "Angels, shepherds, Magi and a manger — how well do you know it?",
+  "description": "Thirty questions on the first Christmas, drawn straight from Matthew 1–2 and Luke 1–2 (NIV): angel visits, a census, shepherds, Magi, and the boy Jesus in the temple.",
+  "collection": "Christmas",
+  "theme": "christmas",
+  "icon": "⭐",
+  "audience": "Family-friendly · Bible",
+  "order": 3,
+  "price": { "usd": 9.99 },
+  "free": false,
+  "translation": "NIV",
+  "requireRefs": ["Scripture"],
+  "questions": [
+    {
+      "id": "nativity-01",
+      "difficulty": "easy",
+      "category": "The Birth",
+      "q": "Where did Mary lay her newborn son?",
+      "choices": ["A cradle at the inn", "A manger", "A basket of reeds", "A carpenter’s bench"],
+      "answer": 1,
+      "reveal": "Mary wrapped her firstborn son in cloths and placed him in a manger, because there was no guest room available for them. The Savior’s first bed was a feeding trough!",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:7" }],
+      "sample": true
+    },
+    {
+      "id": "nativity-02",
+      "difficulty": "easy",
+      "category": "The Magi",
+      "q": "Which gifts did the Magi present to the child?",
+      "choices": ["Gold, silver and spices", "Oil, wine and bread", "Gold, frankincense and myrrh", "Incense, linen and pearls"],
+      "answer": 2,
+      "reveal": "They bowed down and worshiped him, then opened their treasures and presented gold, frankincense and myrrh.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:11" }],
+      "sample": true
+    },
+    {
+      "id": "nativity-03",
+      "difficulty": "easy",
+      "category": "Announcements",
+      "q": "Which angel did God send to Mary in Nazareth?",
+      "choices": ["Gabriel", "Michael", "Raphael", "Uriel"],
+      "answer": 0,
+      "reveal": "God sent the angel Gabriel to Nazareth, a town in Galilee, to a virgin pledged to be married to Joseph. It was the sixth month of Elizabeth’s pregnancy.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 1:26–27" }],
+      "sample": true
+    },
+    {
+      "id": "nativity-04",
+      "difficulty": "easy",
+      "category": "The Census",
+      "q": "For the census, Joseph went to which town because he belonged to the house and line of David?",
+      "choices": ["Nazareth", "Jerusalem", "Capernaum", "Bethlehem"],
+      "answer": 3,
+      "reveal": "Joseph went up from Nazareth in Galilee to Judea, to Bethlehem, the town of David — and Mary went with him.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:4–5" }]
+    },
+    {
+      "id": "nativity-05",
+      "difficulty": "easy",
+      "category": "Flight to Egypt",
+      "q": "Told by an angel in a dream to flee, where did Joseph take Mary and the child to escape King Herod?",
+      "choices": ["Babylon", "Syria", "Egypt", "Moab"],
+      "answer": 2,
+      "reveal": "Joseph got up, took the child and his mother during the night and left for Egypt, where they stayed until Herod died.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:13–15" }]
+    },
+    {
+      "id": "nativity-06",
+      "difficulty": "easy",
+      "category": "Shepherds & Angels",
+      "q": "To whom, out in the fields at night, did an angel announce the birth of the Savior?",
+      "choices": ["Fishermen", "Tax collectors", "Roman soldiers", "Shepherds"],
+      "answer": 3,
+      "reveal": "Shepherds were living out in the fields nearby, keeping watch over their flocks at night, when the glory of the Lord shone around them. Heaven’s birth announcement went to working folk!",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:8–11" }]
+    },
+    {
+      "id": "nativity-07",
+      "difficulty": "easy",
+      "category": "John’s Birth",
+      "q": "What name did the angel tell Zechariah to give his son?",
+      "choices": ["Zechariah", "John", "Samuel", "Jesse"],
+      "answer": 1,
+      "reveal": "The angel said Elizabeth would bear a son, to be called John — a joy and delight who would be filled with the Holy Spirit even before he was born.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 1:13–15" }]
+    },
+    {
+      "id": "nativity-08",
+      "difficulty": "easy",
+      "category": "Joseph’s Dream",
+      "q": "Matthew says the child would be called Immanuel. What does Immanuel mean?",
+      "choices": ["God with us", "Prince of peace", "Son of David", "Light of the world"],
+      "answer": 0,
+      "reveal": "Matthew quotes the prophecy that the virgin will conceive and give birth to a son, and they will call him Immanuel — which means God with us.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 1:23" }]
+    },
+    {
+      "id": "nativity-09",
+      "difficulty": "easy",
+      "category": "The Boy Jesus",
+      "q": "How old was Jesus when he stayed behind in Jerusalem after the Passover festival?",
+      "choices": ["Eight", "Ten", "Twelve", "Thirteen"],
+      "answer": 2,
+      "reveal": "When he was twelve, the family went up to the festival as usual. Afterward the boy Jesus stayed behind in Jerusalem — and his parents didn’t know it!",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:41–43" }]
+    },
+    {
+      "id": "nativity-10",
+      "difficulty": "easy",
+      "category": "The Magi",
+      "q": "What did the Magi say they had seen that led them to come and worship the king of the Jews?",
+      "choices": ["A dream from God", "His star when it rose", "A message from Herod", "An angel in the desert"],
+      "answer": 1,
+      "reveal": "Arriving in Jerusalem from the east, the Magi asked where the one born king of the Jews was, saying they had seen his star when it rose and had come to worship him.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:1–2" }]
+    },
+    {
+      "id": "nativity-11",
+      "difficulty": "medium",
+      "category": "Announcements",
+      "q": "What happened to Zechariah because he did not believe the angel’s message?",
+      "choices": ["He lost his sight", "He was unable to speak", "He fell into a deep sleep", "He was barred from the temple"],
+      "answer": 1,
+      "reveal": "The angel told him he would be silent and unable to speak until the day the promise came true, because he did not believe the angel’s words.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 1:20" }],
+      "sample": true
+    },
+    {
+      "id": "nativity-12",
+      "difficulty": "medium",
+      "category": "The Magi",
+      "q": "According to Matthew, where did the Magi find the child with his mother Mary?",
+      "choices": ["In a stable", "In the temple courts", "In a cave outside town", "In a house"],
+      "answer": 3,
+      "reveal": "Matthew says they came to the house. Fun fact: Matthew never says how many Magi there were — the tradition of three probably comes from the three gifts.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:11" }],
+      "sample": true
+    },
+    {
+      "id": "nativity-13",
+      "difficulty": "medium",
+      "category": "Mary & Elizabeth",
+      "q": "When Elizabeth heard Mary’s greeting, what happened?",
+      "choices": ["Her baby leaped in her womb", "She fainted with joy", "She went into labor", "She lost her voice"],
+      "answer": 0,
+      "reveal": "The baby leaped in her womb, and Elizabeth was filled with the Holy Spirit. She told Mary the baby had leaped for joy!",
+      "refs": [{ "label": "Scripture", "ref": "Luke 1:41–44" }]
+    },
+    {
+      "id": "nativity-14",
+      "difficulty": "medium",
+      "category": "John’s Birth",
+      "q": "At his son’s circumcision, how did Zechariah settle what the baby would be named?",
+      "choices": ["He nodded to the priest", "He pointed to a scroll", "He wrote it on a tablet", "He whispered it to Mary"],
+      "answer": 2,
+      "reveal": "When the relatives made signs to him, he asked for a writing tablet and wrote that the name was John. Everyone was astonished!",
+      "refs": [{ "label": "Scripture", "ref": "Luke 1:59–63" }]
+    },
+    {
+      "id": "nativity-15",
+      "difficulty": "medium",
+      "category": "The Boy Jesus",
+      "q": "When his worried parents found him in the temple, where did the boy Jesus say he had to be?",
+      "choices": ["In his Father’s house", "Among the shepherds", "Back home in Nazareth", "Out in the wilderness"],
+      "answer": 0,
+      "reveal": "Jesus asked why they were searching and said he had to be in his Father’s house. Luke notes they didn’t understand — but Mary treasured all these things in her heart.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:49–51" }]
+    },
+    {
+      "id": "nativity-16",
+      "difficulty": "medium",
+      "category": "Simeon & Anna",
+      "q": "What had the Holy Spirit revealed to Simeon, a righteous man in Jerusalem?",
+      "choices": ["He would become high priest", "He would live to be 100", "He would anoint a new king", "He’d see the Messiah before dying"],
+      "answer": 3,
+      "reveal": "It had been revealed that he would not die before he had seen the Lord’s Messiah. When Mary and Joseph brought Jesus in, Simeon took him in his arms and praised God.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:25–28" }]
+    },
+    {
+      "id": "nativity-17",
+      "difficulty": "medium",
+      "category": "The Boy Jesus",
+      "q": "Luke says Mary and Joseph found the boy Jesus in the temple courts after how many days?",
+      "choices": ["One day", "Three days", "Seven days", "Forty days"],
+      "answer": 1,
+      "reveal": "After three days they found him sitting among the teachers, listening and asking questions — and everyone was amazed at his understanding and his answers.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:46–47" }]
+    },
+    {
+      "id": "nativity-18",
+      "difficulty": "medium",
+      "category": "Joseph’s Dream",
+      "q": "Before the angel appeared in his dream, what did Joseph plan to do on learning Mary was pregnant?",
+      "choices": ["Marry her at once", "Move away to Galilee", "Divorce her quietly", "Ask the priests to decide"],
+      "answer": 2,
+      "reveal": "Joseph was faithful to the law yet did not want to expose her to public disgrace, so he planned to divorce her quietly — until an angel told him not to be afraid to take Mary home as his wife.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 1:19–20" }]
+    },
+    {
+      "id": "nativity-19",
+      "difficulty": "medium",
+      "category": "The Magi",
+      "q": "After being warned in a dream, what did the Magi do?",
+      "choices": ["Went home by another route", "Reported back to Herod", "Settled in Bethlehem", "Traveled on to Egypt"],
+      "answer": 0,
+      "reveal": "Warned not to go back to Herod, they returned to their country by another route — so Herod never got the report he had asked them for.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:8–12" }]
+    },
+    {
+      "id": "nativity-20",
+      "difficulty": "medium",
+      "category": "The Census",
+      "q": "Which Roman ruler issued the decree that a census be taken of the entire Roman world?",
+      "choices": ["Tiberius Caesar", "Julius Caesar", "Nero", "Caesar Augustus"],
+      "answer": 3,
+      "reveal": "Caesar Augustus issued the decree, and everyone went to their own town to register — which is how Joseph and Mary came to Bethlehem.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:1–4" }]
+    },
+    {
+      "id": "nativity-21",
+      "difficulty": "medium",
+      "category": "Return to Nazareth",
+      "q": "According to Matthew, in which town did Joseph settle the family after Herod died?",
+      "choices": ["Bethlehem", "Nazareth", "Jerusalem", "Capernaum"],
+      "answer": 1,
+      "reveal": "Joseph withdrew to the district of Galilee and lived in a town called Nazareth, fulfilling what was said through the prophets that he would be called a Nazarene.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:19–23" }]
+    },
+    {
+      "id": "nativity-22",
+      "difficulty": "medium",
+      "category": "Mary & Elizabeth",
+      "q": "How long did Mary stay with Elizabeth before returning home?",
+      "choices": ["One week", "Forty days", "About three months", "Nine months"],
+      "answer": 2,
+      "reveal": "Mary stayed with Elizabeth for about three months and then returned home. Two expectant mothers, sharing the wonder together!",
+      "refs": [{ "label": "Scripture", "ref": "Luke 1:56" }]
+    },
+    {
+      "id": "nativity-23",
+      "difficulty": "hard",
+      "category": "Announcements",
+      "q": "Zechariah the priest belonged to which priestly division?",
+      "choices": ["Zadok", "Phinehas", "Abijah", "Eli"],
+      "answer": 2,
+      "reveal": "Luke introduces Zechariah as a priest of the priestly division of Abijah; his wife Elizabeth was also a descendant of Aaron.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 1:5" }]
+    },
+    {
+      "id": "nativity-24",
+      "difficulty": "hard",
+      "category": "Simeon & Anna",
+      "q": "Anna the prophet, daughter of Penuel, was from which tribe?",
+      "choices": ["Judah", "Benjamin", "Levi", "Asher"],
+      "answer": 3,
+      "reveal": "Anna was of the tribe of Asher. She never left the temple, worshiping night and day, and she spoke about the child to all who were looking forward to the redemption of Jerusalem.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:36–38" }]
+    },
+    {
+      "id": "nativity-25",
+      "difficulty": "hard",
+      "category": "The Census",
+      "q": "Luke dates the first census to when which man was governor of Syria?",
+      "choices": ["Pontius Pilate", "Quirinius", "Felix", "Festus"],
+      "answer": 1,
+      "reveal": "Luke notes this was the first census that took place while Quirinius was governor of Syria.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:2" }]
+    },
+    {
+      "id": "nativity-26",
+      "difficulty": "hard",
+      "category": "King Herod",
+      "q": "What age limit did Herod set when he ordered the killing of the boys?",
+      "choices": ["Two years old and under", "One year old and under", "Six months and under", "Five years old and under"],
+      "answer": 0,
+      "reveal": "Furious at being outwitted, Herod ordered all the boys in Bethlehem and its vicinity two years old and under to be killed, based on the time he had learned from the Magi.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:16" }]
+    },
+    {
+      "id": "nativity-27",
+      "difficulty": "hard",
+      "category": "The Genealogy",
+      "q": "Matthew sums up Jesus’ family line in three sets of how many generations each?",
+      "choices": ["Seven", "Ten", "Twelve", "Fourteen"],
+      "answer": 3,
+      "reveal": "Fourteen from Abraham to David, fourteen from David to the exile to Babylon, and fourteen from the exile to the Messiah.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 1:17" }]
+    },
+    {
+      "id": "nativity-28",
+      "difficulty": "hard",
+      "category": "Presentation",
+      "q": "When Jesus was presented at the temple, what sacrifice did his parents offer?",
+      "choices": ["A pair of doves or two young pigeons", "A spotless year-old lamb", "A young bull", "A goat and a ram"],
+      "answer": 0,
+      "reveal": "Following what is said in the Law of the Lord, they offered a pair of doves or two young pigeons.",
+      "refs": [{ "label": "Scripture", "ref": "Luke 2:22–24" }]
+    },
+    {
+      "id": "nativity-29",
+      "difficulty": "hard",
+      "category": "Return to Nazareth",
+      "q": "After Herod died, why was Joseph afraid to go back to Judea?",
+      "choices": ["Pilate was governor there", "Archelaus was reigning there", "A famine had struck Judea", "A new census was ordered"],
+      "answer": 1,
+      "reveal": "Joseph heard that Archelaus was reigning in Judea in place of his father Herod, so he was afraid; warned in a dream, he withdrew to Galilee instead.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 2:22" }]
+    },
+    {
+      "id": "nativity-30",
+      "difficulty": "hard",
+      "category": "The Genealogy",
+      "q": "In Matthew’s genealogy, who is named as the mother of Obed?",
+      "choices": ["Rahab", "Tamar", "Ruth", "Naomi"],
+      "answer": 2,
+      "reveal": "Boaz was the father of Obed, whose mother was Ruth — and Boaz’s own mother was Rahab! Matthew’s list names several remarkable women.",
+      "refs": [{ "label": "Scripture", "ref": "Matthew 1:5" }]
+    }
+  ]
+}
