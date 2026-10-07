@@ -78,7 +78,7 @@ function fulfillOrder_(order) {
 }
 
 /**
- * Opt-in (Script Property AUTO_SHARE_ALBUM = true): add the customer's album
+ * On by default (Script Property AUTO_SHARE_ALBUM = false turns it off): add the customer's album
  * email as an editor. Google sends them its usual "shared a folder" email.
  * Any problem (feature off, missing/odd address, non-Google address) falls
  * back to the old manual step, and the owner email says which happened.

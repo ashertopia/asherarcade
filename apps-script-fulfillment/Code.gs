@@ -31,9 +31,10 @@ function CFG_() {
     OWNER_EMAIL: p.getProperty('OWNER_EMAIL') || ownerEmailFromAccount_(),
     LOG_SHEET_ID: p.getProperty('LOG_SHEET_ID'),
     SITE_URL: p.getProperty('SITE_URL') || 'https://keepsakedrop.com',
-    // Opt-in: share the album folder with the customer's album email
-    // automatically. Off unless set to 'true' (sharing stays a manual step).
-    AUTO_SHARE_ALBUM: p.getProperty('AUTO_SHARE_ALBUM') === 'true',
+    // Share the album folder with the customer's album email automatically
+    // (Google emails them its "shared a folder" notice). On unless the
+    // property is set to 'false', which restores the manual step.
+    AUTO_SHARE_ALBUM: p.getProperty('AUTO_SHARE_ALBUM') !== 'false',
   };
 }
 

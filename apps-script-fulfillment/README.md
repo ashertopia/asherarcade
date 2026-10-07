@@ -86,7 +86,7 @@ suffix and the owner email points it out.
    > sending the draft.
    | `PAYMENT_LINK_ID` | optional, defaults to `plink_1U16AQRyTAXcMvg49vhhR39i` — must be the live link's ID or every order is ignored, **silently** (other-link events don't email). Check it with `checkConfig` |
    | `SITE_URL` | optional, defaults to `https://keepsakedrop.com` (sign-pdf only accepts that origin unless `SIGN_PDF_ALLOWED_ORIGINS` is set on Vercel) |
-   | `AUTO_SHARE_ALBUM` | optional; `true` shares each new album folder with the customer's album email automatically (Google sends them its usual "shared a folder" email). Unset = the old manual step |
+   | `AUTO_SHARE_ALBUM` | optional; on by default, so each new album folder is shared with the customer's album email as Editor (Google sends them its usual "shared a folder" email). `false` = share by hand |
 
    (`LOG_SHEET_ID` fills itself in automatically on first run — leave blank.)
 
