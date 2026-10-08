@@ -172,7 +172,7 @@ a{color:var(--blue-deep);}
     <p class="kicker">Order</p>
     <h1>Make this one mine</h1>
     <p class="lede">Pick the game, send the photos, and we build it. Prices are for the standard build listed for each
-      game. Anything beyond that is quoted separately before we start.</p>
+      game. Extras are $20 per extra face or character and $40 for a different theme or world. Anything bigger gets a quote.</p>
 
     <div class="order-grid">
       <div>
@@ -218,10 +218,25 @@ a{color:var(--blue-deep);}
 
           <div class="extra" id="row-extra">
             <label class="check"><input type="checkbox" id="of-extra-on">
-              <span>I want more than the standard build (extra photos, characters, a different theme or world)</span></label>
-            <div id="extra-box" class="is-hidden" style="margin-top:12px;">
-              <label for="of-extra">What would you like added?</label>
-              <textarea id="of-extra" placeholder="Describe the extras. We quote them separately before we build, and your standard game is not held up waiting on it."></textarea>
+              <span>I want more than the standard build</span></label>
+            <div id="extra-box" class="is-hidden" style="margin-top:12px;display:grid;gap:14px;">
+              <div>
+                <label for="of-extra-faces">Extra faces or characters (+$20 each)</label>
+                <select id="of-extra-faces">
+                  <option value="0">None</option>
+                  <option value="1">1 extra (+$20)</option>
+                  <option value="2">2 extra (+$40)</option>
+                  <option value="3">3 extra (+$60)</option>
+                  <option value="4">4 extra (+$80)</option>
+                </select>
+              </div>
+              <label class="check"><input type="checkbox" id="of-extra-theme">
+                <span>A different theme or world (+$40)</span></label>
+              <div>
+                <label for="of-extra">Describe the extras</label>
+                <textarea id="of-extra" placeholder="Who the extra characters are, what theme or world you want, or anything bigger. Bigger changes get a quote."></textarea>
+              </div>
+              <p class="hint" id="extra-total" style="margin:0;"></p>
             </div>
           </div>
 
@@ -515,6 +530,18 @@ $('of-product').addEventListener('change', function(){
   try { history.replaceState(null, '', '?product=' + this.value); } catch (e) {}
 });
 $('of-extra-on').addEventListener('change', function(){ $('extra-box').classList.toggle('is-hidden', !this.checked); });
+function extrasAmount(){
+  if ($('row-extra').classList.contains('is-hidden') || !$('of-extra-on').checked) return 0;
+  return 20 * (parseInt($('of-extra-faces').value, 10) || 0) + ($('of-extra-theme').checked ? 40 : 0);
+}
+function updateExtras(){
+  var amt = extrasAmount();
+  $('extra-total').textContent = amt
+    ? 'Extras: +$' + amt + '. You pay for the game now; we confirm the extras and send a separate Stripe link for them.'
+    : 'Anything beyond these is quoted before we build. Your standard game is not held up waiting on it.';
+}
+['of-extra-on', 'of-extra-faces', 'of-extra-theme'].forEach(function(id){ $(id).addEventListener('change', updateExtras); });
+updateExtras();
 
 function fail(msg){
   var e = $('of-error'); e.textContent = msg; e.classList.remove('is-hidden');
@@ -590,7 +617,17 @@ $('orderForm').addEventListener('submit', function(e){
   var c = collect();
   if (c.error) return fail(c.error);
   $('of-error').classList.add('is-hidden');
-  var extra = (!$('row-extra').classList.contains('is-hidden') && $('of-extra-on').checked) ? $('of-extra').value.trim() : '';
+  var extra = '';
+  if (!$('row-extra').classList.contains('is-hidden') && $('of-extra-on').checked) {
+    var faces = parseInt($('of-extra-faces').value, 10) || 0;
+    var parts = [];
+    if (faces) parts.push(faces + ' extra face(s)/character(s) +$' + (20 * faces));
+    if ($('of-extra-theme').checked) parts.push('different theme or world +$40');
+    var desc = $('of-extra').value.trim();
+    if (!parts.length && !desc) return fail('Pick an extra or describe what you want added, or uncheck "more than the standard build."');
+    extra = (parts.length ? parts.join(', ') + ' = +$' + extrasAmount() : 'Quote needed')
+      + (desc ? '\nDetails: ' + desc : '');
+  }
   if ($('of-website').value) { return finish('AA-000000-TEST', g, email, ''); }
 
   var btn = $('of-submit');
@@ -656,7 +693,7 @@ function finish(id, g, email, miss){
       body: 'We will reply within 24 hours with questions and a quote. Original games start at $249, and nothing is owed until you approve the quote.' + miss });
   } else {
     showThanks({ title: 'Order received.', id: id,
-      body: 'We will email you a secure Stripe payment link for ' + priceText(g) + ' within 24 hours, along with a ready date.' + miss });
+      body: 'We will email you a secure Stripe payment link for ' + priceText(g) + (extrasAmount() ? ' plus $' + extrasAmount() + ' in extras' : '') + ' within 24 hours, along with a ready date.' + miss });
   }
 }
 
