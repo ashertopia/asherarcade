@@ -271,13 +271,11 @@ img{display:block;max-width:100%;}
       <li><b>Faster</b>answers score higher</li>
       <li><b>1,000</b>max points each</li>
     </ul>
-    <div class="welcome" id="i-welcome" hidden></div>
     <form class="join" id="i-form" autocomplete="off" novalidate>
       <label for="i-name">First and last name for the leaderboard</label>
       <input id="i-name" maxlength="30" placeholder="First and last name" autocapitalize="words" enterkeyhint="go" required>
       <button class="btn" id="i-go" type="submit">Let's Play</button>
     </form>
-    <button class="btn" id="i-resume" type="button" hidden>Keep Going</button>
     <div class="msg" id="i-msg" role="alert"></div>
     <p class="once" id="i-once">Right answers score points. Faster right answers score more. <b>One try per person</b>, so make it count.</p>
     <button class="link" id="i-board" type="button">See the leaderboard</button>
@@ -662,18 +660,14 @@ function openIntro(){
     $('i-form').hidden = true; $('i-once').hidden = true;
     $('i-msg').textContent = 'This game is closed. Thanks for playing!';
   } else if (state && state.name && !state.done) {
-    // Came back mid-game (reload, phone slept). The question that was on
-    // screen counts as unanswered, so reloading can't buy a second look.
+    // The page reloaded mid-game (phone call, phone locked, accidental refresh).
+    // Go straight back in. The question that was on screen counts as missed,
+    // so a reload can't buy a second look.
     if (state.pending >= 0 && !state.answers[state.pending]) {
       state.answers[state.pending] = { c: -1, ms: cfg.secs * 1000 };
       state.pending = -1; save();
     }
-    $('i-form').hidden = true;
-    $('i-welcome').hidden = false;
-    var left = cfg.questions.length - state.answers.length;
-    $('i-welcome').innerHTML = 'Welcome back, <b></b>. You have <b>' + left + '</b> question' + (left === 1 ? '' : 's') + ' to go.';
-    $('i-welcome').querySelector('b').textContent = state.name;
-    $('i-resume').hidden = false;
+    return countdown(nextIndex());
   }
   if (MODE === 'preview') $('i-once').textContent = 'Preview: scores stay on this device and reset each time you open the preview.';
   show('s-intro');
@@ -696,7 +690,6 @@ $('i-form').addEventListener('submit', function(e){
     msg.textContent = "Couldn't reach the scoreboard. Check your signal and tap Let's Play again.";
   }).finally(function(){ go.disabled = false; go.textContent = "Let's Play"; });
 });
-$('i-resume').addEventListener('click', function(){ initAudio(); countdown(nextIndex()); });
 $('i-board').addEventListener('click', function(){ openBoard(false); });
 
 function begin(name){
@@ -751,7 +744,7 @@ function ask(i){
     b.dataset.k = k; b.disabled = true;
     b.textContent = q.answers[orig];
     b.setAttribute('aria-label', q.answers[orig]);
-    b.addEventListener('click', function(){ answer(k); });
+    b.addEventListener('click', function(){ initAudio(); answer(k); });
     tiles.appendChild(b);
   });
   setClock(1, cfg.secs);
