@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Order a Custom Game | Asher Arcade</title>
+<meta name="description" content="Order a custom browser game from Asher Arcade. Reveal & Announce Puzzle $39, Drop & Catch $79, Memory Match $79, Whack-a-Mole $99, Endless Runner $129, Wedding Platformer $129, original games from $249.">
+<link rel="canonical" href="https://www.asherarcade.com/order.html">
+<link rel="icon" href="logo-mark.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.asherarcade.com/order.html">
+<meta property="og:title" content="Order a Custom Game | Asher Arcade">
+<meta property="og:description" content="Pick your game, send your photos, and we build it. Every game is hosted free for 3 months with the leaderboard saved.">
+<meta property="og:site_name" content="Asher Arcade">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&amp;family=Rubik:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#F6F0E4;
+  --paper-2:#EDE4D1;
+  --paper-3:#E4D9C1;
+  --ink:#241F1A;
+  --ink-soft:#6B6255;
+  --navy:#0A1A32;
+  --amber:#E8A038;
+  --ochre:#C2761B;
+  --ochre-deep:#9E5C0E;
+  --blue:#44679D;
+  --blue-deep:#33507D;
+  --rule:#CFC3A8;
+  --bad:#A33A2A;
+  --display:"Rubik Mono One","Arial Black",system-ui,sans-serif;
+  --text:"Rubik","Helvetica Neue",Arial,system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--text);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue-deep);}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
+@media (max-width:600px){ .wrap{padding:0 16px;} }
+.kicker{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-deep);margin:0;}
+
+/* NAV */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(246,240,228,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);}
+.topbar-in{max-width:1120px;margin:0 auto;padding:13px 28px 16px;display:flex;align-items:center;gap:26px;}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);}
+.brand img{width:46px;height:46px;display:block;box-shadow:4px 4px 0 var(--ochre);}
+.brand span{font-family:var(--display);font-size:19px;letter-spacing:.01em;}
+.topbar nav{margin-left:auto;display:flex;gap:22px;}
+.topbar nav a{font-size:14px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-bottom:2px solid transparent;padding-bottom:2px;}
+.topbar nav a:hover{color:var(--ink);border-bottom-color:var(--ochre);}
+@media (max-width:600px){ .topbar-in{padding:12px 16px 14px;} .brand span{font-size:16px;} .topbar nav{gap:14px;} .topbar nav a.hide-sm{display:none;} }
+
+/* PAGE */
+.order{padding:52px 0 70px;}
+.order h1{font-family:var(--display);font-size:clamp(26px,4.2vw,42px);line-height:1.08;margin:10px 0 10px;}
+.order .lede{color:var(--ink-soft);max-width:62ch;margin:0 0 34px;}
+.order-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:start;}
+@media (max-width:900px){ .order-grid{grid-template-columns:1fr;gap:28px;} .summary{order:-1;} }
+
+.oform{display:grid;gap:16px;border:2px solid var(--ink);background:var(--paper);padding:26px 24px 28px;}
+.oform label,.oform .lbl{display:block;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px;}
+.oform input[type=text],.oform input[type=email],.oform input[type=date],.oform select,.oform textarea{
+  font-family:var(--text);font-size:16px;color:var(--ink);
+  background:var(--paper-2);border:1px solid var(--rule);padding:13px 14px;width:100%;
+}
+.oform select#of-product{font-weight:600;border:2px solid var(--ink);background:var(--paper);}
+.oform textarea{min-height:110px;resize:vertical;}
+.oform input::placeholder,.oform textarea::placeholder{color:#8C8272;}
+.hint{font-size:13.5px;color:var(--ink-soft);margin:6px 0 0;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:600px){ .two{grid-template-columns:1fr;} }
+.req{color:var(--ochre-deep);}
+
+/* photo pickers */
+.photos{border:1px dashed var(--rule);background:var(--paper-2);padding:14px;}
+.photos + .photos{margin-top:12px;}
+.pick{display:inline-block;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--paper);border:2px solid var(--ink);padding:10px 14px;margin-top:4px;}
+.pick input{position:absolute;left:-9999px;width:1px;height:1px;}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.thumb{position:relative;width:70px;height:70px;border:1px solid var(--rule);background:#fff center/cover no-repeat;}
+.thumb button{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:none;
+  background:var(--ink);color:var(--paper);font-size:14px;line-height:24px;cursor:pointer;padding:0;}
+.count{font-size:13px;color:var(--ink-soft);margin-left:8px;}
+
+.extra{border-top:1px solid var(--rule);padding-top:14px;}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;cursor:pointer;}
+.check input{margin-top:5px;width:18px;height:18px;flex:none;}
+
+.oform button[type=submit]{
+  font-family:var(--text);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);border:none;padding:16px;cursor:pointer;
+  box-shadow:5px 5px 0 var(--ochre);margin-top:4px;
+}
+.oform button[type=submit]:hover{box-shadow:2px 2px 0 var(--ochre);}
+.oform button[type=submit]:disabled{opacity:.6;cursor:default;box-shadow:none;}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+.note{font-size:13.5px;color:var(--ink-soft);margin:0;}
+.err{font-size:14.5px;color:var(--bad);font-weight:600;margin:0;}
+.is-hidden{display:none !important;}
+
+/* SUMMARY */
+.summary{background:var(--navy);color:var(--paper);padding:26px 24px 28px;position:sticky;top:96px;}
+@media (max-width:900px){ .summary{position:static;} }
+.summary .kicker{color:var(--amber);}
+.summary h2{font-family:var(--display);font-size:20px;line-height:1.2;margin:12px 0 0;}
+.summary .amt{font-family:var(--display);font-size:42px;line-height:1;margin:16px 0 0;font-variant-numeric:tabular-nums;}
+.summary .amt small{font-family:var(--text);font-size:13px;font-weight:500;color:#C9BFAD;display:block;margin-top:8px;}
+.summary h3{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin:22px 0 0;}
+.summary ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px;}
+.summary li{font-size:15px;padding-left:17px;position:relative;color:#D6CDBC;}
+.summary li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;background:var(--amber);}
+.summary .host{margin:20px 0 0;padding-top:16px;border-top:1px solid rgba(246,240,228,.2);font-size:14px;color:#C9BFAD;}
+.summary .host b{color:var(--paper);}
+.summary .see{display:inline-block;margin-top:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);}
+
+/* THANKS */
+#thanks{border:2px solid var(--ink);background:var(--paper);padding:28px 24px 30px;}
+#thanks h2{font-family:var(--display);font-size:22px;line-height:1.2;margin:0 0 10px;}
+#thanks p{margin:0 0 14px;color:var(--ink-soft);}
+#thanks .oid{font-family:var(--display);font-size:15px;color:var(--ink);}
+.btn{display:inline-block;margin:6px 12px 6px 0;padding:15px 22px;text-decoration:none;
+  font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);box-shadow:5px 5px 0 var(--ochre);}
+.btn:hover{box-shadow:2px 2px 0 var(--ochre);}
+
+/* FOOTER */
+.foot{border-top:2px solid var(--ink);padding:34px 0 46px;}
+.foot-in{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;}
+.foot-brand{display:flex;align-items:center;gap:11px;}
+.foot-brand img{width:38px;height:38px;box-shadow:3px 3px 0 var(--ochre);}
+.foot-brand small{font-size:13px;color:var(--ink-soft);}
+.foot-brand small a{color:inherit;}
+.foot-nav{display:flex;flex-wrap:wrap;gap:18px;}
+.foot-nav a{font-size:13.5px;color:var(--ink-soft);text-decoration:none;}
+.foot-nav a:hover{color:var(--ink);}
+</style>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CWKRCXYXTG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CWKRCXYXTG');
+</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <img src="logo-mark.png" width="192" height="192" alt="Asher Arcade">
+      <span>ASHER ARCADE</span>
+    </a>
+    <nav>
+      <a href="arcade.html" class="hide-sm">Arcade</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main class="order">
+  <div class="wrap">
+    <p class="kicker">Order</p>
+    <h1>Make this one mine</h1>
+    <p class="lede">Pick the game, send the photos, and we build it. Prices are for the standard build listed for each
+      game. Extras are $20 per extra face or character and $40 for a different theme or world. Anything bigger gets a quote.</p>
+
+    <div class="order-grid">
+      <div>
+        <form class="oform" id="orderForm" novalidate>
+          <div class="hp" aria-hidden="true">
+            <label for="of-website">Leave this field empty</label>
+            <input type="text" id="of-website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div>
+            <label for="of-product">Game</label>
+            <select id="of-product">
+              <option value="puzzle-reveal">Reveal &amp; Announce Puzzle - $39</option>
+              <option value="drop-catch">Drop &amp; Catch - $79</option>
+              <option value="memory-match">Memory Match - $79</option>
+              <option value="whack-a-mole">Whack-a-Mole - $99</option>
+              <option value="endless-runner">Endless Runner - $129</option>
+              <option value="platformer">Wedding Platformer - $129</option>
+              <option value="original">Original Game - from $249</option>
+              <option value="hosting">Hosting Renewal - $19/year</option>
+            </select>
+          </div>
+
+          <div class="two">
+            <div>
+              <label for="of-name">Your name <span class="req">*</span></label>
+              <input type="text" id="of-name" autocomplete="name">
+            </div>
+            <div>
+              <label for="of-email">Email <span class="req">*</span></label>
+              <input type="email" id="of-email" autocomplete="email">
+            </div>
+          </div>
+
+          <!-- Game-specific questions and photo pickers are built here from GAMES below -->
+          <div id="game-fields" style="display:grid;gap:16px;"></div>
+
+          <div id="row-date">
+            <label for="of-date">Date you need it by</label>
+            <input type="date" id="of-date">
+            <p class="hint">Most games are ready within 7 days.</p>
+          </div>
+
+          <div class="extra" id="row-extra">
+            <label class="check"><input type="checkbox" id="of-extra-on">
+              <span>I want more than the standard build</span></label>
+            <div id="extra-box" class="is-hidden" style="margin-top:12px;display:grid;gap:14px;">
+              <div id="row-extra-faces">
+                <label for="of-extra-faces">Extra faces or characters (+$20 each)</label>
+                <select id="of-extra-faces">
+                  <option value="0">None</option>
+                  <option value="1">1 extra (+$20)</option>
+                  <option value="2">2 extra (+$40)</option>
+                  <option value="3">3 extra (+$60)</option>
+                  <option value="4">4 extra (+$80)</option>
+                </select>
+              </div>
+              <label class="check" id="row-extra-theme"><input type="checkbox" id="of-extra-theme">
+                <span>A different theme or world (+$40)</span></label>
+              <div>
+                <label for="of-extra">Describe the extras</label>
+                <textarea id="of-extra" placeholder="Who the extra characters are, what theme or world you want, or anything bigger. Bigger changes get a quote."></textarea>
+              </div>
+              <p class="hint" id="extra-total" style="margin:0;"></p>
+            </div>
+          </div>
+
+          <p class="err is-hidden" id="of-error" role="alert"></p>
+          <button type="submit" id="of-submit">Continue to secure checkout</button>
+          <p class="note" id="of-note">Payment is handled by Stripe. Your photos are uploaded first so nothing gets lost.</p>
+        </form>
+
+        <div id="thanks" class="is-hidden" aria-live="polite">
+          <h2 id="th-title">Order received.</h2>
+          <p id="th-body"></p>
+          <p class="oid" id="th-id"></p>
+          <div id="th-actions"><a class="btn" href="arcade.html">Back to the arcade</a></div>
+        </div>
+      </div>
+
+      <aside class="summary" aria-live="polite">
+        <p class="kicker">Your order</p>
+        <h2 id="sum-name"></h2>
+        <div class="amt" id="sum-amt"></div>
+        <h3>Standard build</h3>
+        <ul id="sum-list"></ul>
+        <h3 id="sum-need-h">What we need from you</h3>
+        <ul id="sum-need"></ul>
+        <p class="host" id="sum-host"><b>Hosting:</b> free for the first 3 months with your friends-and-family leaderboard saved. Keep it
+          live after that for $19 a year.</p>
+        <a class="see is-hidden" id="sum-see" href="#" target="_blank" rel="noopener">Play an example</a>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <img src="logo-mark.png" width="192" height="192" alt="Asher Arcade">
+      <small>&copy; 2026 Asher Arcade &middot; a Scott Asher LLC business &middot;
+        <a href="policies.html">Policies</a></small>
+    </div>
+    <div class="foot-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="arcade.html">Arcade</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── SETUP (see apps-script-orders/README.md) ──
+// 1. The order intake Apps Script /exec URL. Saves details + photos to Drive.
+var ORDER_SCRIPT_URL = '';
+// 2. One Stripe Payment Link per game. Payment links redirect back to
+//    order.html?paid=1&product=KEY. A game with no link still takes the order,
+//    and the customer is told a Stripe payment link is coming by email.
+var STRIPE_LINKS = {
+  'puzzle-reveal':  '',
+  'drop-catch':     '',
+  'memory-match':   '',
+  'whack-a-mole':   '',
+  'endless-runner': '',
+  'platformer':     '',
+  'hosting':        ''
+};
+// Fallback when ORDER_SCRIPT_URL is not set yet: the contact form script (details only, no photos).
+var CONTACT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4669X905fLc5A2ZxcwalMJODm36DUofz8U0bG_32fXSAS-9aO_hjzZf1UpCee6zlwtw/exec';
+
+var GAMES = {
+  'puzzle-reveal': {
+    name: 'Reveal & Announce Puzzle', price: 39, example: 'announcement_puzzle.html',
+    includes: ['A sliding puzzle made from your photo', 'Solving it reveals your news', 'Shareable link and QR code'],
+    needs: ['1 photo for the puzzle', 'The announcement itself'],
+    fields: [
+      { id: 'reveal-type', label: 'What does it reveal?', type: 'select', required: true,
+        options: ['A message on screen', 'A link or website', 'A video link'] },
+      { id: 'reveal-text', label: 'The announcement', type: 'textarea', required: true,
+        placeholder: 'Type the message, or paste the link or video URL.' }
+    ],
+    photos: [{ key: 'puzzle', label: 'Puzzle photo', min: 1, max: 1, hint: 'A clear, well-lit photo. It becomes the puzzle.' }]
+  },
+  'drop-catch': {
+    name: 'Drop & Catch', price: 79, example: 'tinlee_game.html',
+    includes: ['Your person or pet as the catcher', 'One theme of falling items, good and bad', 'Your own leaderboard, just for your friends and family'],
+    needs: ['3 clear, well-lit photos of the catcher', 'A theme and what they are catching'],
+    fields: [
+      { id: 'catcher', label: 'Who is the catcher?', type: 'text', required: true, placeholder: 'Name of the person, child, or pet' },
+      { id: 'theme', label: 'Theme', type: 'select', required: true,
+        options: ['Sports', 'Pets', 'Baby', 'Bouquets', 'Something else (quoted separately)'] },
+      { id: 'catching', label: 'What are they catching?', type: 'textarea', required: true,
+        placeholder: 'Example: the bride catches bouquets and dodges wedding cake, or the dog catches bones and dodges bath tubs.' }
+    ],
+    photos: [{ key: 'catcher', label: 'Photos of the catcher', min: 1, max: 3, hint: 'Up to 3. Face clearly visible, good light, no sunglasses.' }]
+  },
+  'memory-match': {
+    name: 'Memory Match', price: 79, example: 'match_game.html', noFacesExtra: true,
+    includes: ['12-card board built from your photos', 'Your names on the game', 'Your own leaderboard, just for your friends and family'],
+    needs: ['6 photos for a classic match', 'Or up to 12 photos matched by color'],
+    fields: [
+      { id: 'title', label: 'Names or title on the game', type: 'text', required: true, placeholder: 'Example: The Smith Family Reunion' }
+    ],
+    photos: [{ key: 'card', label: 'Card photos', min: 6, max: 12,
+      hint: '6 photos: each one appears twice and you match the same picture. 7 to 12 photos: every card is a different photo and pairs match by their color border.' }]
+  },
+  'whack-a-mole': {
+    name: 'Whack-a-Mole', price: 99, example: 'bonk_a_dragun.html',
+    includes: ['A custom "Whack-a-[your name]" logo', 'Up to 4 faces popping up', 'Your own leaderboard, just for your friends and family'],
+    needs: ['The name for your logo', 'Up to 4 clear photos of faces'],
+    fields: [
+      { id: 'logo', label: 'Logo name: Whack-a-', type: 'text', required: true, placeholder: 'Smith, Boss, Karen, Grandpa...' }
+    ],
+    photos: [{ key: 'face', label: 'Face photos', min: 1, max: 4, hint: 'Up to 4. One face per photo, looking at the camera, good light. More faces can be quoted as an extra.' }]
+  },
+  'endless-runner': {
+    name: 'Endless Runner', price: 129, example: 'mags_game.html',
+    noThemeExtra: true,
+    includes: ['Your person as the skater', 'Skating past obstacles (skating only for now)', 'Your own leaderboard, just for your friends and family'],
+    needs: ['Up to 3 clear photos of the runner', 'Their name'],
+    fields: [
+      { id: 'runner', label: 'Who is the runner?', type: 'text', required: true, placeholder: 'Name as it should appear in the game' }
+    ],
+    photos: [{ key: 'runner', label: 'Photos of the runner', min: 1, max: 3, hint: 'Up to 3. Face and full body if you have one. The Endless Runner is a skating game.' }]
+  },
+  'platformer': {
+    name: 'Wedding Platformer', price: 129, example: 'bragg_game.html',
+    includes: ['Play as the bride or the groom', 'Race through obstacles to the altar', 'Your own leaderboard, just for your friends and family'],
+    needs: ['Names of the couple', 'Good photos of both faces'],
+    fields: [
+      { id: 'bride', label: 'Bride\'s name', type: 'text', required: true },
+      { id: 'groom', label: 'Groom\'s name', type: 'text', required: true }
+    ],
+    photos: [
+      { key: 'bride', label: 'Photos of the bride', min: 1, max: 2, hint: 'Up to 2. Face clearly visible, good light.' },
+      { key: 'groom', label: 'Photos of the groom', min: 1, max: 2, hint: 'Up to 2. Face clearly visible, good light.' }
+    ]
+  },
+  'original': {
+    name: 'Original Game', price: 249, from: true, example: '',
+    includes: ['A brand new game built from scratch', 'Your idea, your characters, your rules', 'Your own leaderboard, just for your friends and family'],
+    needs: ['Your idea, as much detail as you have', 'Reference photos if you have them'],
+    fields: [
+      { id: 'idea', label: 'Describe your game', type: 'textarea', required: true,
+        placeholder: 'Who is in it, what you do, how you win, any games it should feel like.' }
+    ],
+    photos: [{ key: 'reference', label: 'Reference photos (optional)', min: 0, max: 6, hint: 'Optional. Up to 6.' }]
+  },
+  'hosting': {
+    name: 'Hosting Renewal', price: 19, perYear: true, example: '',
+    includes: ['Keeps your game live for another year', 'Your leaderboard stays saved', 'Same link, nothing to reshare'],
+    needs: ['The link to your game'],
+    fields: [
+      { id: 'game-url', label: 'Your game\'s link', type: 'text', required: true, placeholder: 'asherarcade.com/your_game.html' }
+    ],
+    photos: []
+  }
+};
+
+// Older links and page names that should land on a game
+var ALIASES = {
+  'timed-platformer': 'platformer', 'wedding-platformer': 'platformer', 'racing': 'platformer',
+  'drop': 'drop-catch', 'catch': 'drop-catch',
+  'memory': 'memory-match', 'match': 'memory-match',
+  'reveal': 'puzzle-reveal', 'puzzle': 'puzzle-reveal', 'announcement': 'puzzle-reveal',
+  'whack': 'whack-a-mole', 'bonk': 'whack-a-mole',
+  'runner': 'endless-runner', 'skate': 'endless-runner',
+  'custom': 'original', 'new': 'original',
+  'renewal': 'hosting', 'renew': 'hosting'
+};
+
+var picked = {};          // photo group key -> [File]
+var current = '';
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+function priceText(g){ return '$' + g.price + (g.perYear ? '/year' : ''); }
+
+function list(ul, items){
+  ul.innerHTML = '';
+  items.forEach(function(t){ var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+}
+
+function render(key){
+  current = key;
+  var g = GAMES[key];
+  picked = {};
+
+  // summary
+  $('sum-name').textContent = g.name;
+  $('sum-amt').innerHTML = (g.from ? '<small style="margin:0 0 8px">starting at</small>' : '') + '$' + g.price
+    + '<small>' + (g.perYear ? 'per year' : (g.from ? 'quoted before we start' : 'one time')) + '</small>';
+  list($('sum-list'), g.includes);
+  list($('sum-need'), g.needs);
+  $('sum-host').classList.toggle('is-hidden', key === 'hosting');
+  var see = $('sum-see');
+  if (g.example) { see.href = g.example; see.classList.remove('is-hidden'); }
+  else { see.classList.add('is-hidden'); }
+
+  // game-specific fields
+  var box = $('game-fields');
+  var html = '';
+  g.fields.forEach(function(f){
+    var id = 'f-' + f.id;
+    html += '<div><label for="' + id + '">' + esc(f.label) + (f.required ? ' <span class="req">*</span>' : '') + '</label>';
+    if (f.type === 'select') {
+      html += '<select id="' + id + '"><option value="">Choose one</option>'
+        + f.options.map(function(o){ return '<option>' + esc(o) + '</option>'; }).join('') + '</select>';
+    } else if (f.type === 'textarea') {
+      html += '<textarea id="' + id + '" placeholder="' + esc(f.placeholder || '') + '"></textarea>';
+    } else {
+      html += '<input type="text" id="' + id + '" placeholder="' + esc(f.placeholder || '') + '">';
+    }
+    html += '</div>';
+  });
+  if (g.photos.length) {
+    html += '<div><span class="lbl">Photos</span>';
+    g.photos.forEach(function(p){
+      picked[p.key] = [];
+      html += '<div class="photos" data-key="' + p.key + '">'
+        + '<span class="lbl" style="margin:0">' + esc(p.label) + (p.min ? ' <span class="req">*</span>' : '') + '</span>'
+        + '<p class="hint" style="margin:2px 0 6px">' + esc(p.hint) + '</p>'
+        + '<label class="pick">Add photos<input type="file" accept="image/*" multiple data-key="' + p.key + '"></label>'
+        + '<span class="count" id="count-' + p.key + '">0 of ' + p.max + '</span>'
+        + '<div class="thumbs" id="thumbs-' + p.key + '"></div></div>';
+    });
+    html += '</div>';
+  }
+  box.innerHTML = html;
+  box.querySelectorAll('input[type=file]').forEach(function(inp){
+    inp.addEventListener('change', function(){ addFiles(this.getAttribute('data-key'), this.files); this.value = ''; });
+  });
+
+  var simple = key === 'hosting' || key === 'original';
+  $('row-extra').classList.toggle('is-hidden', simple);
+  $('row-date').classList.toggle('is-hidden', key === 'hosting');
+  $('row-extra-theme').classList.toggle('is-hidden', !!g.noThemeExtra);
+  $('row-extra-faces').classList.toggle('is-hidden', !!g.noFacesExtra);
+  if (g.noFacesExtra) $('of-extra-faces').value = '0';
+  if (g.noThemeExtra) $('of-extra-theme').checked = false;
+  if (typeof updateExtras === 'function') updateExtras();
+  $('of-submit').textContent = key === 'original' ? 'Request my quote' : 'Continue to secure checkout';
+  $('of-note').textContent = key === 'original'
+    ? 'Nothing is charged now. We reply within 24 hours with questions and a quote.'
+    : 'Payment is handled by Stripe. Your details and photos are sent first so nothing gets lost.';
+  $('of-error').classList.add('is-hidden');
+}
+
+function groupSpec(key){
+  var g = GAMES[current];
+  for (var i = 0; i < g.photos.length; i++) if (g.photos[i].key === key) return g.photos[i];
+  return null;
+}
+
+function addFiles(key, files){
+  var spec = groupSpec(key);
+  var arr = picked[key];
+  for (var i = 0; i < files.length; i++) {
+    if (arr.length >= spec.max) break;
+    if (!/^image\//.test(files[i].type) && !/\.(heic|heif)$/i.test(files[i].name)) continue;
+    arr.push(files[i]);
+  }
+  drawThumbs(key);
+}
+
+function drawThumbs(key){
+  var spec = groupSpec(key);
+  var wrap = $('thumbs-' + key);
+  wrap.innerHTML = '';
+  picked[key].forEach(function(f, i){
+    var d = document.createElement('div');
+    d.className = 'thumb';
+    try { d.style.backgroundImage = 'url(' + URL.createObjectURL(f) + ')'; } catch (e) {}
+    var b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('aria-label', 'Remove photo'); b.textContent = '×';
+    b.addEventListener('click', function(){ picked[key].splice(i, 1); drawThumbs(key); });
+    d.appendChild(b);
+    wrap.appendChild(d);
+  });
+  $('count-' + key).textContent = picked[key].length + ' of ' + spec.max;
+}
+
+function pickFromUrl(){
+  var params = new URLSearchParams(location.search);
+  var raw = (params.get('product') || params.get('game') || '').toLowerCase();
+  var key = GAMES[raw] ? raw : (ALIASES[raw] || '');
+  if (key) $('of-product').value = key;
+  render($('of-product').value);
+  if (params.get('paid') === '1') {
+    showThanks({
+      title: 'Payment received. Thank you.',
+      body: 'Stripe will email your receipt. We will email you within 24 hours to confirm details and give you a ready date.',
+      id: ''
+    });
+  }
+}
+
+$('of-product').addEventListener('change', function(){
+  render(this.value);
+  try { history.replaceState(null, '', '?product=' + this.value); } catch (e) {}
+});
+$('of-extra-on').addEventListener('change', function(){ $('extra-box').classList.toggle('is-hidden', !this.checked); });
+function extrasAmount(){
+  if ($('row-extra').classList.contains('is-hidden') || !$('of-extra-on').checked) return 0;
+  return 20 * (parseInt($('of-extra-faces').value, 10) || 0) + ($('of-extra-theme').checked ? 40 : 0);
+}
+function updateExtras(){
+  var amt = extrasAmount();
+  $('extra-total').textContent = amt
+    ? 'Extras: +$' + amt + '. You pay for the game now; we confirm the extras and send a separate Stripe link for them.'
+    : 'Anything beyond these is quoted before we build. Your standard game is not held up waiting on it.';
+}
+['of-extra-on', 'of-extra-faces', 'of-extra-theme'].forEach(function(id){ $(id).addEventListener('change', updateExtras); });
+updateExtras();
+
+function fail(msg){
+  var e = $('of-error'); e.textContent = msg; e.classList.remove('is-hidden');
+  e.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function collect(){
+  var g = GAMES[current];
+  var d = {};
+  for (var i = 0; i < g.fields.length; i++) {
+    var f = g.fields[i];
+    var v = $('f-' + f.id).value.trim();
+    if (f.required && !v) return { error: 'Please fill in: ' + f.label.replace(/:.*$/, '') };
+    d[f.label] = v;
+  }
+  for (var j = 0; j < g.photos.length; j++) {
+    var p = g.photos[j];
+    if (picked[p.key].length < p.min) {
+      return { error: p.min === 1 ? 'Please add at least one photo for: ' + p.label
+                                  : 'Please add at least ' + p.min + ' photos for: ' + p.label };
+    }
+  }
+  if (current !== 'hosting' && $('of-date').value) d['Needed by'] = $('of-date').value;
+  return { details: d };
+}
+
+// Resize on the phone before sending: 1600px longest side, JPEG.
+function toJpegB64(file){
+  return new Promise(function(resolve, reject){
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      var max = 1600, w = img.naturalWidth, h = img.naturalHeight;
+      var s = Math.min(1, max / Math.max(w, h));
+      var c = document.createElement('canvas');
+      c.width = Math.round(w * s); c.height = Math.round(h * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg', 0.85).split(',')[1]);
+    };
+    img.onerror = function(){
+      URL.revokeObjectURL(url);
+      // Browsers that cannot decode HEIC send the original; the script checks its bytes.
+      var r = new FileReader();
+      r.onload = function(){ resolve(String(r.result).split(',')[1]); };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    };
+    img.src = url;
+  });
+}
+
+function post(body){
+  return fetch(ORDER_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function(r){ return r.text(); })
+    .then(function(t){ try { return JSON.parse(t); } catch (e) { return { ok: false, error: 'bad response' }; } });
+}
+
+function localId(){
+  var d = new Date(), p = function(n){ return (n < 10 ? '0' : '') + n; };
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = '';
+  for (var i = 0; i < 4; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
+  return 'AA-' + String(d.getFullYear()).slice(2) + p(d.getMonth() + 1) + p(d.getDate()) + '-' + s;
+}
+
+$('orderForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var g = GAMES[current];
+  var name = $('of-name').value.trim();
+  var email = $('of-email').value.trim();
+  if (!name) return fail('Please add your name.');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Please add a valid email.');
+  var c = collect();
+  if (c.error) return fail(c.error);
+  $('of-error').classList.add('is-hidden');
+  var extra = '';
+  if (!$('row-extra').classList.contains('is-hidden') && $('of-extra-on').checked) {
+    var faces = parseInt($('of-extra-faces').value, 10) || 0;
+    var parts = [];
+    if (faces) parts.push(faces + ' extra face(s)/character(s) +$' + (20 * faces));
+    if ($('of-extra-theme').checked) parts.push('different theme or world +$40');
+    var desc = $('of-extra').value.trim();
+    if (!parts.length && !desc) return fail('Pick an extra or describe what you want added, or uncheck "more than the standard build."');
+    extra = (parts.length ? parts.join(', ') + ' = +$' + extrasAmount() : 'Quote needed')
+      + (desc ? '\nDetails: ' + desc : '');
+  }
+  if ($('of-website').value) { return finish('AA-000000-TEST', g, email, ''); }
+
+  var btn = $('of-submit');
+  btn.disabled = true;
+
+  var groups = [];
+  g.photos.forEach(function(p){ picked[p.key].forEach(function(f){ groups.push({ label: p.label.replace(/^Photos of the /, ''), file: f }); }); });
+
+  if (!ORDER_SCRIPT_URL) {
+    // Not set up yet: send the details through the contact form script, photos follow by email.
+    btn.textContent = 'Sending...';
+    var id = localId();
+    var lines = Object.keys(c.details).map(function(k){ return k + ': ' + c.details[k]; });
+    var url = CONTACT_SCRIPT_URL
+      + '?name=' + encodeURIComponent(name)
+      + '&email=' + encodeURIComponent(email)
+      + '&type=' + encodeURIComponent('ORDER ' + id + ' - ' + g.name + ' (' + priceText(g) + ')')
+      + '&idea=' + encodeURIComponent(lines.join(' | '))
+      + '&msg=' + encodeURIComponent((extra ? 'EXTRA (quote): ' + extra + '\n' : '') + 'Photos selected: ' + groups.length + ' (to be emailed)')
+      + '&ms=9999';
+    var done = function(){ finish(id, g, email, groups.length ? ' Reply to that email with your photos.' : ''); };
+    fetch(url, { method: 'GET', mode: 'no-cors' }).then(done).catch(done);
+    return;
+  }
+
+  btn.textContent = 'Sending your order...';
+  post({ action: 'order', product: current, name: name, email: email, details: c.details,
+         extra: extra, photoCount: groups.length, website: $('of-website').value })
+    .then(function(res){
+      if (!res.ok) throw new Error(res.error || 'order failed');
+      var failed = 0, i = 0;
+      function next(){
+        if (i >= groups.length) return Promise.resolve();
+        var item = groups[i++];
+        btn.textContent = 'Uploading photo ' + i + ' of ' + groups.length + '...';
+        return toJpegB64(item.file)
+          .then(function(b64){ return post({ action: 'photo', id: res.id, token: res.token, label: item.label, filename: item.file.name, data: b64 }); })
+          .then(function(r){ if (!r.ok) failed++; })
+          .catch(function(){ failed++; })
+          .then(next);
+      }
+      return next().then(function(){ finish(res.id, g, email, failed ? ' A photo did not come through, so we may ask you to email it.' : ''); });
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.textContent = current === 'original' ? 'Request my quote' : 'Continue to secure checkout';
+      fail('Something went wrong sending your order. Please try again in a minute, or reach us through the contact form on the home page.');
+    });
+});
+
+function finish(id, g, email, miss){
+  try { gtag('event', 'generate_lead', { currency: 'USD', value: g.price, item_id: current }); } catch (err) {}
+  var link = STRIPE_LINKS[current];
+  if (current !== 'original' && link) {
+    $('of-submit').textContent = 'Opening secure checkout...';
+    location.href = link + (link.indexOf('?') === -1 ? '?' : '&')
+      + 'client_reference_id=' + encodeURIComponent(id)
+      + '&prefilled_email=' + encodeURIComponent(email);
+    return;
+  }
+  if (current === 'original') {
+    showThanks({ title: 'Got it. Your idea is in.', id: id,
+      body: 'We will reply within 24 hours with questions and a quote. Original games start at $249, and nothing is owed until you approve the quote.' + miss });
+  } else {
+    showThanks({ title: 'Order received.', id: id,
+      body: 'We will email you a secure Stripe payment link for ' + priceText(g) + (extrasAmount() ? ' plus $' + extrasAmount() + ' in extras' : '') + ' within 24 hours, along with a ready date.' + miss });
+  }
+}
+
+function showThanks(t){
+  $('orderForm').classList.add('is-hidden');
+  $('thanks').classList.remove('is-hidden');
+  $('th-title').textContent = t.title;
+  $('th-body').textContent = t.body;
+  $('th-id').textContent = t.id ? 'Order number: ' + t.id : '';
+  $('thanks').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+pickFromUrl();
+</script>
+</body>
+</html>
