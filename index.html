@@ -48,12 +48,12 @@
   }
 }
 </script>
-<!-- Schema: Service - Custom Occasion Games -->
+<!-- Schema: Service - Custom Games -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Service",
-  "name": "Custom Occasion Games",
+  "name": "Custom Browser Games",
   "description": "Personalized browser games built for weddings, baby showers, birthdays, graduations, anniversaries, and company parties. Custom characters, custom theme, live leaderboard. Share a link and guests play instantly, with no download needed.",
   "provider": {
     "@type": "LocalBusiness",
@@ -89,13 +89,7 @@
     "name": "Asher Arcade",
     "url": "https://www.asherarcade.com"
   },
-  "areaServed": "United States",
-  "offers": {
-    "@type": "Offer",
-    "price": "99",
-    "priceCurrency": "USD",
-    "availability": "https://schema.org/InStock"
-  }
+  "areaServed": "United States"
 }
 </script>
 <!-- Schema: Service - Reveal &amp; Announce Puzzle -->
@@ -114,7 +108,7 @@
   "areaServed": "United States",
   "offers": {
     "@type": "Offer",
-    "price": "79",
+    "price": "39",
     "priceCurrency": "USD",
     "availability": "https://schema.org/InStock"
   }
@@ -511,6 +505,9 @@ a{color:var(--blue-deep);}
   background:var(--ink);color:var(--paper);
 }
 .item.dark .buy{background:var(--amber);color:var(--ink);}
+.item.soon{border-style:dashed;}
+.item.soon .amt{color:var(--ink-soft);}
+.item.soon .buy{background:transparent;color:var(--ink);border:2px solid var(--ink);padding:10px;}
 .item .buy:hover,.host-band .buy:hover{background:var(--blue-deep);color:var(--paper);}
 .host-band{margin-top:26px;border:2px solid var(--ink);background:var(--paper-2);padding:18px 22px;
   display:flex;align-items:center;justify-content:space-between;gap:22px;}
@@ -728,7 +725,7 @@ a{color:var(--blue-deep);}
     <div class="rows">
       <a class="row" href="birthday-game.html">
         <span class="row-n">01</span>
-        <h3>Custom Occasion Games</h3>
+        <h3>Custom Games</h3>
         <p>A personalized arcade game built around a real person or a real event. The characters look like your
           people, and the leaderboard gives guests a reason to keep playing.
           <span class="occ">Weddings &middot; Baby showers &middot; Birthdays &middot; Graduations</span></p>
@@ -847,50 +844,44 @@ a{color:var(--blue-deep);}
   <div class="wrap">
     <p class="kicker">Pricing</p>
     <h2>One price per game</h2>
-    <p class="lede">Pick the game you want. Every price below is the price, and every game is hosted free for
-      3 months with the leaderboard saved.</p>
+    <p class="lede">Pick the game you want. Each price is for the standard build listed on the card. Want more
+      than that, like extra photos, characters, or a different world? We quote it separately before we build.</p>
 
     <div class="menu">
       <div class="item">
+        <h3>Reveal &amp; Announce Puzzle</h3>
+        <div class="amt">$39</div>
+        <p>A sliding puzzle made from 1 photo. Solving it reveals your message, link, or video.</p>
+        <a class="buy" href="order.html?product=puzzle-reveal">Buy now</a>
+      </div>
+      <div class="item">
         <h3>Drop &amp; Catch</h3>
         <div class="amt">$79</div>
-        <p>Your person catches custom falling items. Good stuff scores, bad stuff costs a life.</p>
+        <p>Your person or pet catches falling items. Pick a theme: pet treats, baby pacifiers, or sports. Needs 3 photos.</p>
         <a class="buy" href="order.html?product=drop-catch">Buy now</a>
       </div>
       <div class="item">
         <h3>Memory Match</h3>
         <div class="amt">$79</div>
-        <p>A card matching game built from your own photos.</p>
+        <p>A 12-card board from 6 of your photos. Send up to 12 and pairs match by color.</p>
         <a class="buy" href="order.html?product=memory-match">Buy now</a>
-      </div>
-      <div class="item">
-        <h3>Reveal &amp; Announce Puzzle</h3>
-        <div class="amt">$79</div>
-        <p>Guests solve a sliding puzzle to unlock your news.</p>
-        <a class="buy" href="order.html?product=puzzle-reveal">Buy now</a>
-      </div>
-      <div class="item">
-        <h3>Custom Trivia</h3>
-        <div class="amt">$99</div>
-        <p>Your questions and your pictures. Made for graduations and family events.</p>
-        <a class="buy" href="order.html?product=trivia">Buy now</a>
       </div>
       <div class="item">
         <h3>Whack-a-Mole</h3>
         <div class="amt">$99</div>
-        <p>Your pictures pop up to get bonked, with your logo on the game.</p>
+        <p>A custom Whack-a-[your name] logo with up to 4 faces popping up.</p>
         <a class="buy" href="order.html?product=whack-a-mole">Buy now</a>
       </div>
       <div class="item">
         <h3>Endless Runner</h3>
         <div class="amt">$129</div>
-        <p>Your person runs, skates, or flies through a world of custom obstacles.</p>
+        <p>Your person skates through a world of obstacles. Needs up to 3 photos.</p>
         <a class="buy" href="order.html?product=endless-runner">Buy now</a>
       </div>
       <div class="item">
         <h3>Wedding Platformer</h3>
         <div class="amt">$129</div>
-        <p>Play as the bride or the groom and race to the altar before the clock runs out.</p>
+        <p>Play as the bride or the groom and race to the altar. Needs photos of both faces.</p>
         <a class="buy" href="order.html?product=platformer">Buy now</a>
       </div>
       <div class="item dark">
@@ -898,6 +889,12 @@ a{color:var(--blue-deep);}
         <div class="amt"><small>starts at</small>$249</div>
         <p>A brand new game built from scratch around your idea. Quoted before we start.</p>
         <a class="buy" href="order.html?product=original">Request a quote</a>
+      </div>
+      <div class="item soon">
+        <h3>Custom Trivia</h3>
+        <div class="amt"><small>&nbsp;</small>Soon</div>
+        <p>Your questions and your pictures, for graduations and family events. Coming soon.</p>
+        <a class="buy" href="custom-trivia-game.html">Learn more</a>
       </div>
     </div>
 
