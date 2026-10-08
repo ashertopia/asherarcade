@@ -220,7 +220,7 @@ a{color:var(--blue-deep);}
             <label class="check"><input type="checkbox" id="of-extra-on">
               <span>I want more than the standard build</span></label>
             <div id="extra-box" class="is-hidden" style="margin-top:12px;display:grid;gap:14px;">
-              <div>
+              <div id="row-extra-faces">
                 <label for="of-extra-faces">Extra faces or characters (+$20 each)</label>
                 <select id="of-extra-faces">
                   <option value="0">None</option>
@@ -331,7 +331,7 @@ var GAMES = {
     photos: [{ key: 'catcher', label: 'Photos of the catcher', min: 1, max: 3, hint: 'Up to 3. Face clearly visible, good light, no sunglasses.' }]
   },
   'memory-match': {
-    name: 'Memory Match', price: 79, example: 'match_game.html',
+    name: 'Memory Match', price: 79, example: 'match_game.html', noFacesExtra: true,
     includes: ['12-card board built from your photos', 'Your names on the game', 'Your own leaderboard, just for your friends and family'],
     needs: ['6 photos for a classic match', 'Or up to 12 photos matched by color'],
     fields: [
@@ -471,6 +471,8 @@ function render(key){
   $('row-extra').classList.toggle('is-hidden', simple);
   $('row-date').classList.toggle('is-hidden', key === 'hosting');
   $('row-extra-theme').classList.toggle('is-hidden', !!g.noThemeExtra);
+  $('row-extra-faces').classList.toggle('is-hidden', !!g.noFacesExtra);
+  if (g.noFacesExtra) $('of-extra-faces').value = '0';
   if (g.noThemeExtra) $('of-extra-theme').checked = false;
   if (typeof updateExtras === 'function') updateExtras();
   $('of-submit').textContent = key === 'original' ? 'Request my quote' : 'Continue to secure checkout';
