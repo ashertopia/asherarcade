@@ -1,0 +1,80 @@
+{
+  "title": "How Well Do You Know Maya?",
+  "honoree": "Maya Brooks",
+  "occasion": "graduation",
+  "eyebrow": "Maya's Grad Party · Demo",
+  "subtitle": "Class of 2026. This is a sample game about a made-up graduate, so guess away.",
+  "photo": "trivia/games/demo/maya.svg",
+  "secondsPerQuestion": 20,
+  "shuffleAnswers": true,
+  "leaderboardUrl": "",
+  "closesAt": "",
+  "questions": [
+    {
+      "q": "What did Maya want to be when she was 6?",
+      "answers": ["Veterinarian", "Astronaut", "Pop star", "Mail carrier"],
+      "correct": 1,
+      "fact": "She wore a cardboard space helmet to school for most of first grade."
+    },
+    {
+      "q": "What was Maya's go-to Friday night dinner all through high school?",
+      "answers": ["Pizza", "Breakfast tacos", "Chicken nuggets", "Ramen"],
+      "correct": 1,
+      "fact": "Her dad made them every Friday from freshman year on. She has never once skipped the salsa."
+    },
+    {
+      "q": "At 8, Maya ran a lemonade stand all summer. How much did she make?",
+      "image": "trivia/games/demo/lemonade.svg",
+      "answers": ["$12", "$47", "$113", "$250"],
+      "correct": 2,
+      "fact": "She charged extra for 'premium ice'. Nobody knows what made it premium."
+    },
+    {
+      "q": "Which one was Maya's first car?",
+      "answers": ["Red hatchback", "Blue minivan", "Yellow pickup", "Green bug"],
+      "answerImages": ["trivia/games/demo/car-hatch.svg", "trivia/games/demo/car-van.svg", "trivia/games/demo/car-truck.svg", "trivia/games/demo/car-bug.svg"],
+      "correct": 1,
+      "fact": "Grandma's old minivan, nicknamed The Blue Whale. It fit the whole volleyball team."
+    },
+    {
+      "q": "What sport did Maya letter in?",
+      "answers": ["Soccer", "Volleyball", "Swimming", "Track"],
+      "correct": 1
+    },
+    {
+      "q": "What is Maya's most-played song of all time?",
+      "answers": ["A Taylor Swift song", "A worship song", "A movie soundtrack", "A 2000s throwback"],
+      "correct": 2,
+      "fact": "The 'How Far I'll Go' replay count is honestly concerning."
+    },
+    {
+      "q": "What is the name of the family dog?",
+      "answers": ["Biscuit", "Waffles", "Pickles", "Noodle"],
+      "correct": 0
+    },
+    {
+      "q": "Which teacher did Maya say changed her life?",
+      "answers": ["Her chemistry teacher", "Her English teacher", "Her coach", "Her band director"],
+      "correct": 0,
+      "fact": "Mr. Patel's chemistry class is the reason she is studying nursing."
+    },
+    {
+      "q": "Where is Maya headed this fall?",
+      "answers": ["State university", "Community college", "A gap year abroad", "Straight to work"],
+      "correct": 0
+    },
+    {
+      "q": "What does Maya always order at a coffee shop?",
+      "answers": ["Iced vanilla latte", "Hot chocolate", "Chai tea", "Just water, thanks"],
+      "correct": 1,
+      "fact": "Twelve months a year. Even in July. With extra whipped cream."
+    }
+  ],
+  "samplePlayers": [
+    { "name": "Aunt Denise", "score": 8420, "right": 9 },
+    { "name": "Jordan P.", "score": 7310, "right": 8 },
+    { "name": "Coach Ray", "score": 6050, "right": 7 },
+    { "name": "Grandpa Lou", "score": 4120, "right": 5 },
+    { "name": "Sam T.", "score": 2980, "right": 4 }
+  ]
+}
