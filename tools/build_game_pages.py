@@ -24,6 +24,8 @@ COMMON_FAQ = [
     ('How long does the game stay live?',
      'Hosting is free for the first 3 months, with your leaderboard saved the whole time. After that it is $19 a year to '
      'keep it live. If you do not renew, we retire the link.'),
+    ("Is there anything you won't build?",
+     "Our free games are for everyone, and we're glad to serve every customer. Custom games are original creative work, so we only create content we can stand behind. Asher Arcade is a Christian-owned business, and we don't create custom work that includes nudity or sexual content, profanity or vulgar language, or anything obscene. We also don't create custom wedding games or announcements that celebrate a marriage other than one between one man and one woman, and we don't build reveals, invitations, or QR codes that send people to events or pages with that kind of content. This is about the message, not the person: we decline the same content no matter who asks. If we can't take a custom request, we'll tell you right away and refund you in full."),
     ('Do players need an app?',
      'No. It runs in the browser on any phone, tablet, or computer. Share the link or a QR code and people start playing.'),
 ]
