@@ -52,7 +52,7 @@ function doPost(e) {
 /* ---------- names + scoring: keep in step with trivia.html ---------- */
 
 function cleanName_(s) {
-  return String(s || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 20);
+  return String(s || '').replace(/[\u0000-\u001f<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);
 }
 function nameKey_(s) {
   return cleanName_(s).normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');

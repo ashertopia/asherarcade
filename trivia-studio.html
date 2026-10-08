@@ -138,7 +138,7 @@ pre{background:var(--card2);padding:10px;font-size:12.5px;white-space:pre-wrap;m
   <!-- QUESTIONS -->
   <section class="card">
     <h2>3. Questions</h2>
-    <p class="hint">20 is the sweet spot (about 5 minutes to play). Tap the circle next to the right answer. A question can have its own photo, and the answers can be photos too (&ldquo;which one is baby Maya?&rdquo;). The <b>story</b> shows after each answer, and it's where the laughs are.</p>
+    <p class="hint">20 is the sweet spot (about 5 minutes to play). Tap the circle next to the right answer. Keep answers short so they fit on the buttons. A question photo is optional and most questions don't need one. The <b>story</b> shows after each answer, and it's where the laughs are.</p>
     <details style="margin-bottom:6px">
       <summary>Paste questions from a doc</summary>
       <p class="hint" style="margin:8px 0 0">One question per block, with a blank line between blocks. Put the question on the first line and one answer on each line after it. Mark the right answer with <b>*</b>. A line starting with <b>&gt;</b> is the story.</p>
@@ -203,7 +203,7 @@ var PRESETS = { // keep in step with trivia.html
 var $ = function(id){ return document.getElementById(id); };
 function ls(k, v){ try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); return true; } catch (e) { return false; } }
 function toast(t){ var el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function(){ el.classList.remove('on'); }, 2600); }
-function blankQ(){ return { q: '', image: '', answers: ['', '', '', ''], answerImages: ['', '', '', ''], pics: false, correct: -1, fact: '' }; }
+function blankQ(){ return { q: '', image: '', answers: ['', '', '', ''], correct: -1, fact: '' }; }
 function fresh(){
   var d = { id: '', honoree: '', occasion: 'birthday', title: '', eyebrow: '', subtitle: '', photo: '',
     theme: { bg1: PRESETS.birthday.bg1, bg2: PRESETS.birthday.bg2, accent: PRESETS.birthday.accent },
@@ -287,23 +287,19 @@ function renderQuestions(){
     var el = document.createElement('div'); el.className = 'q'; el.dataset.i = i;
     el.innerHTML =
       '<div class="q-head"><b>Q' + (i + 1) + '</b>' +
-      '<label class="toggle"><input type="checkbox" class="pics"> Picture answers</label>' +
       '<button class="btn ghost sm up" title="Move up">&uarr;</button><button class="btn ghost sm down" title="Move down">&darr;</button>' +
       '<button class="btn danger sm del" title="Delete">&times;</button></div>' +
       '<input type="text" class="qt" maxlength="140" placeholder="Question, e.g. What was her first job?">' +
       '<div class="ans-grid">' + [0, 1, 2, 3].map(function(k){
         return '<div class="ans" data-k="' + k + '"><input type="radio" name="c' + i + '" value="' + k + '" title="Right answer">' +
-          '<div class="thumb ai" data-k="' + k + '" title="Answer photo">+ photo</div>' +
           '<input type="text" class="at" maxlength="60" placeholder="' + COLORS[k] + ' answer' + (k > 1 ? ' (optional)' : '') + '"></div>';
       }).join('') + '</div>' +
-      '<div class="q-extra"><div class="thumb qi" title="Question photo">+ question photo</div>' +
+      '<div class="q-extra"><div class="thumb qi" title="Optional question photo">+ photo (optional)</div>' +
       '<textarea class="fact" maxlength="240" rows="2" placeholder="The story (optional): shown after they answer. e.g. She cried for an hour when it got towed."></textarea></div>';
     el.querySelector('.qt').value = q.q;
     el.querySelector('.fact').value = q.fact || '';
-    el.querySelector('.pics').checked = !!q.pics;
     el.querySelectorAll('.at').forEach(function(inp, k){ inp.value = q.answers[k] || ''; });
-    el.querySelectorAll('.ai').forEach(function(t, k){ t.hidden = !q.pics; thumb(t, q.answerImages[k], '+ photo'); });
-    thumb(el.querySelector('.qi'), q.image, '+ question photo');
+    thumb(el.querySelector('.qi'), q.image, '+ photo (optional)');
     if (q.correct >= 0) el.querySelector('input[value="' + q.correct + '"]').checked = true;
     markCorrect(el, q.correct);
     box.appendChild(el);
@@ -322,7 +318,6 @@ $('questions').addEventListener('input', function(e){
 $('questions').addEventListener('change', function(e){
   var el = e.target.closest('.q'); if (!el) return; var q = draft.questions[+el.dataset.i];
   if (e.target.type === 'radio') { q.correct = +e.target.value; markCorrect(el, q.correct); }
-  if (e.target.classList.contains('pics')) { q.pics = e.target.checked; el.querySelectorAll('.ai').forEach(function(t){ t.hidden = !q.pics; }); }
   save();
 });
 $('questions').addEventListener('click', function(e){
@@ -332,13 +327,8 @@ $('questions').addEventListener('click', function(e){
   else if (e.target.closest('.down') && i < qs.length - 1) { qs.splice(i + 1, 0, qs.splice(i, 1)[0]); renderQuestions(); save(); }
   else if (e.target.closest('.qi')) {
     var t = e.target.closest('.qi');
-    if (q.image && confirm('Remove this question photo?')) { q.image = ''; thumb(t, '', '+ question photo'); save(); return; }
+    if (q.image && confirm('Remove this question photo?')) { q.image = ''; thumb(t, '', '+ photo (optional)'); save(); return; }
     pickImage(900, function(d){ q.image = d; thumb(t, d); save(); });
-  }
-  else if (e.target.closest('.ai')) {
-    var a = e.target.closest('.ai'), k = +a.dataset.k;
-    if (q.answerImages[k] && confirm('Remove this answer photo?')) { q.answerImages[k] = ''; thumb(a, '', '+ photo'); save(); return; }
-    pickImage(500, function(d){ q.answerImages[k] = d; thumb(a, d); save(); });
   }
 });
 $('q-add').addEventListener('click', function(){ draft.questions.push(blankQ()); renderQuestions(); save(); $('questions').lastChild.querySelector('.qt').focus(); });
@@ -375,20 +365,18 @@ function build(){
     if (!started) return;
     var n = 'Question ' + (i + 1) + ': ';
     if (!q.q.trim()) problems.push(n + 'needs the question.');
-    var answers = [], images = [], correct = -1;
+    var answers = [], correct = -1;
     q.answers.forEach(function(a, k){
       a = a.trim();
-      if (!a && q.pics && q.answerImages[k]) a = COLORS[k];
       if (!a) return;
       if (k === q.correct) correct = answers.length;
-      answers.push(a); images.push(q.pics ? (q.answerImages[k] || '') : '');
+      answers.push(a);
     });
     if (answers.length < 2) problems.push(n + 'needs at least 2 answers.');
     if (q.correct < 0) problems.push(n + 'tap the circle next to the right answer.');
     else if (correct < 0) problems.push(n + 'the answer marked right is empty.');
     var item = { q: q.q.trim(), answers: answers, correct: correct };
     if (q.image) item.image = q.image;
-    if (q.pics && images.some(Boolean)) item.answerImages = images;
     if (q.fact && q.fact.trim()) item.fact = q.fact.trim();
     out.push(item);
   });
@@ -486,7 +474,6 @@ $('f-import').addEventListener('change', function(){
     d.questions = c.questions.map(function(q){
       var x = blankQ(); x.q = q.q || ''; x.image = q.image || ''; x.fact = q.fact || ''; x.correct = Number.isInteger(q.correct) ? q.correct : -1;
       (q.answers || []).slice(0, 4).forEach(function(a, k){ x.answers[k] = a; });
-      if (Array.isArray(q.answerImages)) { x.pics = true; q.answerImages.slice(0, 4).forEach(function(s, k){ x.answerImages[k] = s || ''; }); }
       return x;
     });
     draft = d; paintFields(); renderQuestions(); save(); showProblems([]);

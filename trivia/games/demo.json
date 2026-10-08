@@ -2,8 +2,8 @@
   "title": "How Well Do You Know Maya?",
   "honoree": "Maya Brooks",
   "occasion": "graduation",
-  "eyebrow": "Maya's Grad Party · Demo",
-  "subtitle": "Class of 2026. This is a sample game about a made-up graduate, so guess away.",
+  "eyebrow": "Class of 2026 · Graduation Party",
+  "subtitle": "Think you know Maya? Prove it.",
   "photo": "trivia/games/demo/maya.svg",
   "secondsPerQuestion": 20,
   "shuffleAnswers": true,
@@ -12,69 +12,243 @@
   "questions": [
     {
       "q": "What did Maya want to be when she was 6?",
-      "answers": ["Veterinarian", "Astronaut", "Pop star", "Mail carrier"],
+      "answers": [
+        "Veterinarian",
+        "Astronaut",
+        "Pop star",
+        "Mail carrier"
+      ],
       "correct": 1,
       "fact": "She wore a cardboard space helmet to school for most of first grade."
     },
     {
       "q": "What was Maya's go-to Friday night dinner all through high school?",
-      "answers": ["Pizza", "Breakfast tacos", "Chicken nuggets", "Ramen"],
+      "answers": [
+        "Pizza",
+        "Breakfast tacos",
+        "Chicken nuggets",
+        "Ramen"
+      ],
       "correct": 1,
       "fact": "Her dad made them every Friday from freshman year on. She has never once skipped the salsa."
     },
     {
       "q": "At 8, Maya ran a lemonade stand all summer. How much did she make?",
-      "image": "trivia/games/demo/lemonade.svg",
-      "answers": ["$12", "$47", "$113", "$250"],
+      "answers": [
+        "$12",
+        "$47",
+        "$113",
+        "$250"
+      ],
       "correct": 2,
       "fact": "She charged extra for 'premium ice'. Nobody knows what made it premium."
     },
     {
-      "q": "Which one was Maya's first car?",
-      "answers": ["Red hatchback", "Blue minivan", "Yellow pickup", "Green bug"],
-      "answerImages": ["trivia/games/demo/car-hatch.svg", "trivia/games/demo/car-van.svg", "trivia/games/demo/car-truck.svg", "trivia/games/demo/car-bug.svg"],
+      "q": "What was Maya's first car?",
+      "answers": [
+        "Red hatchback",
+        "Blue minivan",
+        "Yellow pickup",
+        "Green convertible"
+      ],
       "correct": 1,
       "fact": "Grandma's old minivan, nicknamed The Blue Whale. It fit the whole volleyball team."
     },
     {
       "q": "What sport did Maya letter in?",
-      "answers": ["Soccer", "Volleyball", "Swimming", "Track"],
+      "answers": [
+        "Soccer",
+        "Volleyball",
+        "Swimming",
+        "Track"
+      ],
       "correct": 1
     },
     {
       "q": "What is Maya's most-played song of all time?",
-      "answers": ["A Taylor Swift song", "A worship song", "A movie soundtrack", "A 2000s throwback"],
+      "answers": [
+        "A Taylor Swift song",
+        "A worship song",
+        "A movie soundtrack song",
+        "A 2000s throwback"
+      ],
       "correct": 2,
       "fact": "The 'How Far I'll Go' replay count is honestly concerning."
     },
     {
       "q": "What is the name of the family dog?",
-      "answers": ["Biscuit", "Waffles", "Pickles", "Noodle"],
+      "answers": [
+        "Biscuit",
+        "Waffles",
+        "Pickles",
+        "Noodle"
+      ],
       "correct": 0
     },
     {
       "q": "Which teacher did Maya say changed her life?",
-      "answers": ["Her chemistry teacher", "Her English teacher", "Her coach", "Her band director"],
+      "answers": [
+        "Her chemistry teacher",
+        "Her English teacher",
+        "Her volleyball coach",
+        "Her band director"
+      ],
       "correct": 0,
       "fact": "Mr. Patel's chemistry class is the reason she is studying nursing."
     },
     {
       "q": "Where is Maya headed this fall?",
-      "answers": ["State university", "Community college", "A gap year abroad", "Straight to work"],
+      "answers": [
+        "State university",
+        "Community college",
+        "A gap year abroad",
+        "Straight to work"
+      ],
       "correct": 0
     },
     {
       "q": "What does Maya always order at a coffee shop?",
-      "answers": ["Iced vanilla latte", "Hot chocolate", "Chai tea", "Just water, thanks"],
+      "answers": [
+        "Iced vanilla latte",
+        "Hot chocolate",
+        "Chai tea",
+        "Just water, thanks"
+      ],
       "correct": 1,
       "fact": "Twelve months a year. Even in July. With extra whipped cream."
+    },
+    {
+      "q": "What was Maya's first job?",
+      "answers": [
+        "Lifeguard",
+        "Babysitter",
+        "Ice cream shop",
+        "Grocery bagger"
+      ],
+      "correct": 2,
+      "fact": "She still can't look at mint chocolate chip."
+    },
+    {
+      "q": "What is Maya most afraid of?",
+      "answers": [
+        "Spiders",
+        "Heights",
+        "Geese",
+        "The dark"
+      ],
+      "correct": 2,
+      "fact": "A goose chased her across a park in 4th grade. She has not forgiven geese."
+    },
+    {
+      "q": "What is Maya's favorite movie?",
+      "answers": [
+        "Moana",
+        "The Princess Bride",
+        "Toy Story",
+        "Remember the Titans"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "How many times did Maya fail her driving test?",
+      "answers": [
+        "Never",
+        "Once",
+        "Twice",
+        "Three times"
+      ],
+      "correct": 1,
+      "fact": "She parallel parked into a trash can. Gently."
+    },
+    {
+      "q": "What is Maya's go-to karaoke song?",
+      "answers": [
+        "Bohemian Rhapsody",
+        "Don't Stop Believin'",
+        "Love Story",
+        "Sweet Caroline"
+      ],
+      "correct": 1
+    },
+    {
+      "q": "What did Maya dress up as for Halloween three years in a row?",
+      "answers": [
+        "A witch",
+        "A banana",
+        "A cat",
+        "Hermione"
+      ],
+      "correct": 1,
+      "fact": "Same banana costume. It got shorter every year."
+    },
+    {
+      "q": "Which subject was Maya's favorite?",
+      "answers": [
+        "Chemistry",
+        "History",
+        "Art",
+        "Math"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What is Maya's hidden talent?",
+      "answers": [
+        "Juggling",
+        "Solving a Rubik's Cube",
+        "Whistling with her fingers",
+        "Drawing"
+      ],
+      "correct": 1,
+      "fact": "Her record is 48 seconds. She will tell you about it."
+    },
+    {
+      "q": "Where was Maya's favorite family vacation?",
+      "answers": [
+        "The Grand Canyon",
+        "Disney World",
+        "The beach in Florida",
+        "Yellowstone"
+      ],
+      "correct": 3,
+      "fact": "She saw a bison up close and named it Gerald."
+    },
+    {
+      "q": "What does Maya say she will miss most about high school?",
+      "answers": [
+        "Friday night games",
+        "Her friends at lunch",
+        "The volleyball team",
+        "Senior trip"
+      ],
+      "correct": 2
     }
   ],
   "samplePlayers": [
-    { "name": "Aunt Denise", "score": 8420, "right": 9 },
-    { "name": "Jordan P.", "score": 7310, "right": 8 },
-    { "name": "Coach Ray", "score": 6050, "right": 7 },
-    { "name": "Grandpa Lou", "score": 4120, "right": 5 },
-    { "name": "Sam T.", "score": 2980, "right": 4 }
+    {
+      "name": "Denise Brooks",
+      "score": 16420,
+      "right": 17
+    },
+    {
+      "name": "Jordan Price",
+      "score": 14310,
+      "right": 16
+    },
+    {
+      "name": "Ray Thompson",
+      "score": 12050,
+      "right": 14
+    },
+    {
+      "name": "Lou Brooks",
+      "score": 9120,
+      "right": 11
+    },
+    {
+      "name": "Sam Torres",
+      "score": 6980,
+      "right": 9
+    }
   ]
 }
