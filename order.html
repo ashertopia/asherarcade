@@ -230,7 +230,7 @@ a{color:var(--blue-deep);}
                   <option value="4">4 extra (+$80)</option>
                 </select>
               </div>
-              <label class="check"><input type="checkbox" id="of-extra-theme">
+              <label class="check" id="row-extra-theme"><input type="checkbox" id="of-extra-theme">
                 <span>A different theme or world (+$40)</span></label>
               <div>
                 <label for="of-extra">Describe the extras</label>
@@ -261,7 +261,7 @@ a{color:var(--blue-deep);}
         <ul id="sum-list"></ul>
         <h3 id="sum-need-h">What we need from you</h3>
         <ul id="sum-need"></ul>
-        <p class="host" id="sum-host"><b>Hosting:</b> free for the first 3 months with your leaderboard saved. Keep it
+        <p class="host" id="sum-host"><b>Hosting:</b> free for the first 3 months with your friends-and-family leaderboard saved. Keep it
           live after that for $19 a year.</p>
         <a class="see is-hidden" id="sum-see" href="#" target="_blank" rel="noopener">Play an example</a>
       </aside>
@@ -319,20 +319,20 @@ var GAMES = {
   },
   'drop-catch': {
     name: 'Drop & Catch', price: 79, example: 'tinlee_game.html',
-    includes: ['Your person or pet as the catcher', 'One theme of falling items, good and bad', 'Live leaderboard'],
+    includes: ['Your person or pet as the catcher', 'One theme of falling items, good and bad', 'Your own leaderboard, just for your friends and family'],
     needs: ['3 clear, well-lit photos of the catcher', 'A theme and what they are catching'],
     fields: [
       { id: 'catcher', label: 'Who is the catcher?', type: 'text', required: true, placeholder: 'Name of the person, child, or pet' },
       { id: 'theme', label: 'Theme', type: 'select', required: true,
-        options: ['Pet treats', 'Baby pacifiers', 'Sports balls', 'Something else (quoted separately)'] },
+        options: ['Sports', 'Pets', 'Baby', 'Bouquets', 'Something else (quoted separately)'] },
       { id: 'catching', label: 'What are they catching?', type: 'textarea', required: true,
-        placeholder: 'Example: dog bones and tennis balls are good, cats and bath tubs are bad.' }
+        placeholder: 'Example: the bride catches bouquets and dodges wedding cake, or the dog catches bones and dodges bath tubs.' }
     ],
     photos: [{ key: 'catcher', label: 'Photos of the catcher', min: 1, max: 3, hint: 'Up to 3. Face clearly visible, good light, no sunglasses.' }]
   },
   'memory-match': {
     name: 'Memory Match', price: 79, example: 'match_game.html',
-    includes: ['12-card board built from your photos', 'Your names on the game', 'Live leaderboard'],
+    includes: ['12-card board built from your photos', 'Your names on the game', 'Your own leaderboard, just for your friends and family'],
     needs: ['6 photos for a classic match', 'Or up to 12 photos matched by color'],
     fields: [
       { id: 'title', label: 'Names or title on the game', type: 'text', required: true, placeholder: 'Example: The Smith Family Reunion' }
@@ -342,7 +342,7 @@ var GAMES = {
   },
   'whack-a-mole': {
     name: 'Whack-a-Mole', price: 99, example: 'bonk_a_dragun.html',
-    includes: ['A custom "Whack-a-[your name]" logo', 'Up to 4 faces popping up', 'Live leaderboard'],
+    includes: ['A custom "Whack-a-[your name]" logo', 'Up to 4 faces popping up', 'Your own leaderboard, just for your friends and family'],
     needs: ['The name for your logo', 'Up to 4 clear photos of faces'],
     fields: [
       { id: 'logo', label: 'Logo name: Whack-a-', type: 'text', required: true, placeholder: 'Smith, Boss, Karen, Grandpa...' }
@@ -351,16 +351,17 @@ var GAMES = {
   },
   'endless-runner': {
     name: 'Endless Runner', price: 129, example: 'mags_game.html',
-    includes: ['Your person as the skater', 'Skating world with obstacles', 'Live leaderboard'],
+    noThemeExtra: true,
+    includes: ['Your person as the skater', 'Skating past obstacles (skating only for now)', 'Your own leaderboard, just for your friends and family'],
     needs: ['Up to 3 clear photos of the runner', 'Their name'],
     fields: [
       { id: 'runner', label: 'Who is the runner?', type: 'text', required: true, placeholder: 'Name as it should appear in the game' }
     ],
-    photos: [{ key: 'runner', label: 'Photos of the runner', min: 1, max: 3, hint: 'Up to 3. Face and full body if you have one. The standard build is the skating game; a different sport or world is an extra.' }]
+    photos: [{ key: 'runner', label: 'Photos of the runner', min: 1, max: 3, hint: 'Up to 3. Face and full body if you have one. The Endless Runner is a skating game.' }]
   },
   'platformer': {
     name: 'Wedding Platformer', price: 129, example: 'bragg_game.html',
-    includes: ['Play as the bride or the groom', 'Race through obstacles to the altar', 'Live leaderboard'],
+    includes: ['Play as the bride or the groom', 'Race through obstacles to the altar', 'Your own leaderboard, just for your friends and family'],
     needs: ['Names of the couple', 'Good photos of both faces'],
     fields: [
       { id: 'bride', label: 'Bride\'s name', type: 'text', required: true },
@@ -373,7 +374,7 @@ var GAMES = {
   },
   'original': {
     name: 'Original Game', price: 249, from: true, example: '',
-    includes: ['A brand new game built from scratch', 'Your idea, your characters, your rules', 'Live leaderboard'],
+    includes: ['A brand new game built from scratch', 'Your idea, your characters, your rules', 'Your own leaderboard, just for your friends and family'],
     needs: ['Your idea, as much detail as you have', 'Reference photos if you have them'],
     fields: [
       { id: 'idea', label: 'Describe your game', type: 'textarea', required: true,
@@ -469,6 +470,9 @@ function render(key){
   var simple = key === 'hosting' || key === 'original';
   $('row-extra').classList.toggle('is-hidden', simple);
   $('row-date').classList.toggle('is-hidden', key === 'hosting');
+  $('row-extra-theme').classList.toggle('is-hidden', !!g.noThemeExtra);
+  if (g.noThemeExtra) $('of-extra-theme').checked = false;
+  if (typeof updateExtras === 'function') updateExtras();
   $('of-submit').textContent = key === 'original' ? 'Request my quote' : 'Continue to secure checkout';
   $('of-note').textContent = key === 'original'
     ? 'Nothing is charged now. We reply within 24 hours with questions and a quote.'
