@@ -30,7 +30,7 @@
   "name": "Asher Arcade",
   "url": "https://www.asherarcade.com",
   "description": "Custom browser games and apps for weddings, baby showers, birthdays, graduations, churches, and more. Personalized, shareable, no download needed.",
-  "priceRange": "$39 - $299+",
+  "priceRange": "$19 - $249+",
   "serviceType": [
     "Custom Browser Games",
     "Wedding Games",
@@ -64,12 +64,12 @@
   "areaServed": "United States",
   "offers": {
     "@type": "Offer",
-    "price": "199",
+    "price": "79",
     "priceCurrency": "USD",
     "priceSpecification": {
       "@type": "PriceSpecification",
-      "minPrice": "199",
-      "maxPrice": "299",
+      "minPrice": "79",
+      "maxPrice": "249",
       "priceCurrency": "USD"
     },
     "availability": "https://schema.org/InStock"
@@ -92,7 +92,7 @@
   "areaServed": "United States",
   "offers": {
     "@type": "Offer",
-    "price": "199",
+    "price": "99",
     "priceCurrency": "USD",
     "availability": "https://schema.org/InStock"
   }
@@ -497,6 +497,27 @@ a{color:var(--blue-deep);}
 .tier.pick .buy{background:var(--amber);color:var(--ink);}
 .tier .buy:hover{background:var(--blue-deep);color:var(--paper);}
 .price-foot{margin:34px 0 0;color:var(--ink-soft);max-width:62ch;}
+.menu{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
+.item{border:2px solid var(--ink);background:var(--paper);padding:22px 20px 22px;display:flex;flex-direction:column;}
+.item.dark{background:var(--navy);color:var(--paper);}
+.item h3{font-family:var(--display);font-size:16px;line-height:1.2;margin:0;}
+.item .amt{font-family:var(--display);font-size:34px;line-height:1;margin:14px 0 0;font-variant-numeric:tabular-nums;}
+.item .amt small{font-family:var(--text);font-size:12px;font-weight:500;color:#C9BFAD;display:block;margin-bottom:6px;letter-spacing:0;}
+.item p{font-size:14.5px;color:var(--ink-soft);margin:12px 0 0;flex:1;}
+.item.dark p{color:#D6CDBC;}
+.item .buy,.host-band .buy{
+  display:block;text-align:center;margin-top:18px;padding:12px;text-decoration:none;
+  font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);
+}
+.item.dark .buy{background:var(--amber);color:var(--ink);}
+.item .buy:hover,.host-band .buy:hover{background:var(--blue-deep);color:var(--paper);}
+.host-band{margin-top:26px;border:2px solid var(--ink);background:var(--paper-2);padding:18px 22px;
+  display:flex;align-items:center;justify-content:space-between;gap:22px;}
+.host-band p{margin:0;font-size:15.5px;}
+.host-band .buy{margin-top:0;flex:none;padding:12px 18px;}
+@media (max-width:1000px){ .menu{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:560px){ .menu{grid-template-columns:1fr;} .host-band{flex-direction:column;align-items:stretch;} }
 .ministry{
   margin-top:22px;border-left:4px solid var(--ochre);background:var(--paper-2);padding:17px 21px;
 }
@@ -610,7 +631,7 @@ a{color:var(--blue-deep);}
       <li><b>Ready in</b><span>7 days</span></li>
       <li><b>Works on</b><span>Any phone</span></li>
       <li><b>To install</b><span>Nothing</span></li>
-      <li><b>Starting at</b><span>$39</span></li>
+      <li><b>Games from</b><span>$79</span></li>
     </ul>
   </div>
 </section>
@@ -640,7 +661,7 @@ a{color:var(--blue-deep);}
             and your version could catch pacifiers, footballs, bouquets, doughnuts, cupcakes, or confetti.</p>
           <div class="lot-actions">
             <a class="link-play" href="tinlee_game.html" target="_blank" rel="noopener">Play it</a>
-            <a class="link-make" href="#contact?game=drop-catch">Make this one mine</a>
+            <a class="link-make" href="order.html?product=drop-catch">Make this one mine</a>
           </div>
         </div>
       </article>
@@ -656,7 +677,7 @@ a{color:var(--blue-deep);}
             recognize.</p>
           <div class="lot-actions">
             <a class="link-play" href="mags_game.html" target="_blank" rel="noopener">Play it</a>
-            <a class="link-make" href="#contact?game=endless-runner">Make this one mine</a>
+            <a class="link-make" href="order.html?product=endless-runner">Make this one mine</a>
           </div>
         </div>
         <div class="screen">
@@ -678,7 +699,7 @@ a{color:var(--blue-deep);}
             to be.</p>
           <div class="lot-actions">
             <a class="link-play" href="bragg_game.html" target="_blank" rel="noopener">Play it</a>
-            <a class="link-make" href="#contact?game=timed-platformer">Make this one mine</a>
+            <a class="link-make" href="order.html?product=platformer">Make this one mine</a>
           </div>
         </div>
       </article>
@@ -825,59 +846,70 @@ a{color:var(--blue-deep);}
 <section class="pricing" id="pricing">
   <div class="wrap">
     <p class="kicker">Pricing</p>
-    <h2>Simple, honest pricing</h2>
-    <p class="lede">Three tiers based on what you need. The final price depends on scope, and you always get a clear
-      quote before anything starts.</p>
+    <h2>One price per game</h2>
+    <p class="lede">Pick the game you want. Every price below is the price, and every game is hosted free for
+      3 months with the leaderboard saved.</p>
 
-    <div class="tiers">
-      <div class="tier">
-        <h3>KeepsakeDrop</h3>
-        <div class="amt">$39<small>per event, one time</small></div>
-        <p class="terms">Guest photos &middot; no subscription</p>
-        <ul>
-          <li>A private Google Drive folder that is yours from day one</li>
-          <li>A printable QR sign for the table</li>
-          <li>Branded with your names and your event date</li>
-          <li>Guests upload with no app and no account</li>
-          <li>Collection stays open through 30 days after the event</li>
-        </ul>
-        <a class="buy" href="https://keepsakedrop.com">See KeepsakeDrop</a>
+    <div class="menu">
+      <div class="item">
+        <h3>Drop &amp; Catch</h3>
+        <div class="amt">$79</div>
+        <p>Your person catches custom falling items. Good stuff scores, bad stuff costs a life.</p>
+        <a class="buy" href="order.html?product=drop-catch">Buy now</a>
       </div>
-
-      <div class="tier pick">
-        <span class="tier-tag">Most popular</span>
-        <h3>The Occasion</h3>
-        <div class="amt">$89</div>
-        <p class="terms">The whole event day &middot; hosted 60 days</p>
-        <ul>
-          <li>KeepsakeDrop guest photo collection</li>
-          <li>A custom quiz written around your event</li>
-          <li>A Reveal &amp; Announce puzzle, if you have news to break</li>
-          <li>All of it branded with your names, date, and a custom message</li>
-          <li>Hosted on asherarcade.com for 60 days</li>
-        </ul>
-        <a class="buy" href="#contact">Get started</a>
-        <p class="tier-alt">The photos are $39 and the puzzle is $79 on their own.</p>
+      <div class="item">
+        <h3>Memory Match</h3>
+        <div class="amt">$79</div>
+        <p>A card matching game built from your own photos.</p>
+        <a class="buy" href="order.html?product=memory-match">Buy now</a>
       </div>
-
-      <div class="tier">
-        <h3>The Memory</h3>
-        <div class="amt">$199<small>starting at</small></div>
-        <p class="terms">The only tier with original artwork &middot; 1 year hosting &middot; renew $20/yr</p>
-        <ul>
-          <li>Original artwork with your characters in it</li>
-          <li>Live leaderboard so guests compete</li>
-          <li>A reskin of a mechanic we already have, from $199</li>
-          <li>A brand new mechanic built only for your event, from $299</li>
-          <li>Hosted one year on asherarcade.com</li>
-          <li>Shareable link that works on any device</li>
-        </ul>
-        <a class="buy" href="#contact">Get a quote</a>
+      <div class="item">
+        <h3>Reveal &amp; Announce Puzzle</h3>
+        <div class="amt">$79</div>
+        <p>Guests solve a sliding puzzle to unlock your news.</p>
+        <a class="buy" href="order.html?product=puzzle-reveal">Buy now</a>
+      </div>
+      <div class="item">
+        <h3>Custom Trivia</h3>
+        <div class="amt">$99</div>
+        <p>Your questions and your pictures. Made for graduations and family events.</p>
+        <a class="buy" href="order.html?product=trivia">Buy now</a>
+      </div>
+      <div class="item">
+        <h3>Whack-a-Mole</h3>
+        <div class="amt">$99</div>
+        <p>Your pictures pop up to get bonked, with your logo on the game.</p>
+        <a class="buy" href="order.html?product=whack-a-mole">Buy now</a>
+      </div>
+      <div class="item">
+        <h3>Endless Runner</h3>
+        <div class="amt">$129</div>
+        <p>Your person runs, skates, or flies through a world of custom obstacles.</p>
+        <a class="buy" href="order.html?product=endless-runner">Buy now</a>
+      </div>
+      <div class="item">
+        <h3>Wedding Platformer</h3>
+        <div class="amt">$129</div>
+        <p>Play as the bride or the groom and race to the altar before the clock runs out.</p>
+        <a class="buy" href="order.html?product=platformer">Buy now</a>
+      </div>
+      <div class="item dark">
+        <h3>Original Game</h3>
+        <div class="amt"><small>starts at</small>$249</div>
+        <p>A brand new game built from scratch around your idea. Quoted before we start.</p>
+        <a class="buy" href="order.html?product=original">Request a quote</a>
       </div>
     </div>
 
-    <p class="price-foot">Every custom game is scoped and quoted per project. Send the idea and we will come back
-      with a straight number and no pressure.</p>
+    <div class="host-band">
+      <p><strong>Hosting:</strong> every game is hosted free for the first 3 months with the leaderboard saved.
+        Keep it live after that for $19 a year.</p>
+      <a class="buy" href="order.html?product=hosting">Renew hosting</a>
+    </div>
+
+    <p class="price-foot">Collecting guest photos too? <a href="https://keepsakedrop.com">KeepsakeDrop</a> is $39
+      per event. Pocket Rockets, Just Keep Buzzing, and Office Derby are free to play in the
+      <a href="arcade.html">arcade</a>.</p>
 
     <div class="ministry">
       <p><strong>Discounts are available</strong> for active military, veterans, first responders, teachers, and

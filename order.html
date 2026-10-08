@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Order a Custom Game | Asher Arcade</title>
+<meta name="description" content="Order a custom browser game from Asher Arcade. Drop & Catch $79, Memory Match $79, Custom Trivia $99, Whack-a-Mole $99, Endless Runner $129, Wedding Platformer $129, original games from $249.">
+<link rel="canonical" href="https://www.asherarcade.com/order.html">
+<link rel="icon" href="logo-mark.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.asherarcade.com/order.html">
+<meta property="og:title" content="Order a Custom Game | Asher Arcade">
+<meta property="og:description" content="Pick your game, tell us who is in it, and we build it. Every game is hosted free for 3 months with the leaderboard saved.">
+<meta property="og:site_name" content="Asher Arcade">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&amp;family=Rubik:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#F6F0E4;
+  --paper-2:#EDE4D1;
+  --paper-3:#E4D9C1;
+  --ink:#241F1A;
+  --ink-soft:#6B6255;
+  --navy:#0A1A32;
+  --amber:#E8A038;
+  --ochre:#C2761B;
+  --ochre-deep:#9E5C0E;
+  --blue:#44679D;
+  --blue-deep:#33507D;
+  --rule:#CFC3A8;
+  --display:"Rubik Mono One","Arial Black",system-ui,sans-serif;
+  --text:"Rubik","Helvetica Neue",Arial,system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--text);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue-deep);}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
+@media (max-width:600px){ .wrap{padding:0 16px;} }
+.kicker{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-deep);margin:0;}
+
+/* NAV */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(246,240,228,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);}
+.topbar-in{max-width:1120px;margin:0 auto;padding:13px 28px 16px;display:flex;align-items:center;gap:26px;}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);}
+.brand img{width:46px;height:46px;display:block;box-shadow:4px 4px 0 var(--ochre);}
+.brand span{font-family:var(--display);font-size:19px;letter-spacing:.01em;}
+.topbar nav{margin-left:auto;display:flex;gap:22px;}
+.topbar nav a{font-size:14px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-bottom:2px solid transparent;padding-bottom:2px;}
+.topbar nav a:hover{color:var(--ink);border-bottom-color:var(--ochre);}
+@media (max-width:600px){ .topbar-in{padding:12px 16px 14px;} .brand span{font-size:16px;} .topbar nav{gap:14px;} .topbar nav a.hide-sm{display:none;} }
+
+/* PAGE */
+.order{padding:52px 0 70px;}
+.order h1{font-family:var(--display);font-size:clamp(26px,4.2vw,42px);line-height:1.08;margin:10px 0 10px;}
+.order .lede{color:var(--ink-soft);max-width:60ch;margin:0 0 34px;}
+.order-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:start;}
+@media (max-width:900px){ .order-grid{grid-template-columns:1fr;gap:28px;} }
+
+.oform{display:grid;gap:14px;border:2px solid var(--ink);background:var(--paper);padding:26px 24px 28px;}
+.oform label{display:block;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px;}
+.oform input,.oform select,.oform textarea{
+  font-family:var(--text);font-size:16px;color:var(--ink);
+  background:var(--paper-2);border:1px solid var(--rule);padding:13px 14px;width:100%;
+}
+.oform select#of-product{font-weight:600;border:2px solid var(--ink);background:var(--paper);}
+.oform textarea{min-height:120px;resize:vertical;}
+.oform input::placeholder,.oform textarea::placeholder{color:#8C8272;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:600px){ .two{grid-template-columns:1fr;} }
+.oform button{
+  font-family:var(--text);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);border:none;padding:16px;cursor:pointer;
+  box-shadow:5px 5px 0 var(--ochre);margin-top:6px;
+}
+.oform button:hover{box-shadow:2px 2px 0 var(--ochre);}
+.oform button:disabled{opacity:.6;cursor:default;box-shadow:none;}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+.note{font-size:13.5px;color:var(--ink-soft);margin:2px 0 0;}
+.is-hidden{display:none !important;}
+
+/* SUMMARY */
+.summary{background:var(--navy);color:var(--paper);padding:26px 24px 28px;position:sticky;top:96px;}
+@media (max-width:900px){ .summary{position:static;} }
+.summary .kicker{color:var(--amber);}
+.summary h2{font-family:var(--display);font-size:20px;line-height:1.2;margin:12px 0 0;}
+.summary .amt{font-family:var(--display);font-size:42px;line-height:1;margin:16px 0 0;font-variant-numeric:tabular-nums;}
+.summary .amt small{font-family:var(--text);font-size:13px;font-weight:500;color:#C9BFAD;display:block;margin-top:8px;}
+.summary ul{list-style:none;margin:20px 0 0;padding:0;display:grid;gap:10px;}
+.summary li{font-size:15px;padding-left:17px;position:relative;color:#D6CDBC;}
+.summary li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;background:var(--amber);}
+.summary .host{margin:20px 0 0;padding-top:16px;border-top:1px solid rgba(246,240,228,.2);font-size:14px;color:#C9BFAD;}
+.summary .host b{color:var(--paper);}
+.summary .see{display:inline-block;margin-top:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);}
+
+/* THANKS */
+#thanks{border:2px solid var(--ink);background:var(--paper);padding:28px 24px 30px;}
+#thanks h2{font-family:var(--display);font-size:22px;line-height:1.2;margin:0 0 10px;}
+#thanks p{margin:0 0 14px;color:var(--ink-soft);}
+.pay{display:inline-block;margin:6px 12px 6px 0;padding:15px 22px;text-decoration:none;
+  font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);box-shadow:5px 5px 0 var(--ochre);}
+.pay:hover{box-shadow:2px 2px 0 var(--ochre);}
+.pay.alt{background:var(--paper-2);color:var(--ink);box-shadow:none;border:2px solid var(--ink);}
+
+/* FOOTER */
+.foot{border-top:2px solid var(--ink);padding:34px 0 46px;}
+.foot-in{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;}
+.foot-brand{display:flex;align-items:center;gap:11px;}
+.foot-brand img{width:38px;height:38px;box-shadow:3px 3px 0 var(--ochre);}
+.foot-brand small{font-size:13px;color:var(--ink-soft);}
+.foot-brand small a{color:inherit;}
+.foot-nav{display:flex;flex-wrap:wrap;gap:18px;}
+.foot-nav a{font-size:13.5px;color:var(--ink-soft);text-decoration:none;}
+.foot-nav a:hover{color:var(--ink);}
+</style>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CWKRCXYXTG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CWKRCXYXTG');
+</script>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <img src="logo-mark.png" width="192" height="192" alt="Asher Arcade">
+      <span>ASHER ARCADE</span>
+    </a>
+    <nav>
+      <a href="arcade.html" class="hide-sm">Arcade</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main class="order">
+  <div class="wrap">
+    <p class="kicker">Order</p>
+    <h1>Order your game</h1>
+    <p class="lede">Pick the game, tell us who is in it, and we build it. We reply within 24 hours to confirm the
+      details, and most games are ready within 7 days.</p>
+
+    <div class="order-grid">
+      <div>
+        <form class="oform" id="orderForm" novalidate>
+          <div class="hp" aria-hidden="true">
+            <label for="of-website">Leave this field empty</label>
+            <input type="text" id="of-website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div>
+            <label for="of-product">Game</label>
+            <select id="of-product" required>
+              <option value="drop-catch">Drop &amp; Catch - $79</option>
+              <option value="memory-match">Memory Match - $79</option>
+              <option value="puzzle-reveal">Reveal &amp; Announce Puzzle - $79</option>
+              <option value="trivia">Custom Trivia - $99</option>
+              <option value="whack-a-mole">Whack-a-Mole - $99</option>
+              <option value="endless-runner">Endless Runner - $129</option>
+              <option value="platformer">Wedding Platformer - $129</option>
+              <option value="original">Original Game - from $249</option>
+              <option value="hosting">Hosting Renewal - $19/year</option>
+            </select>
+          </div>
+
+          <div class="two">
+            <div>
+              <label for="of-name">Your name</label>
+              <input type="text" id="of-name" autocomplete="name" required>
+            </div>
+            <div>
+              <label for="of-email">Email</label>
+              <input type="email" id="of-email" autocomplete="email" required>
+            </div>
+          </div>
+
+          <div class="two" id="row-event">
+            <div>
+              <label for="of-occasion">Occasion</label>
+              <select id="of-occasion">
+                <option value="">Choose one (optional)</option>
+                <option>Wedding or Engagement</option>
+                <option>Baby Shower or Gender Reveal</option>
+                <option>Birthday</option>
+                <option>Graduation</option>
+                <option>Family Event or Reunion</option>
+                <option>Church / Youth Group</option>
+                <option>Anniversary or Milestone</option>
+                <option>Corporate or Office Event</option>
+                <option>Just for Fun / Personal Gift</option>
+                <option>Something else</option>
+              </select>
+            </div>
+            <div>
+              <label for="of-date">Event date</label>
+              <input type="date" id="of-date">
+            </div>
+          </div>
+
+          <div id="row-who">
+            <label for="of-who" id="lbl-who">Who is in the game?</label>
+            <input type="text" id="of-who" placeholder="Names of the people, pets, or brand">
+          </div>
+
+          <div id="row-url" class="is-hidden">
+            <label for="of-url">Your game's link</label>
+            <input type="text" id="of-url" placeholder="asherarcade.com/your_game.html">
+          </div>
+
+          <div>
+            <label for="of-msg" id="lbl-msg">Details</label>
+            <textarea id="of-msg" placeholder="Theme, colors, inside jokes, anything that makes it yours. You will send photos after we reply."></textarea>
+          </div>
+
+          <button type="submit" id="of-submit">Place order</button>
+          <p class="note" id="of-note">Nothing is charged on this page. After you submit you can pay right away or wait
+            for our confirmation email.</p>
+          <p class="note is-hidden" id="of-error" role="alert">Please add your name and a valid email.</p>
+        </form>
+
+        <div id="thanks" class="is-hidden" aria-live="polite">
+          <h2 id="th-title">Order received.</h2>
+          <p id="th-body"></p>
+          <div id="th-pay"></div>
+          <p class="note" id="th-foot"></p>
+        </div>
+      </div>
+
+      <aside class="summary" aria-live="polite">
+        <p class="kicker">Your order</p>
+        <h2 id="sum-name">Drop &amp; Catch</h2>
+        <div class="amt" id="sum-amt">$79<small>one time</small></div>
+        <ul id="sum-list"></ul>
+        <p class="host" id="sum-host"><b>Hosting:</b> free for the first 3 months with your leaderboard saved. Keep it
+          live after that for $19 a year.</p>
+        <a class="see is-hidden" id="sum-see" href="#" target="_blank" rel="noopener">Play an example</a>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <img src="logo-mark.png" width="192" height="192" alt="Asher Arcade">
+      <small>&copy; 2026 Asher Arcade &middot; a Scott Asher LLC business &middot;
+        <a href="policies.html">Policies</a></small>
+    </div>
+    <div class="foot-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="arcade.html">Arcade</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── PAYMENT LINKS ──
+// Paste a Stripe Payment Link for any product here and its "Pay now" button
+// goes to Stripe instead of Venmo. Leave a value empty to use Venmo.
+var STRIPE_LINKS = {
+  'drop-catch':     '',
+  'memory-match':   '',
+  'puzzle-reveal':  '',
+  'trivia':         '',
+  'whack-a-mole':   '',
+  'endless-runner': '',
+  'platformer':     '',
+  'hosting':        ''
+};
+var VENMO_HANDLE = 'AsherArcade';
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4669X905fLc5A2ZxcwalMJODm36DUofz8U0bG_32fXSAS-9aO_hjzZf1UpCee6zlwtw/exec';
+
+var PRODUCTS = {
+  'drop-catch': {
+    name: 'Drop & Catch', price: 79, from: false, example: 'tinlee_game.html',
+    items: ['Your person as the catcher', 'Custom falling items, good and bad', 'Live leaderboard'],
+    who: 'Who is doing the catching?'
+  },
+  'memory-match': {
+    name: 'Memory Match', price: 79, from: false, example: 'match_game.html',
+    items: ['Your photos on the cards', 'Your names and colors', 'Live leaderboard'],
+    who: 'Whose photos are on the cards?'
+  },
+  'puzzle-reveal': {
+    name: 'Reveal & Announce Puzzle', price: 79, from: false, example: 'reveal_announce.html',
+    items: ['A sliding puzzle built from your photo', 'Solving it unlocks your announcement', 'The reveal can be a message, QR code, website, or video'],
+    who: 'What are you announcing?'
+  },
+  'trivia': {
+    name: 'Custom Trivia', price: 99, from: false, example: 'custom-trivia-game.html',
+    items: ['Your questions', 'Your pictures', 'Built for graduations and family events', 'Live leaderboard'],
+    who: 'Who or what is the trivia about?'
+  },
+  'whack-a-mole': {
+    name: 'Whack-a-Mole', price: 99, from: false, example: 'bonk_a_dragun.html',
+    items: ['Your pictures as the targets', 'Your logo on the game', 'Live leaderboard'],
+    who: 'Who or what pops up to get bonked?'
+  },
+  'endless-runner': {
+    name: 'Endless Runner', price: 129, from: false, example: 'mags_game.html',
+    items: ['Your person as the runner', 'Custom world and obstacles', 'Live leaderboard'],
+    who: 'Who is the runner?'
+  },
+  'platformer': {
+    name: 'Wedding Platformer', price: 129, from: false, example: 'bragg_game.html',
+    items: ['Play as the bride or the groom', 'Race through obstacles to the altar', 'Live leaderboard'],
+    who: 'Names of the couple'
+  },
+  'original': {
+    name: 'Original Game', price: 249, from: true, example: '',
+    items: ['A brand new game built from scratch', 'Your idea, your characters, your rules', 'Live leaderboard', 'Final price quoted before we start'],
+    who: 'Who is in the game?'
+  },
+  'hosting': {
+    name: 'Hosting Renewal', price: 19, from: false, example: '', perYear: true,
+    items: ['Keeps your game live for another year', 'Your leaderboard stays saved', 'Same link, nothing to reshare'],
+    who: ''
+  }
+};
+
+// Older links and page names that should land on a product
+var ALIASES = {
+  'timed-platformer': 'platformer', 'wedding-platformer': 'platformer', 'racing': 'platformer',
+  'drop': 'drop-catch', 'catch': 'drop-catch',
+  'memory': 'memory-match', 'match': 'memory-match',
+  'reveal': 'puzzle-reveal', 'puzzle': 'puzzle-reveal',
+  'whack': 'whack-a-mole', 'bonk': 'whack-a-mole',
+  'runner': 'endless-runner',
+  'custom': 'original', 'new': 'original',
+  'renewal': 'hosting', 'renew': 'hosting'
+};
+
+var LOADED_AT = Date.now();
+function $(id){ return document.getElementById(id); }
+
+function money(p){
+  var s = '$' + p.price;
+  return s;
+}
+
+function render(key){
+  var p = PRODUCTS[key];
+  $('sum-name').textContent = p.name;
+  $('sum-amt').innerHTML = (p.from ? '<small style="margin:0 0 8px">starting at</small>' : '') + money(p)
+    + '<small>' + (p.perYear ? 'per year' : (p.from ? 'quoted before we start' : 'one time')) + '</small>';
+  var ul = $('sum-list'); ul.innerHTML = '';
+  p.items.forEach(function(t){ var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+  $('sum-host').classList.toggle('is-hidden', key === 'hosting');
+  var see = $('sum-see');
+  if (p.example) { see.href = p.example; see.classList.remove('is-hidden'); see.textContent = key === 'puzzle-reveal' || key === 'trivia' ? 'See an example' : 'Play an example'; }
+  else { see.classList.add('is-hidden'); }
+
+  var isHost = key === 'hosting';
+  $('row-event').classList.toggle('is-hidden', isHost);
+  $('row-who').classList.toggle('is-hidden', isHost);
+  $('row-url').classList.toggle('is-hidden', !isHost);
+  if (!isHost) $('lbl-who').textContent = p.who;
+  $('lbl-msg').textContent = isHost ? 'Anything else (optional)' : (key === 'original' ? 'Describe your idea' : 'Details');
+  $('of-submit').textContent = key === 'original' ? 'Request my quote' : 'Place order';
+}
+
+function pickFromUrl(){
+  var params = new URLSearchParams(location.search);
+  var raw = (params.get('product') || params.get('game') || '').toLowerCase();
+  var key = PRODUCTS[raw] ? raw : (ALIASES[raw] || '');
+  if (key) $('of-product').value = key;
+  var occ = params.get('occasion');
+  if (occ) {
+    var sel = $('of-occasion');
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].text.toLowerCase().indexOf(occ.toLowerCase()) === 0) { sel.selectedIndex = i; break; }
+    }
+  }
+  render($('of-product').value);
+}
+
+$('of-product').addEventListener('change', function(){
+  render(this.value);
+  try { history.replaceState(null, '', '?product=' + this.value); } catch (e) {}
+});
+
+$('orderForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var key   = $('of-product').value;
+  var p     = PRODUCTS[key];
+  var name  = $('of-name').value.trim();
+  var email = $('of-email').value.trim();
+  if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    $('of-error').classList.remove('is-hidden');
+    return;
+  }
+  $('of-error').classList.add('is-hidden');
+
+  var trap = $('of-website').value;
+  var elapsed = Date.now() - LOADED_AT;
+  var label = p.name + ' (' + (p.from ? 'from ' : '') + money(p) + (p.perYear ? '/yr' : '') + ')';
+
+  if (!trap && elapsed >= 3000) {
+    var idea = key === 'hosting'
+      ? 'Game link: ' + $('of-url').value.trim()
+      : 'Occasion: ' + ($('of-occasion').value || '-') + ' | Date: ' + ($('of-date').value || '-')
+        + ' | Who: ' + ($('of-who').value.trim() || '-');
+    var url = SCRIPT_URL
+      + '?name='    + encodeURIComponent(name)
+      + '&email='   + encodeURIComponent(email)
+      + '&type='    + encodeURIComponent('ORDER - ' + label)
+      + '&idea='    + encodeURIComponent(idea)
+      + '&msg='     + encodeURIComponent($('of-msg').value.trim())
+      + '&product=' + encodeURIComponent(key)
+      + '&price='   + encodeURIComponent(p.price)
+      + '&ms='      + encodeURIComponent(elapsed);
+    var btn = $('of-submit');
+    btn.textContent = 'Sending...'; btn.disabled = true;
+    fetch(url, {method:'GET', mode:'no-cors'}).then(function(){ thanks(key, name); }).catch(function(){ thanks(key, name); });
+    try { gtag('event', 'generate_lead', {currency:'USD', value:p.price, item_id:key}); } catch (err) {}
+  } else {
+    thanks(key, name);
+  }
+});
+
+function thanks(key, name){
+  var p = PRODUCTS[key];
+  $('orderForm').classList.add('is-hidden');
+  $('thanks').classList.remove('is-hidden');
+  var pay = $('th-pay'); pay.innerHTML = '';
+
+  if (key === 'original') {
+    $('th-title').textContent = 'Got it. Your idea is in.';
+    $('th-body').textContent = 'We will reply within 24 hours with questions and a straight quote. Original games start at $249, and nothing is owed until you approve the quote.';
+    $('th-foot').textContent = '';
+  } else {
+    $('th-title').textContent = 'Order received.';
+    $('th-body').textContent = key === 'hosting'
+      ? 'Pay below and your game stays live for another year, leaderboard and all.'
+      : 'Pay now to lock in your spot, or wait for our email. We reply within 24 hours to confirm details and collect your photos.';
+    var note = 'Asher Arcade - ' + p.name + ' - ' + name;
+    var a = document.createElement('a');
+    a.className = 'pay'; a.target = '_blank'; a.rel = 'noopener';
+    if (STRIPE_LINKS[key]) {
+      a.href = STRIPE_LINKS[key] + (STRIPE_LINKS[key].indexOf('?') === -1 ? '?' : '&') + 'prefilled_email=' + encodeURIComponent($('of-email').value.trim());
+      a.textContent = 'Pay $' + p.price + ' now';
+    } else {
+      a.href = 'https://venmo.com/' + VENMO_HANDLE + '?txn=pay&amount=' + p.price + '&note=' + encodeURIComponent(note);
+      a.textContent = 'Pay $' + p.price + ' with Venmo';
+    }
+    pay.appendChild(a);
+    var back = document.createElement('a');
+    back.className = 'pay alt'; back.href = 'index.html'; back.textContent = 'Pay later';
+    pay.appendChild(back);
+    $('th-foot').textContent = key === 'hosting' ? '' : 'Every game is hosted free for 3 months with the leaderboard saved. After that it is $19 a year to keep it live.';
+  }
+  $('thanks').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+pickFromUrl();
+</script>
+</body>
+</html>
