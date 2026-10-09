@@ -1,0 +1,218 @@
+{
+  "title": "How Well Do You Know J.D.?",
+  "honoree": "J.D. Swilley",
+  "occasion": "birthday",
+  "eyebrow": "Happy Birthday, J.D.",
+  "subtitle": "Think you know J.D.? Prove it.",
+  "photo": "trivia/games/jd-swilley/jd.jpg",
+  "theme": {
+    "primary": "#111111",
+    "secondary": "#8a8d8f"
+  },
+  "secondsPerQuestion": 20,
+  "shuffleAnswers": true,
+  "leaderboardUrl": "https://script.google.com/macros/s/AKfycbycNvo4qnhR4vNiVgaNKIcgXZvvjiPEIVLy7m-5jJVsRG588BCo7cHCr9PTEhhVwY27/exec",
+  "closesAt": "",
+  "questions": [
+    {
+      "q": "What's his largest collection?",
+      "answers": [
+        "Hats",
+        "Guitars",
+        "Books",
+        "Sneakers"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What's the name of his cologne?",
+      "answers": [
+        "Stronger With You",
+        "Bleu de Chanel",
+        "Sauvage",
+        "Acqua di Gio"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "Who is his favorite non-Christian author?",
+      "answers": [
+        "Jack Carr",
+        "Tom Clancy",
+        "Lee Child",
+        "Stephen King"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "How many states has he lived in?",
+      "answers": [
+        "5",
+        "3",
+        "4",
+        "7"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "How old was he when he met Jamè?",
+      "answers": [
+        "18",
+        "16",
+        "21",
+        "24"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What's his worst habit?",
+      "answers": [
+        "Cracking his knuckles",
+        "Biting his nails",
+        "Leaving dishes out",
+        "Hitting snooze"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What's his favorite drink?",
+      "answers": [
+        "Coke",
+        "Dr Pepper",
+        "Sweet tea",
+        "Mountain Dew"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "Who is his favorite band?",
+      "answers": [
+        "U2",
+        "Coldplay",
+        "Bon Jovi",
+        "Journey"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What is his favorite guitar brand?",
+      "answers": [
+        "Taylor",
+        "Martin",
+        "Gibson",
+        "Fender"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What is his favorite coffee brand?",
+      "answers": [
+        "Black Rifle",
+        "Folgers",
+        "Dunkin'",
+        "Maxwell House"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What is his Starbucks order?",
+      "answers": [
+        "Grande Iced Vanilla",
+        "Venti Black Coffee",
+        "Caramel Macchiato",
+        "Pumpkin Spice Latte"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What does J.D. stand for?",
+      "answers": [
+        "John Douglas",
+        "Joseph Duncan",
+        "Juris Diction",
+        "Jackson Daniel"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "Where did he go to Bible college?",
+      "answers": [
+        "Heritage of Faith",
+        "Rhema",
+        "Oral Roberts",
+        "Christ for Nations"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "How many pairs of cowboy boots does he have?",
+      "answers": [
+        "3",
+        "1",
+        "5",
+        "8"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What fast food could he eat every day?",
+      "answers": [
+        "Panda Express",
+        "Long John Silver's",
+        "Chick-fil-A",
+        "Taco Bell"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What's his favorite snack?",
+      "answers": [
+        "Ritz w/ Peanut Butter",
+        "Beef jerky",
+        "Cheez-Its",
+        "Peanut M&Ms"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What's his favorite Christmas movie?",
+      "answers": [
+        "Home Alone",
+        "Die Hard",
+        "Elf",
+        "Christmas Vacation"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What's his favorite sports team?",
+      "answers": [
+        "Vols",
+        "Cowboys",
+        "Titans",
+        "Crimson Tide"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "What was his college job?",
+      "answers": [
+        "Window washer",
+        "Pizza delivery",
+        "Lifeguard",
+        "Car wash"
+      ],
+      "correct": 0
+    },
+    {
+      "q": "Who is his best friend and why is it Scott?",
+      "answers": [
+        "Scott is awesome",
+        "Scott pays him",
+        "He lost a bet",
+        "No one else applied"
+      ],
+      "correct": 0
+    }
+  ]
+}
