@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Build Your Trivia Game | Asher Arcade</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo-mark.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&amp;family=Rubik:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#F6F0E4;
+  --paper-2:#EDE4D1;
+  --paper-3:#E4D9C1;
+  --ink:#241F1A;
+  --ink-soft:#6B6255;
+  --navy:#0A1A32;
+  --amber:#E8A038;
+  --ochre:#C2761B;
+  --ochre-deep:#9E5C0E;
+  --blue:#44679D;
+  --blue-deep:#33507D;
+  --rule:#CFC3A8;
+  --bad:#A33A2A;
+  --display:"Rubik Mono One","Arial Black",system-ui,sans-serif;
+  --text:"Rubik","Helvetica Neue",Arial,system-ui,sans-serif;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:var(--text);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue-deep);}
+:focus-visible{outline:3px solid var(--blue);outline-offset:3px;}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px;}
+@media (max-width:600px){ .wrap{padding:0 16px;} }
+.kicker{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--blue-deep);margin:0;}
+
+/* NAV */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(246,240,228,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule);}
+.topbar-in{max-width:1120px;margin:0 auto;padding:13px 28px 16px;display:flex;align-items:center;gap:26px;}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);}
+.brand img{width:46px;height:46px;display:block;box-shadow:4px 4px 0 var(--ochre);}
+.brand span{font-family:var(--display);font-size:19px;letter-spacing:.01em;}
+.topbar nav{margin-left:auto;display:flex;gap:22px;}
+.topbar nav a{font-size:14px;font-weight:500;color:var(--ink-soft);text-decoration:none;border-bottom:2px solid transparent;padding-bottom:2px;}
+.topbar nav a:hover{color:var(--ink);border-bottom-color:var(--ochre);}
+@media (max-width:600px){ .topbar-in{padding:12px 16px 14px;} .brand span{font-size:16px;} .topbar nav{gap:14px;} .topbar nav a.hide-sm{display:none;} }
+
+/* PAGE */
+.order{padding:52px 0 70px;}
+.order h1{font-family:var(--display);font-size:clamp(26px,4.2vw,42px);line-height:1.08;margin:10px 0 10px;}
+.order .lede{color:var(--ink-soft);max-width:62ch;margin:0 0 34px;}
+.order-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:start;}
+@media (max-width:900px){ .order-grid{grid-template-columns:1fr;gap:28px;} .summary{order:-1;} }
+
+.oform{display:grid;gap:16px;border:2px solid var(--ink);background:var(--paper);padding:26px 24px 28px;}
+.oform label,.oform .lbl{display:block;font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 6px;}
+.oform input[type=text],.oform input[type=email],.oform input[type=date],.oform select,.oform textarea{
+  font-family:var(--text);font-size:16px;color:var(--ink);
+  background:var(--paper-2);border:1px solid var(--rule);padding:13px 14px;width:100%;
+}
+.oform select#of-product{font-weight:600;border:2px solid var(--ink);background:var(--paper);}
+.oform textarea{min-height:110px;resize:vertical;}
+.oform input::placeholder,.oform textarea::placeholder{color:#8C8272;}
+.hint{font-size:13.5px;color:var(--ink-soft);margin:6px 0 0;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:600px){ .two{grid-template-columns:1fr;} }
+.req{color:var(--ochre-deep);}
+
+/* photo pickers */
+.photos{border:1px dashed var(--rule);background:var(--paper-2);padding:14px;}
+.photos + .photos{margin-top:12px;}
+.pick{display:inline-block;cursor:pointer;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--paper);border:2px solid var(--ink);padding:10px 14px;margin-top:4px;}
+.pick input{position:absolute;left:-9999px;width:1px;height:1px;}
+.thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.thumb{position:relative;width:70px;height:70px;border:1px solid var(--rule);background:#fff center/cover no-repeat;}
+.thumb button{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:none;
+  background:var(--ink);color:var(--paper);font-size:14px;line-height:24px;cursor:pointer;padding:0;}
+.count{font-size:13px;color:var(--ink-soft);margin-left:8px;}
+
+.extra{border-top:1px solid var(--rule);padding-top:14px;}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;cursor:pointer;}
+.check input{margin-top:5px;width:18px;height:18px;flex:none;}
+
+.oform button[type=submit],#of-photo-retry{
+  font-family:var(--text);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);border:none;padding:16px;cursor:pointer;
+  box-shadow:5px 5px 0 var(--ochre);margin-top:4px;
+}
+.oform button[type=submit]:hover,#of-photo-retry:hover{box-shadow:2px 2px 0 var(--ochre);}
+.oform button[type=submit]:disabled,#of-photo-retry:disabled{opacity:.6;cursor:default;box-shadow:none;}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+.note{font-size:13.5px;color:var(--ink-soft);margin:0;}
+.err{font-size:14.5px;color:var(--bad);font-weight:600;margin:0;}
+.photo-trouble{display:flex;flex-direction:column;gap:10px;}
+.photo-trouble .link-btn{background:none;border:0;box-shadow:none;color:inherit;text-decoration:underline;font-weight:600;padding:6px;cursor:pointer;}
+.is-hidden{display:none !important;}
+
+/* SUMMARY */
+.summary{background:var(--navy);color:var(--paper);padding:26px 24px 28px;position:sticky;top:96px;}
+@media (max-width:900px){ .summary{position:static;} }
+.summary .kicker{color:var(--amber);}
+.summary h2{font-family:var(--display);font-size:20px;line-height:1.2;margin:12px 0 0;}
+.summary .amt{font-family:var(--display);font-size:42px;line-height:1;margin:16px 0 0;font-variant-numeric:tabular-nums;}
+.summary .amt small{font-family:var(--text);font-size:13px;font-weight:500;color:#C9BFAD;display:block;margin-top:8px;}
+.summary h3{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin:22px 0 0;}
+.summary ul{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:8px;}
+.summary li{font-size:15px;padding-left:17px;position:relative;color:#D6CDBC;}
+.summary li::before{content:"";position:absolute;left:0;top:.62em;width:8px;height:8px;background:var(--amber);}
+.summary .host{margin:20px 0 0;padding-top:16px;border-top:1px solid rgba(246,240,228,.2);font-size:14px;color:#C9BFAD;}
+.summary .host b{color:var(--paper);}
+.summary .see{display:inline-block;margin-top:14px;font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);}
+
+/* THANKS */
+#thanks{border:2px solid var(--ink);background:var(--paper);padding:28px 24px 30px;}
+#thanks h2{font-family:var(--display);font-size:22px;line-height:1.2;margin:0 0 10px;}
+#thanks p{margin:0 0 14px;color:var(--ink-soft);}
+#thanks .oid{font-family:var(--display);font-size:15px;color:var(--ink);}
+.btn{display:inline-block;margin:6px 12px 6px 0;padding:15px 22px;text-decoration:none;
+  font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--ink);color:var(--paper);box-shadow:5px 5px 0 var(--ochre);}
+.btn:hover{box-shadow:2px 2px 0 var(--ochre);}
+
+/* FOOTER */
+.foot{border-top:2px solid var(--ink);padding:34px 0 46px;}
+.foot-in{display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;}
+.foot-brand{display:flex;align-items:center;gap:11px;}
+.foot-brand img{width:38px;height:38px;box-shadow:3px 3px 0 var(--ochre);}
+.foot-brand small{font-size:13px;color:var(--ink-soft);}
+.foot-brand small a{color:inherit;}
+.foot-nav{display:flex;flex-wrap:wrap;gap:18px;}
+.foot-nav a{font-size:13.5px;color:var(--ink-soft);text-decoration:none;}
+.foot-nav a:hover{color:var(--ink);}
+</style>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CWKRCXYXTG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CWKRCXYXTG');
+</script>
+<style>
+.build{padding:28px 0 60px;}
+.build .card{max-width:760px;}
+.bstate{max-width:760px;}
+.photo-crop{display:flex;gap:18px;align-items:center;flex-wrap:wrap;}
+.crop{width:220px;height:220px;border-radius:50%;overflow:hidden;background:var(--paper-3);position:relative;touch-action:none;cursor:grab;border:4px solid var(--ink);flex:none;}
+.crop canvas{width:100%;height:100%;display:block;}
+.crop .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;font-size:14px;color:var(--ink-soft);}
+.crop-tools{display:grid;gap:10px;min-width:200px;flex:1;}
+.crop-tools input[type=range]{width:100%;}
+.done-box{border:2px solid var(--ink);background:var(--paper-2);padding:20px;margin:18px 0;}
+.done-box .link{display:block;font-weight:700;font-size:17px;word-break:break-all;margin:8px 0 14px;}
+.done-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.done-actions a,.done-actions button{font-family:var(--text);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;padding:13px 16px;cursor:pointer;text-decoration:none;}
+.done-actions .alt{background:transparent;color:var(--ink);border:2px solid var(--ink);}
+.answers-list{font-size:14.5px;margin:10px 0 0;padding-left:20px;}
+.answers-list li{margin:8px 0;}
+.answers-list .r{font-weight:700;color:#3f6b32;}
+.answers-list .ai{color:var(--ink-soft);}
+.spin{width:38px;height:38px;border:4px solid var(--paper-3);border-top-color:var(--ochre);border-radius:50%;animation:sp 1s linear infinite;margin:10px 0;}
+@keyframes sp{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="index.html">
+      <img src="logo-mark.png" width="192" height="192" alt="Asher Arcade">
+      <span>ASHER ARCADE</span>
+    </a>
+    <nav>
+      <a href="arcade.html" class="hide-sm">Arcade</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="index.html#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<main class="order build">
+  <div class="wrap">
+    <p class="kicker">Custom Trivia</p>
+    <h1 id="b-h1">Build your trivia game</h1>
+
+    <div class="bstate" id="st-loading"><div class="spin"></div><p>Checking your order&hellip;</p></div>
+
+    <div class="bstate is-hidden" id="st-error">
+      <p class="lede" id="err-text"></p>
+      <p class="note">Questions? Reply to your order email or use the <a href="index.html#contact">contact form</a>.</p>
+    </div>
+
+    <div class="bstate is-hidden" id="st-done">
+      <div class="done-box">
+        <p class="kicker" style="margin:0" id="done-kicker">Your game is live</p>
+        <a class="link" id="done-link" href="#" target="_blank" rel="noopener"></a>
+        <div class="done-actions">
+          <a id="done-play" href="#" target="_blank" rel="noopener">Open the game</a>
+          <button type="button" id="done-share">Share the link</button>
+          <button type="button" class="alt" id="done-edit">Edit questions</button>
+        </div>
+        <p class="note" id="done-note">We emailed you this link too. Everyone plays on their own phone, once each, and the leaderboard updates live.</p>
+      </div>
+      <h2 style="font-size:20px;margin:24px 0 0">Your 20 questions</h2>
+      <p class="hint" style="margin:4px 0 0">Right answers are in green. Wrong answers we wrote for you are in gray. Want to change any? Tap Edit questions.</p>
+      <ol class="answers-list" id="done-list"></ol>
+    </div>
+
+    <div class="bstate is-hidden" id="st-writing">
+      <div class="spin"></div>
+      <p class="lede">Writing your wrong answers&hellip;</p>
+      <p class="note" id="writing-note">This usually takes a few seconds.</p>
+    </div>
+
+    <form class="oform is-hidden" id="buildForm" novalidate>
+      <p class="lede" style="margin:0">Thanks for your order<span id="b-order"></span>! Add the photo, colors and 20 questions.
+        Your game goes live the moment you finish. Your work saves on this device as you go, and you can come back to this page from the link in your email.</p>
+      <div>
+        <label for="f-honoree">Who is the game about? <span class="req">*</span></label>
+        <input type="text" id="f-honoree" maxlength="60" placeholder="First and last name, e.g. Maya Brooks" required>
+      </div>
+      <div>
+        <label for="f-occasion">Occasion <span class="req">*</span></label>
+        <select id="f-occasion" required>
+          <option value="">Pick one</option>
+          <option>Graduation</option><option>Birthday</option><option>Wedding or engagement</option>
+          <option>Baby or bridal shower</option><option>Anniversary</option><option>Retirement</option><option>Something else</option>
+        </select>
+      </div>
+      <div>
+        <span class="lbl">Their photo <span class="req">*</span></span>
+        <p class="hint" style="margin:0 0 10px">A clear photo of their face. Drag it and use the slider so their face fills the circle.</p>
+        <div class="photo-crop">
+          <div class="crop" id="crop"><canvas id="crop-cv" width="480" height="480"></canvas><div class="empty" id="crop-empty">No photo yet</div></div>
+          <div class="crop-tools">
+            <label class="pick" style="justify-self:start">Pick a photo<input type="file" accept="image/*" id="f-photo"></label>
+            <label for="crop-zoom" style="margin:0">Zoom</label>
+            <input type="range" id="crop-zoom" min="1" max="4" step="0.01" value="1" disabled>
+          </div>
+        </div>
+      </div>
+      <div id="tq-box" style="display:grid;gap:16px;"></div>
+      <p class="err is-hidden" id="of-error" role="alert"></p>
+      <button type="submit" id="b-submit">Make my game</button>
+      <p class="note">Leave wrong answers blank and we write believable ones for you. You can still edit everything until the first person plays.</p>
+    </form>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <img src="logo-mark.png" width="192" height="192" alt="Asher Arcade">
+      <small>&copy; 2026 Asher Arcade &middot; a Scott Asher LLC business &middot;
+        <a href="policies.html">Policies</a></small>
+    </div>
+    <div class="foot-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#pricing">Pricing</a>
+      <a href="arcade.html">Arcade</a>
+      <a href="index.html#contact">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<script src="trivia/theme.js"></script>
+<script src="trivia/sample-questions.js"></script>
+<script src="trivia/order-trivia.js"></script>
+<script>
+// Pay first, then build: Stripe sends the customer here with ?session_id=cs_...
+// The trivia Apps Script checks the payment with Stripe, fills in missing wrong
+// answers with Claude, stores the game and serves it at trivia.html?g=<id>.
+var TRIVIA_SCRIPT = 'https://script.google.com/macros/s/AKfycbycNvo4qnhR4vNiVgaNKIcgXZvvjiPEIVLy7m-5jJVsRG588BCo7cHCr9PTEhhVwY27/exec';
+var SID = new URLSearchParams(location.search).get('session_id') || '';
+var $ = function(id){ return document.getElementById(id); };
+var ui = null, sessionInfo = null, current = null;
+
+function show(id){
+  ['st-loading', 'st-error', 'st-done', 'st-writing', 'buildForm'].forEach(function(s){ $(s).classList.toggle('is-hidden', s !== id); });
+  window.scrollTo(0, 0);
+}
+function fail(msg){ var e = $('of-error'); e.textContent = msg; e.classList.remove('is-hidden'); e.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+function post(body, tries){
+  tries = tries || 3;
+  return fetch(TRIVIA_SCRIPT, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function(r){ return r.text(); })
+    .then(function(t){ try { return JSON.parse(t); } catch (e) { throw new Error('bad response'); } })
+    .catch(function(err){
+      if (tries <= 1) throw err;
+      return new Promise(function(ok){ setTimeout(ok, 2000); }).then(function(){ return post(body, tries - 1); });
+    });
+}
+function errorPage(msg){ $('err-text').textContent = msg; show('st-error'); }
+
+/* ---------- photo crop: drag to move, slider to zoom ---------- */
+var crop = { img: null, zoom: 1, x: 0, y: 0, existing: '' };
+function drawCrop(){
+  var cv = $('crop-cv'), c = cv.getContext('2d'), S = cv.width;
+  c.fillStyle = '#e4d9c1'; c.fillRect(0, 0, S, S);
+  if (!crop.img) return;
+  var base = S / Math.min(crop.img.naturalWidth, crop.img.naturalHeight), sc = base * crop.zoom;
+  var w = crop.img.naturalWidth * sc, h = crop.img.naturalHeight * sc;
+  crop.x = Math.min(0, Math.max(S - w, crop.x)); crop.y = Math.min(0, Math.max(S - h, crop.y));
+  c.drawImage(crop.img, crop.x, crop.y, w, h);
+}
+function loadPhoto(src, keepPosition){
+  var img = new Image();
+  img.onload = function(){
+    crop.img = img;
+    if (!keepPosition) {
+      var S = 480, sc = S / Math.min(img.naturalWidth, img.naturalHeight);
+      crop.zoom = 1; $('crop-zoom').value = 1;
+      crop.x = (S - img.naturalWidth * sc) / 2;
+      crop.y = img.naturalHeight > img.naturalWidth ? -(img.naturalHeight * sc - S) * 0.15 : 0;   // portraits: faces sit high
+    }
+    $('crop-zoom').disabled = false; $('crop-empty').style.display = 'none';
+    drawCrop();
+  };
+  img.onerror = function(){ fail("That photo couldn't be opened. Try a JPG or PNG, or take a screenshot of it and pick that."); };
+  img.src = src;
+}
+$('f-photo').addEventListener('change', function(){
+  var f = this.files && this.files[0]; if (!f) return;
+  crop.existing = '';
+  loadPhoto(URL.createObjectURL(f));
+});
+$('crop-zoom').addEventListener('input', function(){
+  var S = 480, old = crop.zoom; crop.zoom = Number(this.value);
+  // zoom around the center
+  crop.x = S / 2 - (S / 2 - crop.x) * crop.zoom / old; crop.y = S / 2 - (S / 2 - crop.y) * crop.zoom / old;
+  drawCrop();
+});
+(function(){
+  var el = $('crop'), drag = null;
+  el.addEventListener('pointerdown', function(e){ if (!crop.img) return; drag = { x: e.clientX, y: e.clientY, cx: crop.x, cy: crop.y }; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointermove', function(e){
+    if (!drag) return;
+    var k = 480 / el.clientWidth;
+    crop.x = drag.cx + (e.clientX - drag.x) * k; crop.y = drag.cy + (e.clientY - drag.y) * k; drawCrop();
+  });
+  el.addEventListener('pointerup', function(){ drag = null; });
+  el.addEventListener('pointercancel', function(){ drag = null; });
+})();
+function photoData(){
+  if (crop.existing) return '';            // unchanged: the server keeps the one it has
+  if (!crop.img) return null;
+  return $('crop-cv').toDataURL('image/jpeg', 0.85);
+}
+
+/* ---------- form ---------- */
+function openForm(game){
+  show('buildForm');
+  $('b-order').textContent = sessionInfo.order ? ' (' + sessionInfo.order + ')' : '';
+  if (!ui) {
+    ui = TriviaOrder.mount($('tq-box'), { nameInput: $('f-honoree'), occasionInput: $('f-occasion'),
+      draftKey: 'aa-trivia-build-' + SID, initial: game || null });
+    if (!$('f-honoree').value || !$('f-occasion').value) {
+      try {
+        var pre = JSON.parse(localStorage.getItem('aa-trivia-prefill') || 'null');
+        if (pre && !$('f-honoree').value) $('f-honoree').value = pre.honoree || '';
+        if (pre && !$('f-occasion').value) $('f-occasion').value = pre.occasion || '';
+        $('f-honoree').dispatchEvent(new Event('input'));
+        $('f-occasion').dispatchEvent(new Event('change'));
+      } catch (e) {}
+    }
+  }
+  if (game && game.photo && !crop.img) { crop.existing = game.photo; loadPhoto(game.photo); }
+}
+$('buildForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  $('of-error').classList.add('is-hidden');
+  if (!$('f-honoree').value.trim()) return fail('Please add who the game is about.');
+  if (!$('f-occasion').value) return fail('Please pick the occasion.');
+  var photo = photoData();
+  if (photo === null) return fail('Please add their photo.');
+  var c = ui.collect();
+  if (c.error) return fail(c.error);
+  var btn = $('b-submit'); btn.disabled = true; btn.textContent = 'Saving...';
+  show('st-writing');
+  post({ action: 'build', session: SID, game: c.game, photo: photo })
+    .then(function(r){
+      btn.disabled = false; btn.textContent = 'Make my game';
+      if (!r.ok) {
+        show('buildForm');
+        return fail(r.error === 'locked' ? 'People have already played this game, so it can\'t be changed now. Reply to your order email if something is wrong.'
+          : r.error === 'not_paid' ? "We couldn't confirm your payment. Reply to your order email and we'll sort it out."
+          : r.error || 'Something went wrong. Please try again.');
+      }
+      ui.clearDraft();
+      try { localStorage.removeItem('aa-trivia-prefill'); } catch (err) {}
+      done(r.gameId, r.status, r.game);
+    })
+    .catch(function(){
+      btn.disabled = false; btn.textContent = 'Make my game';
+      show('buildForm');
+      fail("We couldn't reach our server. Your work is saved on this device. Check your connection and tap Make my game again.");
+    });
+});
+
+/* ---------- finished ---------- */
+function done(id, status, game){
+  current = { id: id, game: game };
+  var link = 'https://www.asherarcade.com/trivia.html?g=' + id;
+  $('done-link').textContent = link; $('done-link').href = link; $('done-play').href = 'trivia.html?g=' + id;
+  var live = status === 'live';
+  $('done-kicker').textContent = live ? 'Your game is live' : 'Almost ready';
+  $('done-note').textContent = live
+    ? 'We emailed you this link too. Everyone plays on their own phone, once each, and the leaderboard updates live.'
+    : "We're still writing a few wrong answers. We'll email you the moment it's ready, usually within a few minutes.";
+  $('done-play').style.display = live ? '' : 'none';
+  $('done-share').style.display = live ? '' : 'none';
+  var ol = $('done-list'); ol.textContent = '';
+  (game.questions || []).forEach(function(q){
+    var li = document.createElement('li'), b = document.createElement('div');
+    b.textContent = q.q; li.appendChild(b);
+    var a = document.createElement('div');
+    q.answers.forEach(function(ans, i){
+      var s = document.createElement('span'); s.className = i === q.correct ? 'r' : 'ai';
+      s.textContent = ans; a.appendChild(s);
+      if (i < q.answers.length - 1) a.appendChild(document.createTextNode(' · '));
+    });
+    li.appendChild(a); ol.appendChild(li);
+  });
+  show('st-done');
+  if (!live) setTimeout(function(){ checkSession(true); }, 20000);
+}
+$('done-share').addEventListener('click', function(){
+  var link = $('done-link').href, title = (current && current.game && current.game.title) || 'Trivia';
+  if (navigator.share) navigator.share({ title: title, text: title + ' Play here:', url: link }).catch(function(){});
+  else navigator.clipboard.writeText(link).then(function(){ $('done-share').textContent = 'Link copied'; });
+});
+$('done-edit').addEventListener('click', function(){ openForm(current && current.game); });
+
+function checkSession(quiet){
+  if (!/^cs_(live|test)_/.test(SID)) return errorPage("This page needs the link from your order. Open it from your order email, or reply to that email and we'll send it again.");
+  post({ action: 'session', session: SID }).then(function(r){
+    if (!r.ok) return errorPage(r.error === 'not_paid'
+      ? "We couldn't confirm the payment for this link yet. If you just paid, wait a minute and refresh. Otherwise reply to your order email."
+      : 'Something went wrong (' + (r.error || 'unknown') + '). Refresh to try again.');
+    sessionInfo = r;
+    if (r.gameId && r.game) return done(r.gameId, r.status, r.game);
+    if (!quiet) openForm(null);
+  }).catch(function(){ if (!quiet) errorPage("We couldn't reach our server. Check your connection and refresh this page."); });
+}
+checkSession();
+</script>
+</body>
+</html>
