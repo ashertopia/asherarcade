@@ -73,7 +73,7 @@
     };
     for (var i = 0; i < COUNT; i++) {
       var s = (saved.qs || [])[i] || {};
-      state.qs.push({ q: s.q || '', right: s.right || '', wrong: (s.wrong || ['', '', '']).slice(0, 3), fact: s.fact || '' });
+      state.qs.push({ q: s.q || '', right: s.right || '', wrong: (s.wrong || ['', '', '']).slice(0, 3), fact: s.fact || '', tpl: s.tpl || '', filled: s.filled || '' });
     }
     if (saved.honoree && opts.nameInput && !opts.nameInput.value) opts.nameInput.value = saved.honoree;
     if (saved.occasion && opts.occasionInput && !opts.occasionInput.value) opts.occasionInput.value = saved.occasion;
@@ -150,7 +150,7 @@
     box.appendChild(qwrap);
 
     function sampleOptions(current) {
-      var f = first() || 'them', html = '<option value="">Pick a sample question or write your own</option>';
+      var f = first(), html = '<option value="">Pick a sample question or write your own</option>';
       root.TriviaSamples.groupsFor(occasion()).forEach(function (g) {
         html += '<optgroup label="' + esc(g.group) + '">' + g.questions.map(function (q) {
           var text = root.TriviaSamples.fill(q, f);
@@ -206,7 +206,7 @@
       var card = e.target.closest('.tq-q'), q = state.qs[+card.getAttribute('data-i')];
       var v = e.target.value, input = card.querySelector('.tq-text');
       if (v === '__own') { input.value = ''; q.q = ''; input.focus(); }
-      else if (v) { q.q = root.TriviaSamples.fill(v, first() || 'them'); input.value = q.q; card.querySelector('.tq-ans[data-w="-1"]').focus(); }
+      else if (v) { q.tpl = v; q.q = root.TriviaSamples.fill(v, first()); q.filled = q.q; input.value = q.q; card.querySelector('.tq-ans[data-w="-1"]').focus(); }
       progress(); save();
     });
     list.addEventListener('input', function (e) {
@@ -225,6 +225,12 @@
       paintColors();
       list.querySelectorAll('.tq-q').forEach(function (card) {
         var q = state.qs[+card.getAttribute('data-i')];
+        // A sample question picked before the name was typed follows the new name,
+        // unless the customer has since edited the wording.
+        if (q.tpl && q.q === q.filled) {
+          q.q = q.filled = root.TriviaSamples.fill(q.tpl, first());
+          card.querySelector('.tq-text').value = q.q;
+        }
         card.querySelector('.tq-sample').innerHTML = sampleOptions(q.q);
       });
       save();
