@@ -22,6 +22,17 @@
   gtag('config', 'G-CWKRCXYXTG');
 </script>
 
+<script>
+// Paint the game's own colors before anything shows (saved from the last visit),
+// or a neutral dark if this is the first visit, so the default purple never flashes.
+(function(){
+  var r = document.documentElement.style, id = (location.search.match(/[?&]g=([\w-]+)/) || [])[1] || 'demo', t = null;
+  try { t = JSON.parse(localStorage.getItem('aa-trivia-theme-' + id) || 'null'); } catch (e) {}
+  t = t || { bg1: '#141414', bg2: '#262626' };
+  r.setProperty('--bg1', t.bg1); r.setProperty('--bg2', t.bg2);
+  if (t.accent) r.setProperty('--accent', t.accent);
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
@@ -470,6 +481,7 @@ function applyTheme(cfg){
   cfg.colors.forEach(function(c, i){ r.setProperty('--a' + i, c); r.setProperty('--t' + i, window.TriviaTheme ? TriviaTheme.textOn(c) : '#fff'); });
   var meta = document.querySelector('meta[name=theme-color]'); if (meta) meta.content = cfg.bg1;
   document.title = cfg.title + ' | Asher Arcade Trivia';
+  try { localStorage.setItem('aa-trivia-theme-' + (cfg.id || 'demo'), JSON.stringify({ bg1: cfg.bg1, bg2: cfg.bg2, accent: cfg.accent })); } catch (e) {}
 }
 function fillPhoto(el, cfg){
   el.textContent = '';
@@ -835,11 +847,14 @@ function openDone(fresh){
   if (fresh) { sfx.done(); if (t.right) confetti([cfg.accent].concat(cfg.colors)); }
   if (state.sent && state.result) { paintRank(state.result); return liveDone(); }
   send();
+  liveDone();
 }
 function send(){
   $('d-rank').textContent = 'Checking where you placed…';
   $('d-msg').textContent = ''; $('d-retry').hidden = true;
+  var slow = setTimeout(function(){ if (!state.sent) $('d-rank').textContent = 'Posting your score… almost there'; }, 6000);
   api.finish(state.name, DEV, state.answers).then(function(res){
+    clearTimeout(slow);
     if (!res || !res.ok) {
       var e = res && res.error;
       $('d-rank').textContent = '';
@@ -851,8 +866,10 @@ function send(){
     }
     state.sent = true; state.result = { score: res.score, rank: res.rank, count: res.count }; save();
     paintRank(state.result);
-    liveDone();
+    loadBoard($('d-board'), 25);
   }).catch(function(){
+    clearTimeout(slow);
+    if (state.sent) return;   // the board already showed our score
     $('d-rank').textContent = '';
     $('d-msg').textContent = "Couldn't reach the scoreboard. Your answers are saved on this phone.";
     $('d-retry').hidden = false;
@@ -867,9 +884,10 @@ function liveDone(){
       if (!d || !d.players) return;
       $('d-count').textContent = countLabel(d);
       var k = nameKey(state.name), me = d.players.find(function(p){ return nameKey(p.name) === k; });
-      if (!me) return;
+      if (!me || (!state.sent && me.score == null)) return;
       var rank = 1 + d.players.filter(function(p){ return p.score > me.score; }).length;
-      state.result = { score: state.result.score, rank: rank, count: d.count }; save();
+      state.sent = true; $('d-msg').textContent = ''; $('d-retry').hidden = true;
+      state.result = { score: me.score, rank: rank, count: d.count }; save();
       paintRank(state.result);
     });
   });
