@@ -391,7 +391,6 @@ footer.small a { color: var(--ink-soft); }
 .place-card .v { font-family: var(--display); font-size: 32px; font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; }
 .place-card .v span { font-size: 16px; color: var(--muted); font-weight: 600; }
 .gap-dots { text-align: center; color: var(--muted); line-height: 0.8; }
-.players.many { -webkit-mask-image: linear-gradient(180deg, #000 85%, transparent); mask-image: linear-gradient(180deg, #000 85%, transparent); }
 
 /* Buy options (host unlock dialog, landing page) */
 .offers { display: grid; gap: 10px; margin-top: 14px; }
@@ -417,3 +416,10 @@ footer.small a { color: var(--ink-soft); }
 .price-card select.input { font-size: 16px; padding: 0.6em 0.8em; }
 #checkoutNote { margin-top: 14px; }
 #checkoutNote a { color: var(--ink-soft); }
+
+.p-explain { padding: 14px 16px; border-radius: 16px; background: rgba(0, 0, 0, 0.25); border-left: 4px solid var(--gold); font-size: 15px; line-height: 1.45; color: var(--ink-soft); }
+.p-explain .refs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.p-explain .pill { font-size: 12px; white-space: normal; }
+
+.pchip.more { background: transparent; border-style: dashed; color: var(--muted); }
+.share-btn { margin-top: 1.2vh; }

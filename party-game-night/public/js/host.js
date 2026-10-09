@@ -405,7 +405,7 @@
         const res = E.join(s, data, t);
         // Success needs no reply of its own: the phone sees itself in the next
         // state broadcast. Only a refusal gets a message (it goes to every phone,
-        // and with 100 of them a reply per join would add up).
+        // and with 200 of them a reply per join would add up).
         if (!res.ok) H.rt.publish('joinResult', { pid: data.pid, ok: false, reason: res.reason || null, room: s.room });
         else {
           if (!known) A.sfx.join();
@@ -441,7 +441,7 @@
 
   // Phase changes go out at once. Joins, answers and wagers are folded into
   // at most one broadcast every BROADCAST_GAP_MS: each broadcast is delivered
-  // to every phone, so with 100 players this is what keeps a game at a few
+  // to every phone, so with 200 players this is what keeps a game at a few
   // thousand Ably messages instead of tens of thousands.
   const BROADCAST_GAP_MS = 1500;
   let bTimer = null;
@@ -631,6 +631,7 @@
 
   function bindStage() {
     on('#startBtn', 'click', startGame);
+    on('#shareBtn', 'click', shareInvite);
     on('#changePack', 'click', newPack);
     on('#againBtn', 'click', playAgain);
     on('#newPackBtn', 'click', newPack);
@@ -662,11 +663,36 @@
   function playersHTML(s) {
     if (!s.order.length) return '<div class="empty-players">Waiting for the first brave soul…</div>';
     // Newest first, so a big crowd can still spot their own name pop in.
-    return s.order.slice().reverse().map((id) => {
+    // A TV fits about 50 name tags; past that, the rest are a count.
+    const SHOW = 48;
+    const newest = s.order.slice().reverse();
+    const more = newest.length - SHOW;
+    return newest.slice(0, SHOW).map((id) => {
       const p = s.players[id];
       return '<span class="pchip">' + avatar(p.name, id) + esc(p.name) +
         '<button class="x" data-kick="' + esc(id) + '" title="Remove ' + esc(p.name) + '" aria-label="Remove ' + esc(p.name) + '">✕</button></span>';
-    }).join('');
+    }).join('') + (more > 0 ? '<span class="pchip more">+' + more + ' more</span>' : '');
+  }
+
+  // For games with no TV: send the join link by text, email or group chat.
+  async function shareInvite() {
+    const s = H.state;
+    const url = joinOrigin() + '/play?room=' + s.room;
+    const text = 'Join our Christmas Party Game Night! Room code ' + s.room + ': ' + url;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: 'Christmas Party Game Night', text: 'Join our Christmas Party Game Night! Room code ' + s.room, url });
+        return;
+      }
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Invite link copied. Paste it into a text or group chat.');
+    } catch (e) {
+      prompt('Copy this invite link:', url);
+    }
   }
 
   function qrSVG(text) {
@@ -735,8 +761,9 @@
       return '<div class="lobby">' +
         '<div class="join-panel"><div class="how">On your phone, go to <b>' + esc(host) + '/play</b><br>and enter the room code</div>' +
         '<div class="code-big" aria-label="Room code ' + esc(s.room.split('').join(' ')) + '">' + esc(s.room) + '</div>' +
-        '<div class="qr" title="Scan to join">' + qrSVG(url) + '</div><div class="muted">or scan to join</div></div>' +
-        '<div class="lobby-right"><div class="eyebrow">' + esc(s.pack.icon) + ' ' + esc(s.pack.title) + (s.mode === 'sample' ? ' · Free sample round' : ' · ' + esc((E.LENGTHS[s.length] || {}).label || '') + ' game') + '</div>' +
+        '<div class="qr" title="Scan to join">' + qrSVG(url) + '</div><div class="muted">or scan to join</div>' +
+        '<button class="btn small ghost share-btn" id="shareBtn">📤 Share invite link</button></div>' +
+        '<div class="lobby-right"><div class="eyebrow">' + esc(s.pack.icon) + ' ' + esc(s.pack.title) + (s.mode === 'sample' ? ' · Free sample round' : ' · ' + ((E.LENGTHS[s.length] || {}).questions || '') + ' questions') + '</div>' +
         '<h2 class="display">Who’s playing?</h2><div class="sub" id="pcount">' + countLine(s) + '</div>' +
         '<div class="players' + (s.order.length > 24 ? ' many' : '') + '" id="players">' + playersHTML(s) + '</div>' +
         '<div class="lobby-actions"><button class="btn primary" id="startBtn"' + (s.order.length ? '' : ' disabled') + '>Start the game ▶</button>' +

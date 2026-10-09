@@ -6,7 +6,7 @@ const Ably = require('ably');
 const { json, query } = require('../lib/http');
 
 // Must match shardOf() in public/js/realtime.js.
-const SHARDS = 4;
+const SHARDS = 8;
 function shardOf(id) {
   let h = 0;
   for (const ch of String(id)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;

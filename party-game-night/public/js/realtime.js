@@ -4,13 +4,13 @@
 //
 //   const rt = await PGNRealtime.connect({ mode, role, room, clientId, onMessage, onStatus })
 //
-// Channels, sized for 100 phones. Ably bills every delivered copy, so phones
+// Channels, sized for 200 phones. Ably bills every delivered copy, so phones
 // never hear each other:
 //   pgn:ROOM        the TV broadcasts here; every phone listens
-//   pgn:ROOM:in0-3  phones send joins/answers/wagers here; only the TV
-//                   listens. Four of them, picked by player id, so 100
-//                   near-simultaneous answers stay under Ably's per-channel
-//                   rate limit (50 msg/s on the free plan).
+//   pgn:ROOM:in0-7  phones send joins/answers/wagers here; only the TV
+//                   listens. Eight of them, picked by player id, so 200
+//                   near-simultaneous answers (about 25 per channel) stay
+//                   under Ably's per-channel rate limit (50 msg/s).
 //   rt.publish(name, data)
 //   rt.close()
 //
@@ -31,7 +31,7 @@
     });
   }
 
-  const SHARDS = 4;
+  const SHARDS = 8;
   // Must match api/ably-token.js, which grants each phone its one inbox.
   function shardOf(id) {
     let h = 0;
