@@ -17,6 +17,34 @@ Deployed 2026-10-09 as "Asher Arcade Trivia" (ashertopia@gmail.com):
 Trivia Studio fills this in for every new game. To ship a code change, use
 Deploy > Manage deployments > edit > New version so this URL stays the same.
 
+## Customer-built games (pay first, then build)
+
+```
+order.html (basics only) -> Stripe -> trivia-build.html?session_id=cs_...
+  -> this script: checks the payment with Stripe, Claude writes missing wrong answers,
+     saves the game in Drive ("Asher Arcade Trivia Games"), emails the customer the link
+  -> trivia.html?g=<name>-<last 4 of order> loads it from here (?action=game)
+```
+
+- The customer can edit until the first person finishes a game.
+- If Claude can't be reached, the game waits as "writing". `sweep()` runs every
+  10 minutes and finishes it. After 3 failed tries you get an email with a link
+  to the game file so you can add the wrong answers by hand.
+- Number answers (ages, counts) get nearby numbers without needing Claude.
+
+One-time setup, after pasting the new `Code.gs` and deploying a new version:
+
+1. Script Properties (Project Settings > Script Properties):
+   - `STRIPE_KEY`: a Stripe restricted key with **Checkout Sessions: Read** only.
+   - `ANTHROPIC_API_KEY`: from console.anthropic.com. Each game costs well under a cent.
+2. Run `setupBuilder` once from the editor and approve. It starts the 10-minute
+   check and logs a test answer from Claude.
+3. In `order.html` set `TRIVIA_PAY_FIRST = true`, and point the Stripe trivia
+   Payment Link's after-payment redirect to
+   `https://www.asherarcade.com/trivia-build.html?session_id={CHECKOUT_SESSION_ID}`.
+
+Tests: `node apps-script-trivia/build-test.js`
+
 ## What it does
 
 - **Leaderboard.** `GET ?action=board&game=<id>` returns the top 100. Players

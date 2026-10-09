@@ -61,11 +61,24 @@
     return e;
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function load() { try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) { return null; } }
+  function load(key) { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; } }
+  // A finished game (from the server) in the draft's shape, for editing.
+  function fromGame(g) {
+    var occ = ''; Object.keys(OCCASION_KEYS).forEach(function (k) { if (OCCASION_KEYS[k] === g.occasion) occ = k; });
+    return {
+      primary: g.theme && g.theme.primary, secondary: g.theme && g.theme.secondary, honoree: g.honoree || '', occasion: occ,
+      qs: (g.questions || []).map(function (q) {
+        var right = q.answers[q.correct || 0], wrong = q.answers.filter(function (a, i) { return i !== (q.correct || 0); });
+        return { q: q.q, right: right, wrong: wrong.concat(['', '', '']).slice(0, 3), fact: q.fact || '' };
+      })
+    };
+  }
 
+  // opts: nameInput, occasionInput, draftKey (default the checkout draft), initial (a game to edit)
   function mount(box, opts) {
     if (!document.getElementById('tq-css')) { var st = el('style', { id: 'tq-css' }); st.textContent = CSS; document.head.appendChild(st); }
-    var saved = load() || {};
+    var DRAFT = opts.draftKey || DRAFT_KEY;
+    var saved = load(DRAFT) || (opts.initial ? fromGame(opts.initial) : {});
     var state = {
       primary: saved.primary || '#0b1f4b',
       secondary: saved.secondary || '#ffd200',
@@ -82,7 +95,7 @@
     function occasion() { return OCCASION_KEYS[opts.occasionInput && opts.occasionInput.value] || 'custom'; }
     function save() {
       try {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        localStorage.setItem(DRAFT, JSON.stringify({
           primary: state.primary, secondary: state.secondary, qs: state.qs,
           honoree: opts.nameInput ? opts.nameInput.value : '', occasion: opts.occasionInput ? opts.occasionInput.value : ''
         }));
@@ -278,7 +291,7 @@
         };
         return { details: details, game: game };
       },
-      clearDraft: function () { try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} }
+      clearDraft: function () { try { localStorage.removeItem(DRAFT); } catch (e) {} }
     };
   }
 

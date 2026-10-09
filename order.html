@@ -431,6 +431,15 @@ var ALIASES = {
 };
 
 var picked = {};          // photo group key -> [File]
+// Custom Trivia, pay first: checkout takes only the basics, then Stripe sends the
+// customer to trivia-build.html to add the photo, colors and questions.
+// Flip on only after the trivia Apps Script has the build code + keys and the
+// Stripe trivia link redirects to trivia-build.html?session_id={CHECKOUT_SESSION_ID}.
+var TRIVIA_PAY_FIRST = false;
+if (TRIVIA_PAY_FIRST) {
+  GAMES.trivia.photos = [];
+  GAMES.trivia.needs = ['Their name and the occasion now', 'Right after checkout: their photo, two colors and 20 questions on your own build page'];
+}
 var triviaUI = null;      // trivia/order-trivia.js builder while Custom Trivia is picked
 var current = '';
 
@@ -493,7 +502,7 @@ function render(key){
     inp.addEventListener('change', function(){ addFiles(this.getAttribute('data-key'), this.files); this.value = ''; });
   });
   triviaUI = null;
-  if (g.custom === 'trivia' && window.TriviaOrder) {
+  if (g.custom === 'trivia' && window.TriviaOrder && !TRIVIA_PAY_FIRST) {
     var tbox = document.createElement('div');
     tbox.style.cssText = 'display:grid;gap:16px;';
     box.appendChild(tbox);
@@ -774,6 +783,9 @@ function uploadPhotos(res, items, g, email){
 
 function finish(id, g, email, miss){
   if (triviaUI) triviaUI.clearDraft();
+  if (current === 'trivia' && TRIVIA_PAY_FIRST) {
+    try { localStorage.setItem('aa-trivia-prefill', JSON.stringify({ honoree: $('f-honoree').value, occasion: $('f-occasion').value })); } catch (err) {}
+  }
   try { gtag('event', 'generate_lead', { currency: 'USD', value: g.price, item_id: current }); } catch (err) {}
   var link = STRIPE_LINKS[current];
   if (current !== 'original' && link) {

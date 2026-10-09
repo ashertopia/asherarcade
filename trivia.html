@@ -602,6 +602,7 @@ function confetti(colors){
 }
 
 /* ---------------- game ---------------- */
+var TRIVIA_SCRIPT = 'https://script.google.com/macros/s/AKfycbycNvo4qnhR4vNiVgaNKIcgXZvvjiPEIVLy7m-5jJVsRG588BCo7cHCr9PTEhhVwY27/exec';
 var cfg, api, state, KEY;
 var DEV = deviceId();
 var RIGHT = ['Nailed it!', 'Correct!', 'You really know {n}.', 'Big brain!', 'Too easy.', 'Yes!'];
@@ -619,8 +620,14 @@ function boot(){
         res(JSON.parse(raw));
       })
     : fetch('trivia/games/' + GAME_ID + '.json', { cache: 'no-cache' }).then(function(r){
-        if (!r.ok) throw new Error("We couldn't find that game. Check the link and try again.");
-        return r.json();
+        if (r.ok) return r.json();
+        // Games customers build themselves (trivia-build.html) live with the scoreboard.
+        return fetch(TRIVIA_SCRIPT + '?action=game&game=' + encodeURIComponent(GAME_ID)).then(function(r2){ return r2.json(); })
+          .then(function(d){
+            if (d && d.ok) { d.game.leaderboardUrl = d.game.leaderboardUrl || TRIVIA_SCRIPT; return d.game; }
+            throw new Error(d && d.error === 'not_ready' ? 'This game is almost ready. Try again in a few minutes.'
+              : "We couldn't find that game. Check the link and try again.");
+          }, function(){ throw new Error("We couldn't load the game. Check your connection and try again."); });
       });
   load.then(function(c){
     cfg = normalize(c);
