@@ -43,6 +43,9 @@
     '.tq-q{border:1px solid var(--rule);background:var(--paper-2);padding:14px;margin-top:12px;}' +
     '.tq-q.done{border-color:#7aa36b;box-shadow:inset 4px 0 0 #7aa36b;}' +
     '.tq-q.bad{border-color:var(--bad);box-shadow:inset 4px 0 0 var(--bad);}' +
+    '.tq-tips{background:var(--paper-2);border-left:4px solid var(--ochre);padding:10px 14px;font-size:14px;margin:0 0 12px;}' +
+    '.tq-tips ul{margin:6px 0 0;padding-left:18px;}' + '.tq-tips li{margin:4px 0;}' + '.tq-tips span{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin:0 2px 0 6px;}' +
+    '.tq-long{font-size:12.5px;color:var(--ochre-deep);margin:4px 0 0;}' +
     '.tq-q h4{margin:0 0 8px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);display:flex;justify-content:space-between;}' +
     '.tq-q .tq-wrong{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}' +
     '@media(max-width:600px){.tq-q .tq-wrong{grid-template-columns:1fr;}}' +
@@ -136,7 +139,11 @@
     var qwrap = el('div');
     qwrap.innerHTML =
       '<span class="lbl">Your 20 questions <span class="req">*</span></span>' +
-      '<p class="hint" style="margin:0 0 10px">Pick a sample question or write your own. Then type the right answer and three wrong ones that sound believable. The story is optional, and it shows after everyone answers. That is where the laughs are. Your answers save on this device as you go.</p>' +
+      '<p class="hint" style="margin:0 0 8px">Pick a sample question or write your own, then type the right answer. Wrong answers are optional: leave them blank and we will write believable ones for you. The story is optional too. It shows after everyone answers, and it is where the laughs are. Your answers save on this device as you go.</p>' +
+      '<div class="tq-tips"><b>Keep answers to 3 words or less</b> so they fit on the buttons. For example:' +
+      '<ul><li>What was Maya\'s first car? <span>Right:</span> Blue minivan <span>Wrong:</span> Red pickup, Silver sedan, Riding mower</li>' +
+      '<li>What does Maya always order at a coffee shop? <span>Right:</span> Hot chocolate <span>Wrong:</span> Iced latte, Chai tea</li>' +
+      '<li>How many times did Maya take the driving test? <span>Right:</span> Twice <span>Wrong:</span> leave blank</li></ul></div>' +
       '<div class="tq-progress"><div style="flex:1"><span id="tq-count">0 of 20 done</span><i><b id="tq-bar"></b></i></div></div>';
     var list = el('div');
     qwrap.appendChild(list);
@@ -160,10 +167,11 @@
           '<h4><span>Question ' + (i + 1) + '</span><span class="tq-st"></span></h4>' +
           '<select class="tq-sample" aria-label="Sample questions for question ' + (i + 1) + '">' + sampleOptions(q.q) + '</select>' +
           '<div class="tq-row"><span>Question</span><input type="text" class="tq-text" maxlength="140" placeholder="Type your question"></div>' +
-          '<div class="tq-row tq-right"><span>Right answer</span><input type="text" class="tq-ans" data-w="-1" maxlength="60" placeholder="The correct answer"></div>' +
-          '<div class="tq-row"><span>Three wrong answers</span><div class="tq-wrong">' +
-          [0, 1, 2].map(function (w) { return '<input type="text" class="tq-ans" data-w="' + w + '" maxlength="60" placeholder="Wrong answer ' + (w + 1) + '">'; }).join('') +
+          '<div class="tq-row tq-right"><span>Right answer (3 words or less)</span><input type="text" class="tq-ans" data-w="-1" maxlength="60" placeholder="The correct answer"></div>' +
+          '<div class="tq-row"><span>Wrong answers (optional, leave blank and we write them)</span><div class="tq-wrong">' +
+          [0, 1, 2].map(function (w) { return '<input type="text" class="tq-ans" data-w="' + w + '" maxlength="60" placeholder="Wrong answer ' + (w + 1) + ' (optional)">'; }).join('') +
           '</div></div>' +
+          '<p class="tq-long" hidden>Tip: 3 words or less fits best on the buttons.</p>' +
           '<div class="tq-row"><span>The story (optional)</span><input type="text" class="tq-fact" maxlength="200" placeholder="Shown after they answer. e.g. She cried when it got towed."></div>';
         c.querySelector('.tq-text').value = q.q;
         c.querySelector('.tq-ans[data-w="-1"]').value = q.right;
@@ -173,11 +181,13 @@
       });
       progress();
     }
+    function given(q) { return q.wrong.map(function (w) { return w.trim(); }).filter(Boolean); }
     function complete(q) {
-      if (!q.q.trim() || !q.right.trim() || q.wrong.some(function (w) { return !w.trim(); })) return false;
-      var all = [q.right].concat(q.wrong).map(function (a) { return a.trim().toLowerCase(); });
+      if (!q.q.trim() || !q.right.trim()) return false;
+      var all = [q.right.trim()].concat(given(q)).map(function (a) { return a.toLowerCase(); });
       return all.every(function (a, i) { return all.indexOf(a) === i; });
     }
+    function tooLong(q) { return [q.right].concat(q.wrong).some(function (a) { return a.trim().split(/\s+/).length > 3; }); }
     function progress() {
       var n = 0;
       state.qs.forEach(function (q, i) {
@@ -186,6 +196,7 @@
         card.classList.toggle('done', ok);
         if (ok) card.classList.remove('bad');
         card.querySelector('.tq-st').textContent = ok ? 'Done' : '';
+        card.querySelector('.tq-long').hidden = !tooLong(q);
       });
       document.getElementById('tq-count').textContent = n + ' of ' + COUNT + ' done';
       document.getElementById('tq-bar').style.width = (n / COUNT * 100) + '%';
@@ -237,15 +248,19 @@
           var firstBad = list.children[bad[0] - 1];
           setTimeout(function () { firstBad.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 50);
           return { error: bad.length === COUNT ? 'Please add your 20 questions.'
-            : 'Questions ' + bad.join(', ') + ' still need a question, a right answer and three different wrong answers.' };
+            : 'Questions ' + bad.join(', ') + ' still need a question and a right answer (and no answer typed twice).' };
         }
         var honoree = ((opts.nameInput && opts.nameInput.value) || '').trim();
         var details = { 'Main color': nameOf(state.primary) + ' ' + state.primary, 'Second color': nameOf(state.secondary) + ' ' + state.secondary };
         var questions = state.qs.map(function (q, i) {
           // Studio's "Paste questions" format: question, *right, wrong answers, > story
-          details['Q' + (i + 1)] = [q.q.trim(), '*' + q.right.trim()].concat(q.wrong.map(function (w) { return w.trim(); }))
+          // Wrong answers the customer gave come first, in order; the rest are ours to write.
+          var g = given(q), need = 3 - g.length;
+          details['Q' + (i + 1)] = [q.q.trim(), '*' + q.right.trim()].concat(g)
+            .concat(need ? ['(we write ' + need + ' wrong answer' + (need > 1 ? 's' : '') + ')'] : [])
             .concat(q.fact.trim() ? ['> ' + q.fact.trim()] : []).join('\n');
-          var item = { q: q.q.trim(), answers: [q.right.trim()].concat(q.wrong.map(function (w) { return w.trim(); })), correct: 0 };
+          var item = { q: q.q.trim(), answers: [q.right.trim()].concat(g), correct: 0 };
+          if (need) item.wrongNeeded = need;
           if (q.fact.trim()) item.fact = q.fact.trim();
           return item;
         });
