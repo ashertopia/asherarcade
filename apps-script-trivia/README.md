@@ -11,9 +11,10 @@ each customer's game is just one JSON file in `trivia/games/` (made with
 
 ## What it does
 
-- **Leaderboard.** `GET ?action=board&game=<id>` returns the top 100.
-  `trivia.html` shows it after each game, and `trivia.html?g=<id>&board=1`
-  shows it on a TV with a "scan to play" QR code. The TV refreshes every 10 seconds.
+- **Leaderboard.** `GET ?action=board&game=<id>` returns the top 100. Players
+  see it after their game and from "See the leaderboard" on the start screen.
+  While it is open on a phone it refreshes every 15 seconds, so it stays live as
+  family members finish from wherever they are.
 - **One try per person.** A player is registered when they tap *Let's Play*, not
   when they finish, so quitting halfway doesn't get them a second try.
   - **Per phone:** a phone that finished can't start again, even under a new name.

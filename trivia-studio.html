@@ -91,7 +91,7 @@ pre{background:var(--card2);padding:10px;font-size:12.5px;white-space:pre-wrap;m
   <!-- ABOUT THE PERSON -->
   <section class="card">
     <h2>1. Who is it about?</h2>
-    <p class="hint">Their face goes front and center on the start screen and the big-screen leaderboard.</p>
+    <p class="hint">Their face goes front and center on the start screen and the leaderboard.</p>
     <div class="grid">
       <div><label for="honoree">Their name</label><input type="text" id="honoree" data-k="honoree" placeholder="Maya Brooks" maxlength="40"></div>
       <div><label for="occasion">Occasion <small>(sets the colors)</small></label>
@@ -121,11 +121,10 @@ pre{background:var(--card2);padding:10px;font-size:12.5px;white-space:pre-wrap;m
   <!-- LOOK + RULES -->
   <section class="card">
     <h2>2. Look and rules</h2>
-    <p class="hint">The occasion picks colors for you. Change them to match party decorations or school colors.</p>
+    <p class="hint">School or party colors. The game fine-tunes the shades so every word stays readable, whatever you pick.</p>
     <div class="colors">
-      <div><label for="bg1">Background</label><input type="color" id="bg1" data-k="theme.bg1"></div>
-      <div><label for="bg2">Glow</label><input type="color" id="bg2" data-k="theme.bg2"></div>
-      <div><label for="accent">Highlight</label><input type="color" id="accent" data-k="theme.accent"></div>
+      <div><label for="c1">Main color</label><input type="color" id="c1" data-k="theme.primary"></div>
+      <div><label for="c2">Second color</label><input type="color" id="c2" data-k="theme.secondary"></div>
       <button class="btn ghost sm" id="colors-reset">Use occasion colors</button>
     </div>
     <div class="grid" style="margin-top:14px">
@@ -166,7 +165,7 @@ Pop star
     <div class="row" style="margin-top:14px;align-items:flex-start">
       <canvas id="qr" width="180" height="180"></canvas>
       <div style="flex:1;min-width:220px">
-        <p class="hint" style="margin-bottom:8px">This QR code opens the game. Print it on the table sign or put it on the TV.</p>
+        <p class="hint" style="margin-bottom:8px">This QR code opens the game. Send it with the link or print it on a sign.</p>
         <button class="btn ghost sm" id="qr-dl">Download QR code</button>
       </div>
     </div>
@@ -192,13 +191,13 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 var SITE = 'https://www.asherarcade.com/';
 var DRAFT_KEY = 'aat-studio-draft', LB_KEY = 'aat-studio-lb';
 var PRESETS = { // keep in step with trivia.html
-  birthday:{bg1:'#2a0b4a',bg2:'#7a1fa2',accent:'#ffd23f',label:'Birthday'},
-  graduation:{bg1:'#061430',bg2:'#1b3f80',accent:'#f2c14e',label:'Graduation'},
-  wedding:{bg1:'#2b1320',bg2:'#7a2f4d',accent:'#ffd6e2',label:'Wedding'},
-  shower:{bg1:'#10324d',bg2:'#2f77a8',accent:'#ffe08a',label:'Shower'},
-  retirement:{bg1:'#0b2a24',bg2:'#1d6b5a',accent:'#ffcf6e',label:'Retirement'},
-  anniversary:{bg1:'#2d0a12',bg2:'#8a1c32',accent:'#ffd23f',label:'Anniversary'},
-  custom:{bg1:'#1a1033',bg2:'#3d2a7a',accent:'#ffd23f',label:'Trivia'}
+  birthday:{primary:'#7a1fa2',secondary:'#ffd23f',label:'Birthday'},
+  graduation:{primary:'#1b3f80',secondary:'#f2c14e',label:'Graduation'},
+  wedding:{primary:'#7a2f4d',secondary:'#ffd6e2',label:'Wedding'},
+  shower:{primary:'#2f77a8',secondary:'#ffe08a',label:'Shower'},
+  retirement:{primary:'#1d6b5a',secondary:'#ffcf6e',label:'Retirement'},
+  anniversary:{primary:'#8a1c32',secondary:'#ffd23f',label:'Anniversary'},
+  custom:{primary:'#3d2a7a',secondary:'#ffd23f',label:'Trivia'}
 };
 var $ = function(id){ return document.getElementById(id); };
 function ls(k, v){ try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); return true; } catch (e) { return false; } }
@@ -206,7 +205,7 @@ function toast(t){ var el = $('toast'); el.textContent = t; el.classList.add('on
 function blankQ(){ return { q: '', image: '', answers: ['', '', '', ''], correct: -1, fact: '' }; }
 function fresh(){
   var d = { id: '', honoree: '', occasion: 'birthday', title: '', eyebrow: '', subtitle: '', photo: '',
-    theme: { bg1: PRESETS.birthday.bg1, bg2: PRESETS.birthday.bg2, accent: PRESETS.birthday.accent },
+    theme: { primary: PRESETS.birthday.primary, secondary: PRESETS.birthday.secondary },
     secondsPerQuestion: 20, shuffleAnswers: true, closesAt: '', leaderboardUrl: ls(LB_KEY) || '', questions: [] };
   for (var i = 0; i < 20; i++) d.questions.push(blankQ());
   return d;
@@ -244,7 +243,7 @@ document.querySelectorAll('[data-k]').forEach(function(el){
   });
 });
 $('gid').addEventListener('blur', function(){ draft.id = slug(this.value); this.value = draft.id; save(); });
-function applyPreset(){ var p = PRESETS[draft.occasion] || PRESETS.custom; draft.theme = { bg1: p.bg1, bg2: p.bg2, accent: p.accent }; paintFields(); if (!draft._idTouched) { draft.id = suggestId(); $('gid').value = draft.id; } }
+function applyPreset(){ var p = PRESETS[draft.occasion] || PRESETS.custom; draft.theme = { primary: p.primary, secondary: p.secondary }; paintFields(); if (!draft._idTouched) { draft.id = suggestId(); $('gid').value = draft.id; } }
 $('colors-reset').addEventListener('click', function(){ applyPreset(); save(); });
 function slug(s, typing){
   s = String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
@@ -424,7 +423,7 @@ function refreshMeta(){
     '<li>Click <b>Download game file</b>. You get <code>' + id + '.json</code>.</li>' +
     '<li>Put it in the repo at <code>trivia/games/' + id + '.json</code> and push.</li>' +
     '<li>Guests play at <code>' + play + '</code></li>' +
-    '<li>Big-screen leaderboard: <code>' + play + '&amp;board=1</code></li></ol>' +
+    '</ol>' +
     (draft.leaderboardUrl ? '' : '<p style="margin-top:8px;color:var(--red)"><b>No leaderboard URL yet.</b> Without it, scores only show on each guest\'s own phone. See apps-script-trivia/README.md.</p>');
   try { drawQr($('qr'), play); } catch (e) {}
 }
@@ -467,7 +466,7 @@ $('f-import').addEventListener('change', function(){
     if (!Array.isArray(c.questions)) throw new Error('no questions');
     var d = fresh();
     ['honoree', 'occasion', 'title', 'eyebrow', 'subtitle', 'photo', 'closesAt', 'leaderboardUrl'].forEach(function(k){ if (c[k] != null) d[k] = c[k]; });
-    if (c.theme) d.theme = Object.assign(d.theme, c.theme);
+    if (c.theme && c.theme.primary) d.theme = { primary: c.theme.primary, secondary: c.theme.secondary || c.theme.primary };
     if (c.secondsPerQuestion) d.secondsPerQuestion = c.secondsPerQuestion;
     d.shuffleAnswers = c.shuffleAnswers !== false;
     d.id = slug(f.name.replace(/\.json$/i, '')); d._idTouched = true;
