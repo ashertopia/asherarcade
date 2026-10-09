@@ -190,6 +190,8 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
 'use strict';
 var SITE = 'https://www.asherarcade.com/';
 var DRAFT_KEY = 'aat-studio-draft', LB_KEY = 'aat-studio-lb';
+// The live trivia leaderboard (apps-script-trivia, deployed 2026-10-09). Every new game uses it.
+var LIVE_LEADERBOARD = 'https://script.google.com/macros/s/AKfycbycNvo4qnhR4vNiVgaNKIcgXZvvjiPEIVLy7m-5jJVsRG588BCo7cHCr9PTEhhVwY27/exec';
 var PRESETS = { // keep in step with trivia.html
   birthday:{primary:'#7a1fa2',secondary:'#ffd23f',label:'Birthday'},
   graduation:{primary:'#1b3f80',secondary:'#f2c14e',label:'Graduation'},
@@ -206,7 +208,7 @@ function blankQ(){ return { q: '', image: '', answers: ['', '', '', ''], correct
 function fresh(){
   var d = { id: '', honoree: '', occasion: 'birthday', title: '', eyebrow: '', subtitle: '', photo: '',
     theme: { primary: PRESETS.birthday.primary, secondary: PRESETS.birthday.secondary },
-    secondsPerQuestion: 20, shuffleAnswers: true, closesAt: '', leaderboardUrl: ls(LB_KEY) || '', questions: [] };
+    secondsPerQuestion: 20, shuffleAnswers: true, closesAt: '', leaderboardUrl: ls(LB_KEY) || LIVE_LEADERBOARD, questions: [] };
   for (var i = 0; i < 20; i++) d.questions.push(blankQ());
   return d;
 }
