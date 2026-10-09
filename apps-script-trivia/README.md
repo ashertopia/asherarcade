@@ -9,6 +9,14 @@ One deployment serves **every** trivia game. You deploy it once. After that,
 each customer's game is just one JSON file in `trivia/games/` (made with
 `trivia-studio.html`).
 
+## Live deployment
+
+Deployed 2026-10-09 as "Asher Arcade Trivia" (ashertopia@gmail.com):
+`https://script.google.com/macros/s/AKfycbycNvo4qnhR4vNiVgaNKIcgXZvvjiPEIVLy7m-5jJVsRG588BCo7cHCr9PTEhhVwY27/exec`
+
+Trivia Studio fills this in for every new game. To ship a code change, use
+Deploy > Manage deployments > edit > New version so this URL stays the same.
+
 ## What it does
 
 - **Leaderboard.** `GET ?action=board&game=<id>` returns the top 100. Players
