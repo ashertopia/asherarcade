@@ -99,7 +99,7 @@
   function groupsFor(occasion) {
     return (ORDER[occasion] || ORDER.custom).map(function (g) { return { group: g, questions: Q[g] }; });
   }
-  function fill(q, first) { return q.replace(/\{name\}/g, first || 'them'); }
+  function fill(q, first) { return q.replace(/\{name\}/g, first || 'the guest of honor'); }
   var api = { groupsFor: groupsFor, fill: fill, all: Q };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.TriviaSamples = api;
