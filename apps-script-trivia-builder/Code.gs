@@ -134,7 +134,13 @@ function gameFromSheet_(settings, values) {
 
 function tabs_() {
   var ss = SpreadsheetApp.getActive();
-  var qs = ss.getSheetByName('Questions') || ss.insertSheet('Questions', 0);
+  var qs = ss.getSheetByName('Questions');
+  if (!qs) {
+    // A fresh Sheet's first tab ("Sheet1", or the header row we uploaded) becomes Questions.
+    var firstTab = ss.getSheets()[0];
+    var a1 = String(firstTab.getRange(1, 1).getValue());
+    qs = (a1 === '' || a1 === HEADERS[0]) && ss.getSheets().length === 1 ? firstTab.setName('Questions') : ss.insertSheet('Questions', 0);
+  }
   var gm = ss.getSheetByName('Game') || ss.insertSheet('Game', 1);
   if (qs.getRange(1, 1).getValue() !== HEADERS[0]) {
     qs.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]).setFontWeight('bold');
