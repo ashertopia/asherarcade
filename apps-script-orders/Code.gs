@@ -49,6 +49,7 @@ function doPost(e) {
 
     if (body.action === 'order') return jsonOut(createOrder_(body));
     if (body.action === 'photo') return jsonOut(addPhoto_(body));
+    if (body.action === 'photo-missing') return jsonOut(photoMissing_(body));
     return jsonOut({ ok: false, error: 'bad request' });
   } catch (err) {
     console.error('doPost: ' + (err && err.stack || err));
@@ -137,35 +138,71 @@ function createOrder_(b) {
 }
 
 function addPhoto_(b) {
+  var r = addPhotoChecked_(b);
+  // Every rejected photo shows up under Executions with the reason.
+  if (!r.ok) console.warn('photo rejected: ' + r.error + ' | order ' + String(b.id || '').slice(0, 20) +
+    ' | file ' + String(b.filename || '').slice(0, 60) + ' | ' + String(b.data || '').length + ' base64 chars');
+  return r;
+}
+
+function addPhotoChecked_(b) {
   var id = String(b.id || '');
   if (!/^AA-\d{6}-[A-Z0-9]{4}$/.test(id)) return { ok: false, error: 'unknown order' };
-  var props = PropertiesService.getScriptProperties();
-  var lock = LockService.getScriptLock();
-  lock.waitLock(20000);
-  var rec, folderId;
-  try {
-    var raw = props.getProperty('o_' + id);
-    if (!raw) return { ok: false, error: 'unknown order' };
-    rec = JSON.parse(raw);
-    if (rec.k !== String(b.token || '')) return { ok: false, error: 'unknown order' };
-    if (Date.now() - rec.t > PHOTO_WINDOW_HOURS * 3600 * 1000) return { ok: false, error: 'closed' };
-    if (rec.n >= MAX_PHOTOS_PER_ORDER) return { ok: false, error: 'too many photos' };
-    rec.n++;
-    props.setProperty('o_' + id, JSON.stringify(rec));
-    folderId = rec.f;
-  } finally {
-    lock.releaseLock();
-  }
+  var rec = orderRecord_(id, b.token);
+  if (!rec) return { ok: false, error: 'unknown order' };
+  if (Date.now() - rec.t > PHOTO_WINDOW_HOURS * 3600 * 1000) return { ok: false, error: 'closed' };
+  if (rec.n >= MAX_PHOTOS_PER_ORDER) return { ok: false, error: 'too many photos' };
 
   var bytes;
   try { bytes = Utilities.base64Decode(String(b.data || '')); } catch (decodeErr) { return { ok: false, error: 'unsupported file' }; }
   var kind = sniffImage_(bytes);
-  if (!kind) return { ok: false, error: 'unsupported file' };
+  if (!kind) return { ok: false, error: bytes && bytes.length ? 'unsupported file' : 'empty file' };
   var label = clean_(b.label, 40).replace(/[^\w -]/g, '').trim();
   var original = String(b.filename || 'photo').replace(/[^\w.-]/g, '_').replace(/\.[A-Za-z0-9]{1,5}$/, '').slice(0, 60);
   var fname = (label ? label + ' - ' : '') + original + '.' + kind.ext;
-  DriveApp.getFolderById(folderId).createFile(Utilities.newBlob(bytes, kind.mime, fname));
-  return { ok: true, n: rec.n };
+  DriveApp.getFolderById(rec.f).createFile(Utilities.newBlob(bytes, kind.mime, fname));
+
+  // Count the photo only once it is saved, so failed tries don't use up the limit.
+  var props = PropertiesService.getScriptProperties();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var now = JSON.parse(props.getProperty('o_' + id) || 'null') || rec;
+    now.n = (now.n || 0) + 1;
+    props.setProperty('o_' + id, JSON.stringify(now));
+    return { ok: true, n: now.n };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** The customer gave up on a photo upload and went to checkout. Flag it loudly. */
+function photoMissing_(b) {
+  var id = String(b.id || '');
+  if (!/^AA-\d{6}-[A-Z0-9]{4}$/.test(id)) return { ok: false, error: 'unknown order' };
+  var rec = orderRecord_(id, b.token);
+  if (!rec) return { ok: false, error: 'unknown order' };
+  var reason = clean_(b.reason, 500);
+  console.warn('photo missing: order ' + id + ' | ' + reason);
+  try {
+    DriveApp.getFolderById(rec.f).createFile('PHOTO MISSING - ask the customer.txt',
+      'The customer could not upload ' + (parseInt(b.count, 10) || 1) + ' photo(s) and went to checkout without them.\n' + reason,
+      MimeType.PLAIN_TEXT);
+  } catch (e) { console.error('photo missing note: ' + e); }
+  try {
+    var owner = PropertiesService.getScriptProperties().getProperty('OWNER_EMAIL') || Session.getEffectiveUser().getEmail();
+    MailApp.sendEmail(owner, 'PHOTO MISSING for order ' + id,
+      'The customer could not upload their photo and continued to checkout. Email them for it.\n\n' + reason +
+      '\n\nFolder: https://drive.google.com/drive/folders/' + rec.f);
+  } catch (e) { console.error('photo missing mail: ' + e); }
+  return { ok: true };
+}
+
+function orderRecord_(id, token) {
+  var raw = PropertiesService.getScriptProperties().getProperty('o_' + id);
+  if (!raw) return null;
+  var rec = JSON.parse(raw);
+  return rec.k === String(token || '') ? rec : null;
 }
 
 function getRoot_() {

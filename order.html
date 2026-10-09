@@ -94,16 +94,18 @@ a{color:var(--blue-deep);}
 .check{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;cursor:pointer;}
 .check input{margin-top:5px;width:18px;height:18px;flex:none;}
 
-.oform button[type=submit]{
+.oform button[type=submit],#of-photo-retry{
   font-family:var(--text);font-size:14px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   background:var(--ink);color:var(--paper);border:none;padding:16px;cursor:pointer;
   box-shadow:5px 5px 0 var(--ochre);margin-top:4px;
 }
-.oform button[type=submit]:hover{box-shadow:2px 2px 0 var(--ochre);}
-.oform button[type=submit]:disabled{opacity:.6;cursor:default;box-shadow:none;}
+.oform button[type=submit]:hover,#of-photo-retry:hover{box-shadow:2px 2px 0 var(--ochre);}
+.oform button[type=submit]:disabled,#of-photo-retry:disabled{opacity:.6;cursor:default;box-shadow:none;}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
 .note{font-size:13.5px;color:var(--ink-soft);margin:0;}
 .err{font-size:14.5px;color:var(--bad);font-weight:600;margin:0;}
+.photo-trouble{display:flex;flex-direction:column;gap:10px;}
+.photo-trouble .link-btn{background:none;border:0;box-shadow:none;color:inherit;text-decoration:underline;font-weight:600;padding:6px;cursor:pointer;}
 .is-hidden{display:none !important;}
 
 /* SUMMARY */
@@ -242,6 +244,10 @@ a{color:var(--blue-deep);}
           </div>
 
           <p class="err is-hidden" id="of-error" role="alert"></p>
+          <div class="photo-trouble is-hidden" id="of-photo-trouble">
+            <button type="button" id="of-photo-retry">Try the photo upload again</button>
+            <button type="button" class="link-btn" id="of-photo-skip">Continue without it. I'll email the photo.</button>
+          </div>
           <button type="submit" id="of-submit">Continue to secure checkout</button>
           <p class="note" id="of-note">Payment is handled by Stripe. Your photos are uploaded first so nothing gets lost.</p>
           <p class="note">We review every custom order against our <a href="policies.html#content" target="_blank" rel="noopener">content guidelines</a>. If we can't take it, you get a full refund.</p>
@@ -619,10 +625,13 @@ function toJpegB64(file){
       c.width = Math.round(w * s); c.height = Math.round(h * s);
       c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
-      resolve(c.toDataURL('image/jpeg', 0.85).split(',')[1]);
+      var out = c.width && c.height ? c.toDataURL('image/jpeg', 0.85).split(',')[1] : '';
+      // Some phones hand back a blank canvas. Send the original file instead.
+      if (!out || out.length < 1000) return img.onerror();
+      resolve(out);
     };
     img.onerror = function(){
-      URL.revokeObjectURL(url);
+      try { URL.revokeObjectURL(url); } catch (e) {}
       // Browsers that cannot decode HEIC send the original; the script checks its bytes.
       var r = new FileReader();
       r.onload = function(){ resolve(String(r.result).split(',')[1]); };
@@ -710,18 +719,7 @@ $('orderForm').addEventListener('submit', function(e){
     })
     .then(function(res){
       if (!res.ok) throw new Error(res.error || 'order failed');
-      var failed = 0, i = 0;
-      function next(){
-        if (i >= groups.length) return Promise.resolve();
-        var item = groups[i++];
-        btn.textContent = 'Uploading photo ' + i + ' of ' + groups.length + '...';
-        return toJpegB64(item.file)
-          .then(function(b64){ return post({ action: 'photo', id: res.id, token: res.token, label: item.label, filename: item.file.name, data: b64 }); })
-          .then(function(r){ if (!r.ok) failed++; })
-          .catch(function(){ failed++; })
-          .then(next);
-      }
-      return next().then(function(){ finish(res.id, g, email, failed ? ' A photo did not come through, so we may ask you to email it.' : ''); });
+      return uploadPhotos(res, groups, g, email);
     })
     .catch(function(){
       btn.disabled = false;
@@ -729,6 +727,50 @@ $('orderForm').addEventListener('submit', function(e){
       fail('Something went wrong sending your order. Please try again in a minute, or reach us through the contact form on the home page.');
     });
 });
+
+// Each photo gets 3 tries. If one still fails we stop before checkout and say
+// so, instead of sending the customer to pay with a missing photo.
+function uploadPhotos(res, items, g, email){
+  var btn = $('of-submit'), left = [], i = 0;
+  function sendOne(item, b64, tries){
+    return post({ action: 'photo', id: res.id, token: res.token, label: item.label, filename: item.file.name, data: b64 })
+      .catch(function(err){ return { ok: false, error: 'network: ' + (err && err.message || err) }; })
+      .then(function(r){
+        if (r && r.ok) return r;
+        // A closed or unknown order won't change on a retry.
+        if (tries <= 1 || /unknown order|closed|too many/.test(r && r.error || '')) return r || { ok: false, error: 'no reply' };
+        return new Promise(function(ok){ setTimeout(ok, 1500 * (4 - tries)); }).then(function(){ return sendOne(item, b64, tries - 1); });
+      });
+  }
+  function next(){
+    if (i >= items.length) return Promise.resolve();
+    var item = items[i++];
+    btn.textContent = 'Uploading photo ' + i + ' of ' + items.length + '...';
+    return toJpegB64(item.file)
+      .then(function(b64){ return sendOne(item, b64, 3); }, function(err){ return { ok: false, error: 'could not read the file' }; })
+      .then(function(r){ if (!r.ok) { item.error = r.error || 'unknown'; left.push(item); } })
+      .then(next);
+  }
+  return next().then(function(){
+    if (!left.length) { $('of-photo-trouble').classList.add('is-hidden'); return finish(res.id, g, email, ''); }
+    btn.classList.add('is-hidden');
+    $('of-photo-trouble').classList.remove('is-hidden');
+    $('of-photo-retry').disabled = false;
+    $('of-photo-retry').onclick = function(){
+      this.disabled = true;
+      $('of-error').classList.add('is-hidden');
+      btn.classList.remove('is-hidden');
+      uploadPhotos(res, left, g, email);
+    };
+    $('of-photo-skip').onclick = function(){
+      post({ action: 'photo-missing', id: res.id, token: res.token, count: left.length,
+             reason: left.map(function(it){ return it.file.name + ': ' + it.error; }).join('; ') }).catch(function(){});
+      finish(res.id, g, email, ' Reply to our email with your photo.');
+    };
+    fail('Your order ' + res.id + ' is saved, but ' + (left.length === 1 ? 'a photo' : left.length + ' photos')
+      + ' did not upload (' + left[0].error + '). Check your connection and try again. You have not been charged.');
+  });
+}
 
 function finish(id, g, email, miss){
   if (triviaUI) triviaUI.clearDraft();
