@@ -304,15 +304,15 @@ a{color:var(--blue-deep);}
 
 /* ============================= HERO ============================= */
 .hero{padding:84px 0 66px;}
-.hero-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:46px;align-items:end;}
+.hero-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:46px;align-items:start;margin-top:26px;}
 .hero h1{
   font-family:var(--display);
-  font-size:clamp(37px,6.6vw,72px);
-  line-height:1.0;letter-spacing:-.01em;
-  margin:20px 0 0;text-wrap:balance;
+  font-size:clamp(34px,5.6vw,68px);
+  line-height:1.02;letter-spacing:-.01em;
+  margin:20px 0 0;max-width:none;
 }
 .hero h1 em{font-style:normal;color:var(--blue-deep);}
-.hero-sub{max-width:52ch;font-size:19px;color:var(--ink-soft);margin:22px 0 0;}
+.hero-sub{max-width:52ch;font-size:19px;color:var(--ink-soft);margin:0;}
 .hero-btns{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px;}
 .btn-solid,.btn-ghost{
   font-size:14px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
@@ -625,10 +625,12 @@ a{color:var(--blue-deep);}
 
 <!-- HERO -->
 <section class="hero" id="top">
+  <div class="wrap">
+    <p class="kicker">Custom browser games for real occasions</p>
+    <h1>Give them a game made for <em>this moment.</em></h1>
+  </div>
   <div class="wrap hero-grid">
     <div>
-      <p class="kicker">Custom browser games for real occasions</p>
-      <h1>Give them a game made for <em>this moment.</em></h1>
       <p class="hero-sub">We build personalized browser games and apps for weddings, birthdays, baby showers,
         graduations, and church events. You share one link, and your guests play on the phones already in their
         pockets.</p>
