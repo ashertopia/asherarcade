@@ -42,6 +42,7 @@ other than the Google account that deployed the script.
 | Drop & Catch | $79 | https://buy.stripe.com/eVq4gB3X6bFyfqQb6OcMM02 | prod_VP9ZtIUG5OAKg8 |
 | Memory Match | $79 | https://buy.stripe.com/3cI3cxgJSgZSa6w2AicMM03 | prod_VP9aWgD07UoU5t |
 | Whack-a-Mole | $99 | https://buy.stripe.com/3cIaEZ2T26le3I8ej0cMM04 | prod_VP9adrlZIwvFF8 |
+| Custom Trivia | $99 | https://buy.stripe.com/7sYeVffFO8tmemMb6OcMM08 | prod_VPIgSql8ZukoSt |
 | Endless Runner | $129 | https://buy.stripe.com/fZu7sN65e6le3I8ej0cMM05 | prod_VP9atTXBecQ96m |
 | Wedding Platformer | $129 | https://buy.stripe.com/fZu5kF51afVO3I83EmcMM06 | prod_VP9amDIgG6Y7QD |
 | Hosting Renewal | $19 | https://buy.stripe.com/14A3cxfFOfVO2E40sacMM07 | prod_VP9aMCgR5I4Fae |
@@ -60,6 +61,7 @@ In the Stripe dashboard: **Payment Links -> New**. Make one per game:
 | Memory Match | $79 | `memory-match` |
 | Reveal & Announce Puzzle | $39 | `puzzle-reveal` |
 | Whack-a-Mole | $99 | `whack-a-mole` |
+| Custom Trivia | $99 | `trivia` (also saves `<order id> trivia game.json` in the order folder; open it in `trivia-studio.html`) |
 | Endless Runner | $129 | `endless-runner` |
 | Wedding Platformer | $129 | `platformer` |
 | Hosting Renewal | $19 | `hosting` |

@@ -189,6 +189,7 @@ a{color:var(--blue-deep);}
               <option value="drop-catch">Drop &amp; Catch - $79</option>
               <option value="memory-match">Memory Match - $79</option>
               <option value="whack-a-mole">Whack-a-Mole - $99</option>
+              <option value="trivia">Custom Trivia - $99</option>
               <option value="endless-runner">Endless Runner - $129</option>
               <option value="platformer">Wedding Platformer - $129</option>
               <option value="original">Original Game - from $249</option>
@@ -286,6 +287,9 @@ a{color:var(--blue-deep);}
   </div>
 </footer>
 
+<script src="trivia/theme.js"></script>
+<script src="trivia/sample-questions.js"></script>
+<script src="trivia/order-trivia.js"></script>
 <script>
 // ── SETUP (see apps-script-orders/README.md) ──
 // 1. The order intake Apps Script /exec URL. Saves details + photos to Drive.
@@ -298,6 +302,7 @@ var STRIPE_LINKS = {
   'drop-catch':     'https://buy.stripe.com/eVq4gB3X6bFyfqQb6OcMM02',
   'memory-match':   'https://buy.stripe.com/3cI3cxgJSgZSa6w2AicMM03',
   'whack-a-mole':   'https://buy.stripe.com/3cIaEZ2T26le3I8ej0cMM04',
+  'trivia':         'https://buy.stripe.com/7sYeVffFO8tmemMb6OcMM08',
   'endless-runner': 'https://buy.stripe.com/fZu7sN65e6le3I8ej0cMM05',
   'platformer':     'https://buy.stripe.com/fZu5kF51afVO3I83EmcMM06',
   'hosting':        'https://buy.stripe.com/14A3cxfFOfVO2E40sacMM07'
@@ -349,6 +354,18 @@ var GAMES = {
       { id: 'logo', label: 'Logo name: Whack-a-', type: 'text', required: true, placeholder: 'Smith, Boss, Karen, Grandpa...' }
     ],
     photos: [{ key: 'face', label: 'Face photos', min: 1, max: 4, hint: 'Up to 4. One face per photo, looking at the camera, good light. More faces can be quoted as an extra.' }]
+  },
+  'trivia': {
+    name: 'Custom Trivia', price: 99, example: 'trivia.html', custom: 'trivia',
+    includes: ['20 questions about your person, played on everyone\'s phone', 'Their photo and your colors',
+      'A live leaderboard just for your friends and family', 'One try per person, played from anywhere'],
+    needs: ['1 clear photo of their face', 'Their name and the occasion', 'Two colors', '20 questions with answers'],
+    fields: [
+      { id: 'honoree', label: 'Who is the game about?', type: 'text', required: true, placeholder: 'First and last name, e.g. Maya Brooks' },
+      { id: 'occasion', label: 'Occasion', type: 'select', required: true,
+        options: ['Graduation', 'Birthday', 'Wedding or engagement', 'Baby or bridal shower', 'Anniversary', 'Retirement', 'Something else'] }
+    ],
+    photos: [{ key: 'face', label: 'Their photo', min: 1, max: 1, hint: 'A clear, well-lit photo of their face. It goes on the start screen and the leaderboard.' }]
   },
   'endless-runner': {
     name: 'Endless Runner', price: 129, example: 'mags_game.html',
@@ -403,10 +420,12 @@ var ALIASES = {
   'whack': 'whack-a-mole', 'bonk': 'whack-a-mole',
   'runner': 'endless-runner', 'skate': 'endless-runner',
   'custom': 'original', 'new': 'original',
-  'renewal': 'hosting', 'renew': 'hosting'
+  'renewal': 'hosting', 'renew': 'hosting',
+  'quiz': 'trivia', 'custom-trivia': 'trivia', 'how-well': 'trivia'
 };
 
 var picked = {};          // photo group key -> [File]
+var triviaUI = null;      // trivia/order-trivia.js builder while Custom Trivia is picked
 var current = '';
 
 function $(id){ return document.getElementById(id); }
@@ -467,8 +486,15 @@ function render(key){
   box.querySelectorAll('input[type=file]').forEach(function(inp){
     inp.addEventListener('change', function(){ addFiles(this.getAttribute('data-key'), this.files); this.value = ''; });
   });
+  triviaUI = null;
+  if (g.custom === 'trivia' && window.TriviaOrder) {
+    var tbox = document.createElement('div');
+    tbox.style.cssText = 'display:grid;gap:16px;';
+    box.appendChild(tbox);
+    triviaUI = TriviaOrder.mount(tbox, { nameInput: $('f-honoree'), occasionInput: $('f-occasion') });
+  }
 
-  var simple = key === 'hosting' || key === 'original';
+  var simple = key === 'hosting' || key === 'original' || key === 'trivia';
   $('row-extra').classList.toggle('is-hidden', simple);
   $('row-date').classList.toggle('is-hidden', key === 'hosting');
   $('row-extra-theme').classList.toggle('is-hidden', !!g.noThemeExtra);
@@ -572,6 +598,12 @@ function collect(){
     }
   }
   if (current !== 'hosting' && $('of-date').value) d['Needed by'] = $('of-date').value;
+  if (triviaUI) {
+    var tr = triviaUI.collect();
+    if (tr.error) return { error: tr.error };
+    Object.keys(tr.details).forEach(function(k){ d[k] = tr.details[k]; });
+    return { details: d, game: tr.game };
+  }
   return { details: d };
 }
 
@@ -661,8 +693,21 @@ $('orderForm').addEventListener('submit', function(e){
   }
 
   btn.textContent = 'Sending your order...';
-  post({ action: 'order', product: current, name: name, email: email, details: c.details,
-         extra: extra, photoCount: groups.length, website: $('of-website').value })
+  var payload = { action: 'order', product: current, name: name, email: email, details: c.details,
+         extra: extra, photoCount: groups.length, website: $('of-website').value };
+  if (c.game) payload.triviaGame = c.game;
+  post(payload)
+    .then(function(res){
+      // Until the order script is redeployed with Custom Trivia in its list, file
+      // trivia orders under Original Game, clearly labeled. Checkout is still $99.
+      if (!res.ok && res.error === 'unknown game' && current === 'trivia') {
+        var d2 = { 'PRODUCT': 'CUSTOM TRIVIA ($99, paid through the trivia Stripe link). Not a quote.' };
+        Object.keys(c.details).forEach(function(k){ d2[k] = c.details[k]; });
+        payload.product = 'original'; payload.details = d2;
+        return post(payload);
+      }
+      return res;
+    })
     .then(function(res){
       if (!res.ok) throw new Error(res.error || 'order failed');
       var failed = 0, i = 0;
@@ -686,6 +731,7 @@ $('orderForm').addEventListener('submit', function(e){
 });
 
 function finish(id, g, email, miss){
+  if (triviaUI) triviaUI.clearDraft();
   try { gtag('event', 'generate_lead', { currency: 'USD', value: g.price, item_id: current }); } catch (err) {}
   var link = STRIPE_LINKS[current];
   if (current !== 'original' && link) {

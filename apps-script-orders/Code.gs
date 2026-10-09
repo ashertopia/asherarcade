@@ -30,6 +30,7 @@ var PRODUCTS = {
   'memory-match':   { name: 'Memory Match',             price: '$79' },
   'puzzle-reveal':  { name: 'Reveal & Announce Puzzle', price: '$39' },
   'whack-a-mole':   { name: 'Whack-a-Mole',             price: '$99' },
+  'trivia':         { name: 'Custom Trivia',            price: '$99' },
   'endless-runner': { name: 'Endless Runner',           price: '$129' },
   'platformer':     { name: 'Wedding Platformer',       price: '$129' },
   'original':       { name: 'Original Game',            price: 'from $249 (quote)' },
@@ -95,6 +96,12 @@ function createOrder_(b) {
    .concat(['', 'Photos expected: ' + photosExpected,
             'Stripe: search Payments for client_reference_id ' + id]).join('\n');
   folder.createFile(id + ' order details.txt', text, MimeType.PLAIN_TEXT);
+  // Custom Trivia: the questions and colors as a game file. Open it in
+  // trivia-studio.html ("Open a game file"), add the photo, and download.
+  if (b.triviaGame && typeof b.triviaGame === 'object') {
+    var game = JSON.stringify(b.triviaGame, null, 2);
+    if (game.length < 200000) folder.createFile(id + ' trivia game.json', game, MimeType.PLAIN_TEXT);
+  }
 
   var props = PropertiesService.getScriptProperties();
   var lock = LockService.getScriptLock();
