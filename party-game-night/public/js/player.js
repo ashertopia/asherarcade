@@ -37,7 +37,7 @@
   const REASONS = {
     'name-taken': 'Someone in this room already has that name. Try another!',
     'name-required': 'Pick a nickname first.',
-    full: 'That room is full (100 players max).',
+    full: 'That room is full (200 players max).',
     expired: 'That room has expired. Ask the host for a new code.',
     removed: 'The host removed you from this game.',
     'bad-request': 'Something went wrong. Try again?',
@@ -220,7 +220,7 @@
   }
 
   // The TV doesn't send a "welcome": seeing our own id in a broadcast is the
-  // confirmation (one fewer message per join, times 100 phones).
+  // confirmation (one fewer message per join, times 200 phones).
   function markJoined() {
     clearTimeout(P.joinTimer);
     clearInterval(P.joinTimer);
@@ -407,6 +407,11 @@
       else if (res.correct) html = '<div class="verdict good"><div class="big">Correct!</div><div class="pts">' + signed(res.points) + '</div></div>';
       else if (res.choice == null && v.round.type !== 'final') html = '<div class="verdict none"><div class="big">Too slow!</div><div class="pts">' + (res.points ? signed(res.points) : '+0') + '</div><div class="was">It was ' + right + '</div></div>';
       else html = '<div class="verdict bad"><div class="big">Nope!</div><div class="pts">' + (res.points ? signed(res.points) : '+0') + '</div><div class="was">It was ' + right + '</div></div>';
+      // The why behind the answer, so the game works with no TV in the room.
+      if (q && q.reveal) {
+        const refs = (q.refs || []).map((r) => '<span class="pill">' + esc(r.label) + ': ' + esc(r.ref) + '</span>').join('');
+        html += '<div class="p-explain">' + esc(q.reveal) + (refs ? '<div class="refs">' + refs + '</div>' : '') + '</div>';
+      }
       return html + placeCard(me, v);
     },
     standings(v, me) {

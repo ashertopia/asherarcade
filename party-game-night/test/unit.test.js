@@ -65,7 +65,7 @@ test('join rules: unique names, rejoin by id, bans, size limit, expiry', () => {
   assert.equal(E.join(st, { pid: 'c', name: 'Again' }, 3).reason, 'removed');
   E.kick(st, 'a', false); // a player leaving on their own can come back
   assert.equal(E.join(st, { pid: 'a', name: 'Ann' }, 3).ok, true);
-  for (let i = 0; i < 130; i++) E.join(st, { pid: 'p' + i, name: 'P' + i }, 4);
+  for (let i = 0; i < 230; i++) E.join(st, { pid: 'p' + i, name: 'P' + i }, 4);
   assert.equal(st.order.length, E.MAX_PLAYERS);
   assert.equal(E.join(st, { pid: 'late', name: 'Late' }, E.ROOM_TTL_MS + 1).reason, 'expired');
 });
@@ -238,20 +238,21 @@ test('api/ably-token: phones can only read the broadcast and write their own inb
   const host = await call(handler, '/api/ably-token?clientId=host-abc123&room=BCDF');
   const cap = JSON.parse(host.body.capability);
   assert.deepEqual(cap['pgn:BCDF'], ['publish', 'subscribe']);
-  assert.deepEqual(cap['pgn:BCDF:in3'], ['subscribe']);
+  assert.deepEqual(cap['pgn:BCDF:in7'], ['subscribe'], 'the TV reads all eight inboxes');
+  assert.equal(Object.keys(cap).length, 9);
   const bad = await call(handler, '/api/ably-token?clientId=player123&room=bad!');
   assert.equal(bad.status, 400);
   delete process.env.ABLY_API_KEY;
 });
 
-test('100 players: every broadcast stays under one 5 KiB Ably billing unit', () => {
+test('200 players: the game runs to the end and every broadcast stays within two 5 KiB Ably billing units', () => {
   const { st, rng } = newGame();
   const ids = [];
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 240; i++) {
     const pid = 'p' + Math.random().toString(36).slice(2, 9);
-    if (E.join(st, { pid, name: 'Player Name ' + i }, 0).ok) ids.push(pid);
+    if (E.join(st, { pid, name: 'Guest ' + i }, 0).ok) ids.push(pid);
   }
-  assert.equal(st.order.length, 100, 'capped at 100');
+  assert.equal(st.order.length, 200, 'capped at 200');
   E.start(st, 0, rng);
   let t = 0;
   let biggest = 0;
@@ -267,10 +268,10 @@ test('100 players: every broadcast stays under one 5 KiB Ably billing unit', () 
     phases++;
   }
   assert.equal(st.phase, 'gameover');
-  assert.ok(biggest < 5 * 1024, 'largest broadcast was ' + biggest + ' bytes');
+  assert.ok(biggest < 10 * 1024, 'largest broadcast was ' + biggest + ' bytes');
   const v = E.publicView(st, t);
   assert.equal(v.top.length, 10);
-  assert.equal(Object.keys(v.scores).length, 100);
+  assert.equal(Object.keys(v.scores).length, 200);
   // Each phone's place matches the TV's ranking.
   const { rank } = E.ranks(st);
   for (const pid of ids) assert.equal(E.placeOf(v.scores, pid), rank[pid]);
@@ -313,4 +314,28 @@ test('api/config lists the products for the buy buttons', async () => {
   const r = await call(require('../api/config.js'), '/api/config');
   assert.deepEqual(r.body.products.map((p) => p.id + ' ' + p.price), ['pack $9.99', 'christmas $24.99', 'group $34.99']);
   assert.equal(r.body.checkout, false);
+});
+
+test('game length: the host picks 10 or 20 questions', () => {
+  const pack = packs.getPack('nativity');
+  assert.deepEqual(Object.keys(E.LENGTHS), ['short', 'long']);
+  for (const [len, n] of [['short', 10], ['long', 20]]) {
+    const rounds = E.buildRounds(pack.questions, { mode: 'full', length: len, rng: seeded(3) });
+    const ids = rounds.flatMap((r) => r.questions.map((q) => q.id));
+    assert.equal(ids.length, n, len + ' game is ' + n + ' questions');
+    assert.equal(new Set(ids).size, n, 'no repeats');
+    assert.deepEqual(rounds.map((r) => r.type), ['classic', 'speed', 'final']);
+  }
+});
+
+test('phones get the explanation at the reveal (for games with no TV)', () => {
+  const { st, rng } = newGame();
+  E.join(st, { pid: 'a', name: 'A' }, 0);
+  E.start(st, 0, rng);
+  E.advance(st, 6000, rng);
+  assert.equal(E.publicView(st, 6000).question.reveal, undefined, 'not before the answer is out');
+  E.advance(st, 7000, rng);
+  const q = E.publicView(st, 7000).question;
+  assert.ok(q.reveal && q.reveal.length > 10);
+  assert.ok(Array.isArray(q.refs));
 });

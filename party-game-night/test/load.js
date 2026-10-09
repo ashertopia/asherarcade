@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-// Load test: one real TV page, one real phone page, and 99 lightweight bot
+// Load test: one real TV page, one real phone page, and 199 lightweight bot
 // phones (plain Node, talking to the dev relay) play a full Short game.
 //
 //   npm run load
 //
-// Checks that a 100-player room fills, plays to the end, that every phone ends
+// Checks that a 200-player room fills, plays to the end, that every phone ends
 // with its own correct score and place, and that each broadcast stays under
 // Ably's 5 KiB billing unit. It also prints an estimate of the Ably messages
 // the same game would use.
@@ -20,7 +20,7 @@ try {
   ({ chromium } = require(path.join(execSync('npm root -g').toString().trim(), 'playwright')));
 }
 
-const BOTS = 99;
+const BOTS = 199;
 const PORT = 3600 + Math.floor(Math.random() * 300);
 const BASE = 'http://localhost:' + PORT;
 const SPEED = 3;
@@ -142,10 +142,10 @@ async function main() {
       b.start();
       await sleep(15);
     }
-    await host.waitForFunction(() => window.__pgnHost.state.order.length === 100, null, { timeout: 30000 });
+    await host.waitForFunction(() => window.__pgnHost.state.order.length === 200, null, { timeout: 30000 });
     await phone.waitForFunction(() => window.__pgnPlayer.joined, null, { timeout: 15000 });
     await sleep(2000);
-    assert(bots.every((b) => b.joined), 'all 100 players joined (99 bots + 1 real phone)');
+    assert(bots.every((b) => b.joined), 'all 200 players joined (199 bots + 1 real phone)');
 
     // A 101st player is turned away.
     const extra = await (await browser.newContext()).newPage();
@@ -153,9 +153,9 @@ async function main() {
     await extra.fill('#nameIn', 'One Too Many');
     await extra.click('#joinBtn');
     await extra.waitForFunction(() => /full/.test(document.querySelector('#joinErr').textContent), null, { timeout: 15000 });
-    assert(true, 'the 101st player is told the room is full');
+    assert(true, 'the 201st player is told the room is full');
 
-    await host.screenshot({ path: path.join(SHOTS, 'load-01-host-lobby-100.png') });
+    await host.screenshot({ path: path.join(SHOTS, 'load-01-host-lobby-200.png') });
     await host.evaluate(() => window.__pgnHost.stats.broadcasts = 0);
     const deliveredBefore = counters.delivered;
     const publishesBefore = counters.phonePublishes;
@@ -192,20 +192,21 @@ async function main() {
       const r = window.PGNEngine.ranks(s).rank;
       return { phase: s.phase, scores: Object.fromEntries(s.order.map((id) => [id, [s.players[id].score, r[id]]])), stats: window.__pgnHost.stats, rows: document.querySelectorAll('.standings .row').length };
     });
-    assert(final.phase === 'gameover', 'the 100-player game reached the end screen');
+    assert(final.phase === 'gameover', 'the 200-player game reached the end screen');
     const wrong = bots.filter((b) => !b.done || !b.view.scores[b.pid] || b.view.scores[b.pid][0] !== final.scores[b.pid][0] || placeOf(b.view.scores, b.pid) !== final.scores[b.pid][1]);
     assert(wrong.length === 0, 'every bot phone ends with its own correct score and place');
     const phoneSees = await phone.evaluate(() => [document.querySelector('#meScore').textContent, document.querySelector('#mePlace').textContent]);
-    assert(/of 100$/.test(phoneSees[1]), 'the real phone shows its score and place: ' + phoneSees.join(' · '));
-    assert(final.rows <= 10, 'the TV end screen lists the top 10, not all 100 (' + final.rows + ' rows)');
-    assert(final.stats.maxBytes < 5 * 1024, 'largest broadcast ' + final.stats.maxBytes + ' bytes (< 5 KiB = 1 Ably message each)');
+    assert(/of 200$/.test(phoneSees[1]), 'the real phone shows its score and place: ' + phoneSees.join(' · '));
+    assert(final.rows <= 10, 'the TV end screen lists the top 10, not all 200 (' + final.rows + ' rows)');
+    assert(final.stats.maxBytes < 10 * 1024, 'largest broadcast ' + final.stats.maxBytes + ' bytes (under 10 KiB = at most 2 Ably billing units)');
 
     const broadcasts = final.stats.broadcasts;
     const delivered = counters.delivered - deliveredBefore;
     const publishes = counters.phonePublishes - publishesBefore;
-    const ablyEstimate = broadcasts * (1 + 100) + publishes * 2;
-    console.log('\n  Ably usage estimate for this 10-question, 100-player game:');
-    console.log('    TV broadcasts: ' + broadcasts + ' × 101 (1 in + 100 out) = ' + broadcasts * 101);
+    const units = Math.ceil(final.stats.maxBytes / 5120);
+    const ablyEstimate = broadcasts * units * (1 + 200) + publishes * 2;
+    console.log('\n  Ably usage estimate for this 10-question, 200-player game:');
+    console.log('    TV broadcasts: ' + broadcasts + ' × ' + units + ' billing unit(s) × 201 (1 in + 200 out) = ' + broadcasts * units * 201);
     console.log('    phone messages: ' + publishes + ' × 2 (1 in + 1 out to the TV) = ' + publishes * 2);
     console.log('    total ≈ ' + ablyEstimate.toLocaleString() + ' messages (free tier: 6,000,000/month ≈ ' + Math.floor(6e6 / ablyEstimate) + ' games like this)');
     console.log('    (bot phones received ' + delivered + ' state messages between them)');

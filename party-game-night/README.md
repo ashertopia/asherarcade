@@ -21,7 +21,7 @@ own (no bundles with other Asher Arcade products).
 
 - **Reveal:** after every question the TV shows the right answer, how many people picked each choice, the explanation (with scripture references in the Bible packs), and the live leaderboard with points earned and rank moves.
 - **Standings:** shown after rounds 1 and 2.
-- **Game length:** **Short, 10 questions** (5 classic + 4 speed + the finale, about 8 minutes; the default), Standard (13) or Marathon (18). Every pack can be played at every length.
+- **Game length:** the host picks when creating the game: **Short, 10 questions** (5 classic + 4 speed + the finale, about 8 minutes; the default) or **Long, 20 questions** (10 + 9 + the finale, about 16 minutes). Every pack can be played at either length.
 - **End screen:** confetti, a podium and the full standings, then **Play again** (same pack, questions nobody has seen yet) or **New pack**. Players keep their seats either way.
 
 **Host controls:**
@@ -32,11 +32,24 @@ own (no bundles with other Asher Arcade products).
 - **Remove a player:** the ✕ on their name in the lobby
 - **Narrator:** the 🗣 button turns on the browser's text-to-speech, which reads the host lines and questions aloud.
 
-**Rooms of up to 100 players.** The TV shows the top 10 (with "…and 90 more");
-every phone always shows that player's own **score and place** ("28th of
-100") in its header, plus a place/score card after each question and their own
-row under the top 5 on the phone's mini leaderboard. With more than 16
-players, the TV shows a "57 of 100 locked in" progress bar instead of faces.
+**Rooms of up to 200 players.**
+- **TV leaderboard:** shows the top 10, with "…and 190 more".
+- **Every phone:** always shows that player's own **score and place** ("128th of 200") in its header. After each question it shows a place/score card, and its mini leaderboard shows the top 5 plus that player's own row.
+- **Lobby:** shows the 48 newest names plus a "+152 more" count.
+- **Locked-in display:** with more than 16 players, the TV shows a "57 of 200 locked in" progress bar instead of faces.
+- **Over about 150 players:** needs a paid Ably plan (see [Is Ably free?](#is-ably-free)).
+
+**Setting up a game (host):**
+1. Open `/host`.
+2. Pick the pack (the trivia type).
+3. Pick the length (10 or 20 questions).
+4. Tap **Open the room**. The lobby shows the room code, the QR code and the join address.
+5. When everyone's in, press **Start the game**.
+
+**Playing without a TV.** A TV is optional. Every phone shows the question, the four answers, the countdown, whether you got it right and the explanation after each question, plus its own score and place. Only the host page has to be open somewhere:
+- **Host device:** a laptop, tablet or phone. Keep the page open and the screen awake: closing it or letting it sleep pauses the game.
+- **Inviting people:** tap **📤 Share invite link** in the lobby and send it by text or group chat. On a phone it opens the share sheet; on a laptop it copies the link. Players can also go to `/play` and type the room code.
+- **Over a video call:** share the host screen so everyone sees the big board, too.
 
 **Phones:** big tap targets, and each answer has its own color *and* shape. A
 countdown bar and haptics on correct/wrong. If a phone sleeps, loses signal or
@@ -73,7 +86,7 @@ Dev unlock code (all packs): ALL-DEV1-XXXXXXXX
 npm test          # unit tests: rules, scoring, wagers, codes, API gating (16 tests)
 npm run validate  # checks every pack (structure, 25+ questions, refs, lengths)
 npm run e2e       # a full game: 1 TV + 3 phones in headless Chromium
-npm run load      # a full 10-question game with 100 players (99 bots + 1 real phone)
+npm run load      # a full 10-question game with 200 players (199 bots + 1 real phone)
 ```
 
 The end-to-end test does the following, and saves screenshots to `test/screenshots/` (gitignored):
@@ -110,35 +123,39 @@ production branch can simply be `main`.
 
 ### Is Ably free?
 
-Yes, for this. Ably's free plan (no credit card) allows **6 million messages a
-month, 200 concurrent connections, 200 channels, 500 messages/second app-wide,
-50 messages/second per channel**, and messages up to 64 KiB, billed in 5 KiB
-chunks. Ably counts one message for each publish **and one for each phone it's
-delivered to**, so the game is built around that:
+**Up to about 100 players, yes.** Ably's free plan (no credit card) allows:
+- **Messages:** 6 million a month, up to 64 KiB each, billed in 5 KiB chunks.
+- **Connections and channels:** 200 concurrent connections and 200 channels.
+- **Rate limits:** 500 messages/second app-wide and 50 messages/second per channel.
+
+The connection limit is the one that matters. Every phone plus the TV is one connection, and a phone that reloads or wakes from sleep briefly holds two. **A 200-player room needs a paid Ably plan** (see [ably.com/pricing](https://ably.com/pricing)). The code itself is ready for 200. On the free plan, keep a room to about 100–150 players, and don't run two big rooms at the same moment: the limit covers the whole account.
+
+Ably counts one message for each publish **and one for each phone it's delivered to**, so the game is built around that:
 
 - **Phones never hear each other.** The TV broadcasts on `pgn:ROOM`; phones send
-  answers on four inbox channels (`pgn:ROOM:in0`–`in3`) that only the TV reads.
-  An answer costs 2 messages, not 101.
+  answers on eight inbox channels (`pgn:ROOM:in0`–`in7`) that only the TV reads.
+  An answer costs 2 messages, not 201.
 - **TV updates are throttled.** Phase changes go out at once; joins, answers and
   wagers are folded into one update at most every 1.5 seconds.
-- **Every update fits in one 5 KiB unit.** It carries names only for the top 10,
-  plus a tiny `[score, …]` array per player, from which each phone works out its
-  own place. With 100 players the largest update measured 4 KB.
-- **100 near-simultaneous taps** are split across the four inboxes (about 25 per
+- **Updates stay small.** They carry names only for the top 10, plus a tiny
+  `[score, …]` array per player, from which each phone works out its own place.
+  The largest update measured about 4 KB with 100 players (1 billing unit) and
+  about 7 KB with 200 (2 units).
+- **200 near-simultaneous taps** are split across the eight inboxes (about 25 per
   channel, under the 50/s limit), spread over a few hundred milliseconds, and
   retried if Ably pushes back. The delay costs no points: the answer time is
   measured on the phone at the tap.
 
-**What a game costs:** a 10-question game with 100 players uses roughly
-15,000 messages at normal speed (the load test measured about 7,000 with its
-clock running 3× fast). That's about **400 full 100-player games a month**
-on the free plan, and far more with smaller groups. A 20-person party uses
-around 2,500.
+**What a game costs (10 questions, at normal speed):**
 
-**Limits to keep in mind:** 200 concurrent connections means one 100-player room
-at a time is comfortable (phones that reload briefly hold two). Two big parties
-running at the same moment could hit the cap. If that ever happens, Ably's paid
-plans raise the limits; see [ably.com/pricing](https://ably.com/pricing).
+| Players | Messages per game (approx.) | Games per month on 6M |
+|---|---|---|
+| 20 | 2,500 | thousands |
+| 100 | 15,000 | ~400 |
+| 200 | 45,000 | ~130 |
+
+A 20-question game uses about twice as many. The load tests measured less
+(about 7,000 for 100 players, 24,000 for 200) because they run the clock 3× fast.
 
 ### Why Ably for realtime
 
@@ -311,12 +328,12 @@ party-game-night/
   lib/               pack loading/validation, unlock codes, HTTP helpers
   packs/             the question packs (not publicly served)
   scripts/           make-code.js, validate-packs.js
-  test/              unit.test.js, e2e.js, load.js (100 players)
+  test/              unit.test.js, e2e.js, load.js (200 players)
   dev-server.js      local server + realtime relay
 ```
 
 ## Known limits
 
-- **Max players:** 100 per room. The TV shows the top 10; everyone's own place is on their phone.
+- **Max players:** 200 per room (more than about 100–150 needs a paid Ably plan). The TV shows the top 10; everyone's own place is on their phone.
 - **Who controls the game:** the host browser is the authority. Closing the TV tab pauses the game until it's reopened and resumed.
 - **Ably untested here:** Ably itself couldn't be reached from the sandbox this was built in. The production transport was checked against Ably's documented API, and its token endpoint is unit-tested, but the first real run on Vercel is the first live Ably test. Do one practice game before the party.

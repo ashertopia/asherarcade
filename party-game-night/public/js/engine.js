@@ -14,7 +14,7 @@
   'use strict';
 
   const ROOM_TTL_MS = 24 * 60 * 60 * 1000;
-  const MAX_PLAYERS = 100;
+  const MAX_PLAYERS = 200;
   // The TV leaderboard and the phones' mini-board show this many rows.
   const TOP_N = 10;
   const NAME_MAX = 14;
@@ -61,9 +61,9 @@
   };
 
   const LENGTHS = {
+    // classic + speed + 1 all-in finale
     short: { label: 'Short', classic: 5, speed: 4, questions: 10, minutes: '~8 min' },
-    standard: { label: 'Standard', classic: 6, speed: 6, questions: 13, minutes: '~12 min' },
-    long: { label: 'Marathon', classic: 9, speed: 8, questions: 18, minutes: '~18 min' },
+    long: { label: 'Long', classic: 10, speed: 9, questions: 20, minutes: '~16 min' },
   };
 
   const DIFF_ORDER = { easy: 0, medium: 1, hard: 2 };
@@ -124,7 +124,7 @@
    * Build the rounds for a game.
    *   questions: the pack's questions (full pack, or just its sample)
    *   opts.mode: 'full' | 'sample'
-   *   opts.length: 'short' (10 questions) | 'standard' | 'long'
+   *   opts.length: 'short' (10 questions) | 'long' (20)
    *   opts.used: Set of question ids played recently (picked last)
    */
   function buildRounds(questions, opts) {
@@ -517,7 +517,7 @@
    * What gets broadcast to every phone. The correct answer only appears once
    * the question has closed.
    *
-   * Sized for 100 players: Ably bills in 5 KiB chunks and delivers each
+   * Sized for 200 players: Ably bills in 5 KiB chunks and delivers each
    * broadcast to every phone, so the view carries full rows (names) only for
    * the top TOP_N, plus one tiny array per player under `scores`:
    *   question: [score, answered 0|1]
@@ -577,7 +577,12 @@
     }
     if (inQ && q) {
       view.question = { key: questionKey(state), text: q.text, choices: q.choices };
-      if (state.phase === 'reveal') view.question.correct = q.correct;
+      if (state.phase === 'reveal') {
+        view.question.correct = q.correct;
+        // The explanation goes to phones too, so a game works with no TV at all.
+        view.question.reveal = q.reveal;
+        view.question.refs = q.refs;
+      }
     }
     return view;
   }
