@@ -55,7 +55,7 @@
       "correct": 0
     },
     {
-      "q": "How old was he when he met Jamè?",
+      "q": "How old was he when he met Jamé?",
       "answers": [
         "18",
         "16",
@@ -177,8 +177,8 @@
     {
       "q": "What's his favorite Christmas movie?",
       "answers": [
-        "Home Alone",
         "Die Hard",
+        "Home Alone",
         "Elf",
         "Christmas Vacation"
       ],
@@ -214,5 +214,6 @@
       ],
       "correct": 0
     }
-  ]
+  ],
+  "shuffleQuestions": true
 }
