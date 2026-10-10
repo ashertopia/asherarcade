@@ -416,15 +416,15 @@ function pointsFor(isRight, ms, secs){
   return Math.round(1000 - 500 * f);
 }
 function tally(cfg, answers){
-  var score = 0, right = 0, ms = 0;
+  var score = 0, right = 0, ms = 0, n = 0;
   cfg.questions.forEach(function(q, i){
-    var a = answers[i]; if (!a) return;
+    var a = answers[i]; if (!a || a.x) return;
     var ok = a.c === q.correct;
     if (ok) right++;
     score += pointsFor(ok, a.ms, cfg.secs);
-    ms += a.ms;
+    ms += a.ms; n++;
   });
-  return { score: score, right: right, avgMs: answers.length ? ms / answers.length : 0 };
+  return { score: score, right: right, avgMs: n ? ms / n : 0 };
 }
 
 /* ---------------- config ---------------- */
@@ -459,6 +459,10 @@ function normalize(c){
     colors: (Array.isArray(t.answers) && t.answers.length === 4) ? t.answers : COLORS,
     secs: Math.max(5, Math.min(60, Number(c.secondsPerQuestion) || 20)),
     shuffleAnswers: c.shuffleAnswers !== false,
+    // Each player gets the questions in their own random order. With more
+    // questions than questionsPerPlay, each player gets a random set of that many.
+    shuffleQuestions: !!c.shuffleQuestions,
+    perPlay: Math.max(1, Math.min(c.questions.length, Number(c.questionsPerPlay) || c.questions.length)),
     leaderboardUrl: MODE === 'preview' ? '' : String(c.leaderboardUrl || ''),
     closesAt: c.closesAt || '',
     samplePlayers: Array.isArray(c.samplePlayers) ? c.samplePlayers : [],
@@ -654,7 +658,7 @@ function openIntro(){
   $('i-title').textContent = cfg.title;
   $('i-sub').textContent = cfg.subtitle;
   $('i-sub').hidden = !cfg.subtitle;
-  $('i-count').textContent = cfg.questions.length;
+  $('i-count').textContent = cfg.perPlay;
   if (isClosed(cfg)) {
     $('i-form').hidden = true; $('i-once').hidden = true;
     $('i-msg').textContent = 'This game is closed. Thanks for playing!';
@@ -666,7 +670,7 @@ function openIntro(){
       state.answers[state.pending] = { c: -1, ms: cfg.secs * 1000 };
       state.pending = -1; save();
     }
-    return countdown(nextIndex());
+    return countdown(nextStep());
   }
   if (MODE === 'preview') $('i-once').textContent = 'Preview: scores stay on this device and reset each time you open the preview.';
   show('s-intro');
@@ -694,16 +698,23 @@ $('i-board').addEventListener('click', openBoard);
 function begin(name){
   state = {
     v: 1, name: name, startedAt: Date.now(), pending: -1, answers: [], done: false, sent: false, result: null,
-    orders: cfg.questions.map(function(q){ var o = q.answers.map(function(_, i){ return i; }); return cfg.shuffleAnswers ? shuffle(o) : o; })
+    orders: cfg.questions.map(function(q){ var o = q.answers.map(function(_, i){ return i; }); return cfg.shuffleAnswers ? shuffle(o) : o; }),
+    seq: (function(){
+      var o = cfg.questions.map(function(_, i){ return i; });
+      return (cfg.shuffleQuestions || cfg.perPlay < o.length ? shuffle(o) : o).slice(0, cfg.perPlay);
+    })()
   };
   save();
   if (window.gtag) gtag('event', 'trivia_start', { game_id: cfg.id });
   countdown(0);
 }
-function nextIndex(){ return state.answers.length; }
+// Steps walk through state.seq (this player's questions, in their order);
+// answers are stored by the question's place in the game file.
+function seq(){ if (!state.seq) state.seq = cfg.questions.map(function(_, i){ return i; }); return state.seq; }
+function nextStep(){ var s = seq(), k = 0; while (k < s.length && state.answers[s[k]]) k++; return k; }
 
 function countdown(i){
-  if (i >= cfg.questions.length) return finish();
+  if (i >= seq().length) return finish();
   show('s-count');
   $('c-label').textContent = i === 0 ? 'Get ready, ' + state.name : 'Picking up where you left off';
   var n = 3;
@@ -719,13 +730,13 @@ function countdown(i){
 var timerRaf = 0, t0 = 0, locked = true, lastTick = -1, autoTimer = 0;
 var CIRC = 2 * Math.PI * 26;
 
-function ask(i){
-  var q = cfg.questions[i], order = state.orders[i];
+function ask(step){
+  var i = seq()[step], q = cfg.questions[i], order = state.orders[i];
   state.pending = i; save();
   show('s-play');
   $('sheet').classList.remove('on');
-  $('p-qnum').innerHTML = (i + 1) + '<span>/' + cfg.questions.length + '</span>';
-  $('p-prog').style.width = (i / cfg.questions.length * 100) + '%';
+  $('p-qnum').innerHTML = (step + 1) + '<span>/' + seq().length + '</span>';
+  $('p-prog').style.width = (step / seq().length * 100) + '%';
   paintScore(false);
   var q2 = $('p-q'); q2.textContent = q.q; q2.style.animation = 'none'; void q2.offsetWidth; q2.style.animation = '';
   var fig = $('p-img'); fig.textContent = ''; fig.classList.toggle('has', !!q.image);
@@ -804,7 +815,7 @@ function answer(k){
   $('sh-ans').textContent = ok ? 'Answered in ' + (ms / 1000).toFixed(1) + ' seconds.' : 'The answer: ' + q.answers[q.correct];
   $('sh-fact').hidden = !q.fact;
   if (q.fact) { $('sh-fact').innerHTML = '<b>The story</b>'; $('sh-fact').appendChild(document.createTextNode(q.fact)); }
-  var last = i === cfg.questions.length - 1;
+  var last = nextStep() >= seq().length;
   $('sh-next').firstChild.textContent = last ? 'See My Score' : 'Next Question';
   say((ok ? 'Correct, plus ' + pts + ' points.' : 'Wrong. The answer was ' + q.answers[q.correct] + '.') + (q.fact ? ' ' + q.fact : ''));
   setTimeout(function(){ sh.classList.add('on'); autoNext(q.fact ? 9000 : 3500); }, 650);
@@ -819,8 +830,8 @@ function next(){
   clearTimeout(autoTimer);
   if (!$('sheet').classList.contains('on')) return;
   $('sheet').classList.remove('on');
-  var i = nextIndex();
-  if (i >= cfg.questions.length) finish(); else ask(i);
+  var k = nextStep();
+  if (k >= seq().length) finish(); else ask(k);
 }
 $('sh-next').addEventListener('click', next);
 function paintScore(bump){
@@ -847,8 +858,8 @@ function grade(pct){
 function openDone(fresh){
   var t = tally(cfg, state.answers);
   $('d-score').textContent = fmt(t.score);
-  $('d-grade').textContent = grade(t.right / cfg.questions.length);
-  $('d-stats').innerHTML = '<span>' + t.right + ' of ' + cfg.questions.length + ' right</span><span>' + (t.avgMs / 1000).toFixed(1) + 's average</span>';
+  $('d-grade').textContent = grade(t.right / seq().length);
+  $('d-stats').innerHTML = '<span>' + t.right + ' of ' + seq().length + ' right</span><span>' + (t.avgMs / 1000).toFixed(1) + 's average</span>';
   $('d-label').textContent = state.name + "'s final score";
   show('s-done');
   if (fresh) { sfx.done(); if (t.right) confetti([cfg.accent].concat(cfg.colors)); }
@@ -860,7 +871,9 @@ function send(){
   $('d-rank').textContent = 'Checking where you placed…';
   $('d-msg').textContent = ''; $('d-retry').hidden = true;
   var slow = setTimeout(function(){ if (!state.sent) $('d-rank').textContent = 'Posting your score… almost there'; }, 6000);
-  api.finish(state.name, DEV, state.answers).then(function(res){
+  // One entry per question in the file; questions this player didn't get are marked x.
+  var sent = cfg.questions.map(function(_, i){ return state.answers[i] || { c: -1, ms: 0, x: 1 }; });
+  api.finish(state.name, DEV, sent).then(function(res){
     clearTimeout(slow);
     if (!res || !res.ok) {
       var e = res && res.error;

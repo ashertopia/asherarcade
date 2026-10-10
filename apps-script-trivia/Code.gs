@@ -209,7 +209,9 @@ function finish_(b) {
     var c = Number(a.c), ms = Number(a.ms);
     if (!Number.isInteger(c) || c < -1 || c >= game.key[i].n) return { ok: false, error: 'bad_answers' };
     if (!isFinite(ms)) return { ok: false, error: 'bad_answers' };
-    clean.push({ c: c, ms: Math.round(Math.max(0, Math.min(limit, ms))) });
+    var item = { c: c, ms: Math.round(Math.max(0, Math.min(limit, ms))) };
+    if (a.x) { item = { c: -1, ms: 0, x: 1 }; }   // not in this player's set (question pools)
+    clean.push(item);
   }
   return withLock_(function () {
     var sh = tab_(id, false), rows = rows_(sh), at = -1;
@@ -219,17 +221,18 @@ function finish_(b) {
     if (!row[COL.finished]) {
       // No closing check here: someone who started before the game closed
       // still gets their score posted. New players are turned away in start.
-      var score = 0, right = 0, total = 0;
+      var score = 0, right = 0, total = 0, asked = 0;
       clean.forEach(function (a, k) {
+        if (a.x) return;
         var ok = a.c === game.key[k].correct;
         if (ok) right++;
         score += pointsFor_(ok, a.ms, game.secs);
-        total += a.ms;
+        total += a.ms; asked++;
       });
       row[COL.finished] = new Date();
       row[COL.score] = score;
       row[COL.right] = right;
-      row[COL.avg] = Math.round(total / clean.length / 100) / 10;
+      row[COL.avg] = Math.round(total / Math.max(1, asked) / 100) / 10;
       row[COL.answers] = JSON.stringify(clean);
       sh.getRange(at + 2, 1, 1, HEADERS.length).setValues([row]);
       CacheService.getScriptCache().remove('board:' + id);
@@ -358,7 +361,7 @@ function cleanBuild_(src) {
     title: 'How Well Do You Know ' + first + '?', honoree: honoree, occasion: occasion,
     eyebrow: str_(src.eyebrow, 50) || eyebrows[occasion], subtitle: 'Think you know ' + first + '? Prove it.',
     theme: { primary: theme.primary, secondary: theme.secondary },
-    secondsPerQuestion: 20, shuffleAnswers: true, closesAt: '', questions: qs
+    secondsPerQuestion: 20, shuffleAnswers: true, shuffleQuestions: true, closesAt: '', questions: qs
   } };
 }
 
