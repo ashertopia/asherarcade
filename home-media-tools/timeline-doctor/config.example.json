@@ -1,0 +1,30 @@
+{
+  "immich": {
+    "base_url": "http://localhost:2283",
+    "api_key": "PASTE_YOUR_IMMICH_API_KEY_HERE"
+  },
+
+  "_comment_models": "Where the face-age AI stores its downloaded model files. Point this at the drive with room (e.g. your external HD).",
+  "model_cache_dir": "E:/ai-models/deepface",
+
+  "_comment_detection": "How many years apart 'apparent age' and 'expected age' must be before a photo is flagged as suspicious. 6 is a safe default that catches big mistakes (baby vs teen) without nagging on small ones.",
+  "age_mismatch_years": 6,
+
+  "_comment_confidence": "A date guess is treated as 'certain' (and may move files automatically) only when the apparent age across photos agrees within this many years. Otherwise it waits for your review.",
+  "auto_confident_within_years": 2,
+
+  "organize": {
+    "_comment": "Filing photos into dated folders on the drive.",
+    "enabled": true,
+    "source_root": "E:/PhotosMasters",
+    "dest_root": "E:/PhotosOrganized",
+    "folder_pattern": "{year}/{year}-{month:02d}",
+    "mode": "move",
+    "never_delete": true,
+    "never_overwrite": true,
+    "ask_until_certain": true
+  },
+
+  "queue_file": "review_queue.json",
+  "corrections_file": "corrections.json"
+}

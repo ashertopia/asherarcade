@@ -1,0 +1,9 @@
+# Timeline Doctor dependencies.  Install with:  pip install -r requirements.txt
+requests>=2.31
+flask>=3.0
+pillow>=10.0
+numpy>=1.24
+# Face age estimation (large download on first use; weights go to model_cache_dir):
+deepface>=0.0.92
+# DeepFace needs a backend; tf-keras keeps it working with current TensorFlow:
+tf-keras>=2.15
